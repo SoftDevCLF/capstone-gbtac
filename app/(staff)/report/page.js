@@ -1,6 +1,8 @@
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
+import ReportDropdown from "@/app/_components/ReportGeneration/ReportDropdown";
+import Calendar from "@/app/_components/ReportGeneration/Calendar";
 
 export default function Page() {
   return (
@@ -13,10 +15,12 @@ export default function Page() {
           Reports
         </h1>
 
-
-        {/* LEFT: Dropdown + Calendar */}
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="col-span-1 p-6 bg-white shadow-md rounded-xl border space-y-6"></div>      
+          {/* LEFT: Dropdown + Calendar */}
+          <div className="col-span-1 p-6 bg-white shadow-md rounded-xl border space-y-6">
+          <ReportDropdown />
+          <Calendar />
+          </div>
         </div>
 
         {/* Inline error message */}
