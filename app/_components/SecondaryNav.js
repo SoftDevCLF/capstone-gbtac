@@ -9,12 +9,7 @@ export default function SecondaryNav({
     <nav className="flex flex-row items-center justify-between w-full bg-white py-3 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
       <div>
         <Link href="https://www.sait.ca">
-          <Image
-            src="/sait_extended_horizontal_full_colour_rgb.png"
-            alt="Logo"
-            height={36}
-            width={131}
-          />
+          <Image src="/sait-logo.png" alt="SAIT Logo" height={36} width={131} />
         </Link>
       </div>
 
