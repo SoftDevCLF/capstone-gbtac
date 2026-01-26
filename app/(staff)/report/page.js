@@ -3,6 +3,8 @@ import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
 import ReportDropdown from "@/app/_components/ReportGeneration/ReportDropdown";
 import Calendar from "@/app/_components/ReportGeneration/Calendar";
+import PDFViewer from "@/app/_components/ReportGeneration/PdfViewer";
+
 
 export default function Page() {
   return (
@@ -18,21 +20,25 @@ export default function Page() {
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* LEFT: Dropdown + Calendar */}
           <div className="col-span-1 p-6 bg-white shadow-md rounded-xl border space-y-6">
-          <ReportDropdown />
-          <Calendar />
-          </div>
+            <ReportDropdown />
+            
+            <Calendar />
+        
+
+            {/* Inline error message */}
+                {/* {errorMessage && (
+                  <p className="mt-2 text-red-600 font-bold">{errorMessage}</p>
+                )} */}
         </div>
 
-        {/* Inline error message */}
-            {/* {errorMessage && (
-              <p className="mt-2 text-red-600 font-bold">{errorMessage}</p>
-            )} */}
-          </div>
 
         {/* RIGHT: PDF Viewer */}
-          <div className="col-span-2">
-            {/* {showViewer && <PDFViewer pdfBlob={pdfBlob} onClear={handleClear} />} */}
-          </div>
+        <div className="col-span-2">
+          <PDFViewer/>
+          {/* {showViewer && <PDFViewer pdfBlob={pdfBlob} onClear={handleClear} />} */}
+         </div>
+        </div>
+      </div>
         <Footer />
     </main>
   );
