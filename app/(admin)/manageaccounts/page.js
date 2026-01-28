@@ -1,6 +1,7 @@
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
+import AccountsTable from "./components/AccountsTable";
 
 
 export default function Page() {
@@ -14,9 +15,14 @@ export default function Page() {
           Manage Accounts
         </h1>
 
-    
+        {/* // Import and use the AccountsTable component */}
+
+          <AccountsTable />
+
+  
       </div>
         <Footer />
     </main>
+
   );
 }
