@@ -1,9 +1,9 @@
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
-import ReportDropdown from "@/app/_components/ReportGeneration/ReportDropdown";
-import Calendar from "@/app/_components/ReportGeneration/Calendar";
-import PDFViewer from "@/app/_components/ReportGeneration/PdfViewer";
+import ReportDropdown from "./components/ReportDropdown";
+import Calendar from "./components/Calendar";
+import PDFViewer from "./components/PdfViewer";
 
 
 export default function Page() {
