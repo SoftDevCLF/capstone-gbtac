@@ -2,6 +2,9 @@ import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
 import AccountsTable from "./components/AccountsTable";
+import SearchInput from "./components/SearchInput";
+import AddStaffButton from "./components/AddStaffButton";
+
 
 
 export default function Page() {
@@ -11,13 +14,17 @@ export default function Page() {
         <Navbar />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-10  dark:text-black" style={{ fontFamily: "var(--font-titillium)" }}>
+        <h1 className="text-4xl font-bold mb-10  dark:text-black" style={{ fontFamily: "var(--font-titillium)" }}>
           Manage Accounts
         </h1>
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <SearchInput />
+          <AddStaffButton />
+          </div>
 
-        {/* // Import and use the AccountsTable component */}
 
-          <AccountsTable />
+        
+        <AccountsTable />
 
   
       </div>

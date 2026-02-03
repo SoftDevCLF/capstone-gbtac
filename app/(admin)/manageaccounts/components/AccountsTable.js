@@ -50,6 +50,10 @@ export default function AccountsTable() {
             <span className="text-black">{account.status}</span>
           </td>
           <td className="px-6 py-4 whitespace-nowrap">
+            <button className="bg-[#912932] hover:bg-[#8B1625] text-white  px-3 py-1 mr-2.5 rounded-md transition-colors"
+              style={{ fontFamily: "var(--font-titillium)" }}>
+              Edit
+            </button>
             <button className="bg-[#912932] hover:bg-[#8B1625] text-white  px-3 py-1 rounded-md transition-colors"
               style={{ fontFamily: "var(--font-titillium)" }}>
               Delete
