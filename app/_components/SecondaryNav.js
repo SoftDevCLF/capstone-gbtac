@@ -5,23 +5,29 @@ export default function SecondaryNav({
   displayLogout = false,
   displayProfile = false,
 }) {
+  const employeeName = "John Doe"; // Placeholder for actual employee name
   return (
     <nav className="flex flex-row items-center justify-between w-full bg-white py-3 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
       <div>
         <Link href="https://www.sait.ca">
-          <Image src="/sait-logo.png" alt="SAIT Logo" height={36} width={131} />
+          <Image
+            src="/sait_extended_horizontal_full_colour_rgb.png"
+            alt="Logo"
+            height={50}
+            width={131}
+          />
         </Link>
       </div>
 
       <ul className="flex space-x-8 text-white">
         {displayLogin && (
           <li>
-            <button
-              className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition"
-              // onClick={loginPageNav}
+            <Link
+              href="/login"
+              className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
             >
               Login
-            </button>
+            </Link>
           </li>
         )}
         {displayLogout && (
@@ -35,7 +41,7 @@ export default function SecondaryNav({
           </li>
         )}
         {displayProfile && (
-          <li className="py-2">
+          <li className="py-2 text-2xl font-semibold text-gray-800 hover:text-gray-600 transition">
             <Link href="/about" className="hover:opacity-80 transition">
               {employeeName}
             </Link>

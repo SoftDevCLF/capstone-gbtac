@@ -1,29 +1,20 @@
 import Image from "next/image";
-
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#1C232C] text-white py-4 px-6 mt-12">
-      <div className="flex items-center justify-between">
-        {/* Left - Social Icons */}
-        <div className="flex gap-4">
-          <a href="#" className="hover:opacity-80">
-            FB
-          </a>
-          <a href="#" className="hover:opacity-80">
-            IG
-          </a>
-          <a href="#" className="hover:opacity-80">
-            X
-          </a>
-        </div>
-
-        <p className="text-sm text-center grow">
-          Green Building Technology Access Centre - SAIT
-        </p>
-
-        {/* Right - Logo */}
-        <Image src="/sait-logo.png" alt="SAIT Logo" height={40} width={40} />
+    <div className="w-full bg-[#6D2077] border-t border-[#6D2077] flex flex-row items-center justify-between py-3 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
+      <div>
+        {" "}
+        <Image
+          src="/sait_extended_horizontal_reverse.png"
+          alt="Logo"
+          width={200}
+          height={100}
+        />
       </div>
-    </footer>
+
+      <p className="text-right text-[#F1FAF5] ">
+        {new Date().getFullYear()}. Capstone Project for GBTAC, SAIT.
+      </p>
+    </div>
   );
 }
