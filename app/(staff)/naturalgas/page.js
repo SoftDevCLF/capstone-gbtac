@@ -1,6 +1,6 @@
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
-import KpiGrid from "./components/KpiGrid";
+import KpiGrid from "./components/NaturalGasKpiGrid";
 import DateRangeControls from "./components/DateRangeControls";
 import Footer from "@/app/_components/Footer";
 
@@ -28,9 +28,13 @@ export default function Page() {
             <DateRangeControls />
           </div>
 
-          {/* Chart Placeholder */}
+          {/* Line Chart Placeholder */}
           <div className="bg-white rounded-lg shadow-md h-96 flex items-center justify-center text-gray-400 relative">
-            Natural Gas and Electricity Consumption Chart Placeholder
+            Natural Gas and Electricity Consumption LINE Chart Placeholder
+          </div>
+          {/* Bar Chart Placeholder */}
+          <div className="bg-white rounded-lg shadow-md h-96 flex items-center justify-center text-gray-400 relative">
+            Natural Gas and Electricity Consumption BAR Chart Placeholder
           </div>
         </div>
       </div>
