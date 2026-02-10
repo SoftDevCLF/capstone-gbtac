@@ -11,7 +11,6 @@ export default function Page() {
 
   const handleApply = () => {
     console.log("Filter applied:", { startDate, endDate });
-    // later: hook this into API call
   };
 
   return (
@@ -28,7 +27,6 @@ export default function Page() {
             Wall Temperature Dashboard
           </h1>
 
-          {/* KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-white p-4 rounded-lg shadow">
               <p className="text-sm text-gray-500">Average Wall Temp</p>
@@ -51,7 +49,6 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Date Filter */}
           <div className="bg-white p-4 rounded-lg shadow mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-end gap-4">
             <div className="flex flex-col">
               <label className="text-xs text-gray-500 mb-1">Start Date</label>
@@ -81,7 +78,6 @@ export default function Page() {
             </button>
           </div>
 
-          {/* Chart */}
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-lg font-semibold mb-3">
               Wall Temperature Trend
