@@ -8,6 +8,8 @@ import InfoCard from "../../../_components/InfoCard";
 import GraphPlaceholder from "../../../_components/GraphPlaceholder";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 
+import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
+
 const STORAGE_KEY = "dashboard-energy";
 
 export default function EnergyDashboard() {
@@ -63,10 +65,22 @@ export default function EnergyDashboard() {
         setToDate={(v) => setState({ ...state, toDate: v })}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GraphPlaceholder />
-
-        <GraphPlaceholder />
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+        <LineHandler 
+          sensorList={[
+            "30000_TL252",
+            "30000_TL253"
+          ]}
+          startDate={"2025-06-13"}
+          endDate={"2025-06-13"}
+          graphTitle={"Solar Panel Graph"}
+          yTitle={"kWh"}
+          xTitle={"hours"}
+          xUnit={"hours"}
+        />
+        
+        {/* <GraphPlaceholder /> */}
+        {/* <GraphPlaceholder /> */}
       </div>
       <div className="flex justify-end mt-6">
         <button
