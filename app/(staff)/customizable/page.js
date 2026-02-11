@@ -1,11 +1,13 @@
+
 //Page for Customizable Graph Section
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
-import GraphControl from "./components/GraphControl";
+import ChartSettings from "./components/ChartSettings";
 import SensorSearch from "./components/SensorSearch";
 import SelectedSensors from "./components/SelectedSensors";
 import GraphContainer from "./components/GraphContainer";
+import DateRange from "./components/DateRange";
 
 export default function Page() {
   return (
@@ -18,7 +20,14 @@ export default function Page() {
           style={{ fontFamily: "var(--font-titillium)" }}>
           Create Custom Chart
         </h1>
-        <GraphControl />
+
+        {/*Chart Settings and Date Range*/}
+        <div className="flex gap-4 mb-5">
+          <ChartSettings />
+          <DateRange />
+        </div>
+      
+        {/*Sensor Search and Selected Sensors*/}
         <div className="flex gap-4">
           <SensorSearch />
           <SelectedSensors />
