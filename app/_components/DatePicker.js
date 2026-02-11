@@ -12,7 +12,7 @@ export default function DateRangePicker({
           type="date"
           value={fromDate}
           onChange={(e) => setFromDate(e.target.value)}
-          className="border p-2 rounded text-gray-500"
+          className="border rounded px-3 py-2"
         />
       </div>
 
@@ -22,7 +22,7 @@ export default function DateRangePicker({
           type="date"
           value={toDate}
           onChange={(e) => setToDate(e.target.value)}
-          className="border p-2 rounded text-gray-500"
+          className="border rounded px-3 py-2"
         />
       </div>
     </div>
