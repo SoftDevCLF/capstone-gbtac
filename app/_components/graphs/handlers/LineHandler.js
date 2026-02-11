@@ -8,29 +8,37 @@ import "chartjs-adapter-date-fns";
 
 Chart.register(CategoryScale, TimeScale);
 
-export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit}){
-  // change sensors shown here
-    let temp = []
-    sensorList.forEach(sensor => {
-        temp.push({id: temp.length, code: sensor})
-    });
-  
-    const [sensors, setSensors] = useState(temp); // sensor id (array position) and sensor code (part after SaitSolarLab_)
+const API_ENDPOINT = "http://127.0.0.1:8000";
 
+export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit}){
+    
+    // sensor id (array position) and sensor code (part after SaitSolarLab_)
+    const [sensors, setSensors] = useState(() =>
+        sensorList.map((code, i) => ({
+            id: i, 
+            code: code, 
+            name: null
+        }))
+    );
+
+    console.log(sensors)
+    
     const [fetched, setFetched] = useState(false); // if data has been fetched or not
     const [sensorData, setSensorData] = useState([]); // holds all the sensor data
-
+    
+    
     // takes sensors array and fetches data based off of codes, puts it in the sensorData array
+    // ** NOTE: add warning if no data is available (no sensor data during time period) 
     const fetchData = async () => {
         try {
             let arr = [];
-
+            
             for(let i = 0; i < sensors.length; i++){
-                const res = await fetch(`http://127.0.0.1:8000/${sensors[i].code}?start=${startDate}&end=${endDate}`);
+                const res = await fetch(`${API_ENDPOINT}/data/${sensors[i].code}?start=${startDate}&end=${endDate}`);
                 const data = await res.json();
                 arr.push(data);
             }
-
+            
             setSensorData(arr);
             setFetched(true);
             
@@ -40,9 +48,32 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
         }
     }
 
-    // fetches data on render
+    const fetchNames = async () => {
+        try{
+            const named = await Promise.all(
+                sensors.map(async (sensor) =>{
+                    try{
+                        const res = await fetch(`${API_ENDPOINT}/name/${sensor.code}`);
+                        const data = await res.json();
+                        return {...sensor, name: data}
+                    } catch {
+                        return {...sensor, name: sensor.code}
+                    }
+                })
+            )
+            setSensors(named)
+
+        } catch (e){
+            console.log("error fetching sensor name")
+        }
+    }
+
+    // fetches data and sensor names on render
     useEffect(() => {
         fetchData();
+        fetchNames();
+
+        console.log(sensorData);
     }, []);
     
     // sets defaults
@@ -58,7 +89,7 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
 
         // for each sensor in sensors array it sets the line label, data, and colour
         const dataset = sensors.map(sensor => ({
-            label: sensor.code,
+            label: sensor.name,
             data: sensorData[sensor.id].map(d => d.data),
             borderColor: colours[sensor.id],
             backgroundColor: colours[sensor.id],

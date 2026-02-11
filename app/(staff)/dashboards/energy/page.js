@@ -13,6 +13,10 @@ import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 const STORAGE_KEY = "dashboard-energy";
 
 export default function EnergyDashboard() {
+
+  const [startDate, setStartDate] = useState("2025-06-13")
+  const [endDate, setEndDate] = useState("2025-06-14")
+
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, {
       fromDate: "",
@@ -59,24 +63,34 @@ export default function EnergyDashboard() {
       />
 
       <DatePicker
+        // fromDate={startDate}
+        // toDate={endDate}
         fromDate={state.fromDate}
         toDate={state.toDate}
         setFromDate={(v) => setState({ ...state, fromDate: v })}
         setToDate={(v) => setState({ ...state, toDate: v })}
+        
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         <LineHandler 
           sensorList={[
             "30000_TL252",
-            "30000_TL253"
+            "30000_TL253",            
           ]}
-          startDate={"2025-06-13"}
-          endDate={"2025-06-13"}
+          // sensorList={[
+          //   "30000_TL210",
+          //   "30000_TL211",            
+          //   "30000_TL212",            
+          // ]}
+          // startDate={state.fromDate}
+          // endDate={state.toDate}
+          startDate={startDate}
+          endDate={endDate}
           graphTitle={"Solar Panel Graph"}
           yTitle={"kWh"}
           xTitle={"hours"}
-          xUnit={"hours"}
+          xUnit={"hour"}
         />
         
         {/* <GraphPlaceholder /> */}
