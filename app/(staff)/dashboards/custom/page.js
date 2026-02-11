@@ -3,11 +3,11 @@
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
-import ChartSettings from "./components/ChartSettings";
-import SensorSearch from "./components/SensorSearch";
-import SelectedSensors from "./components/SelectedSensors";
-import GraphContainer from "./components/GraphContainer";
-import DateRange from "./components/DateRange";
+import ChartSettings from "../../../_components/customgraph/ChartSettings";
+import SensorSearch from "../../../_components/customgraph/SensorSearch";
+import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
+import GraphContainer from "../../../_components/customgraph/GraphContainer";
+import DateRange from "../../../_components/customgraph/DateRange";
 
 export default function Page() {
   return (
@@ -16,7 +16,7 @@ export default function Page() {
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-10 dark:text-black"
+        <h1 className="text-4xl font-bold mb-10 dark:text-black"
           style={{ fontFamily: "var(--font-titillium)" }}>
           Create Custom Chart
         </h1>
