@@ -1,40 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
+import { useState } from "react";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
 import InfoCard from "../../../_components/InfoCard";
 import GraphPlaceholder from "../../../_components/GraphPlaceholder";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
+import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 
-const STORAGE_KEY = "dashboard-energy";
+const STORAGE_KEY = "dashboard-water-level";
 
-export default function EnergyDashboard() {
+export default function WaterLevelDashboard() {
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, {
       fromDate: "",
       toDate: "",
+      visibleGraphs: {},
     }),
   );
 
-  useEffect(() => {
-    saveDashboardState(STORAGE_KEY, state);
-  }, [state]);
+  const { fromDate, toDate } = state;
+
+  const handleStateChange = (newState) => {
+    setState(newState);
+    saveDashboardState(STORAGE_KEY, newState);
+  };
 
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login.",
-    );
-  };
 
-  useEffect(() => {
-    saveDashboardState(STORAGE_KEY, state);
     saveRecentDashboard({
-      id: "energy",
-      title: "Energy Dashboard",
-      path: "/dashboards/energy",
+      id: "water-level",
+      title: "Water Level Dashboard",
+      path: "/dashboards/water-level",
       summary: {
         fromDate: state.fromDate,
         toDate: state.toDate,
@@ -42,32 +40,34 @@ export default function EnergyDashboard() {
           (g) => state.visibleGraphs[g],
         ),
       },
+      saved: true, // mark as explicitly saved
     });
-  }, [state]);
+
+    alert(
+      "Dashboard state saved! Your graph settings are restored for next login.",
+    );
+  };
 
   return (
-    <DashboardLayout title="Energy Dashboard">
+    <DashboardLayout title="Water Level Dashboard">
       <InfoCard
         items={[
-          { label: "Current Usage", value: "120 kWh" },
-          { label: "Daily Avg", value: "98 kWh" },
-          { label: "Peak Usage", value: "180 kWh" },
-          { label: "Cost Today", value: "$14.20" },
+          { label: "Current Level", value: "3.2 m" },
+          { label: "Daily Avg", value: "3.0 m" },
+          { label: "Weekly Max", value: "3.8 m" },
+          { label: "Difference vs Yesterday", value: "1.0 m" },
         ]}
       />
 
       <DatePicker
-        fromDate={state.fromDate}
-        toDate={state.toDate}
-        setFromDate={(v) => setState({ ...state, fromDate: v })}
-        setToDate={(v) => setState({ ...state, toDate: v })}
+        fromDate={fromDate}
+        toDate={toDate}
+        setFromDate={(v) => handleStateChange({ ...state, fromDate: v })}
+        setToDate={(v) => handleStateChange({ ...state, toDate: v })}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GraphPlaceholder />
+      <GraphPlaceholder />
 
-        <GraphPlaceholder />
-      </div>
       <div className="flex justify-end mt-6">
         <button
           onClick={handleSaveScreen}
