@@ -6,13 +6,13 @@ export default function KpiGrid() {
     {
       title: "Total Energy Consumption",
       value: "134,350",
-      unit: "kWh + GJ",
+      unit: "kWh",
       color: "bg-blue-500", 
     },
     {
       title: "Avg Monthly Natural Gas Usage",
       value: "820",
-      unit: "GJ",
+      unit: "kWh",
       color: "bg-green-500", 
     },
     {
