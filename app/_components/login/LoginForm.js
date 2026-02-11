@@ -124,7 +124,7 @@ export default function LoginForm() {
     <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8 relative">
       {/* Heading */}
       <h2
-        className="text-3xl font-bold text-start mb-6"
+        className="text-3xl font-bold text-start mb-6 text-gray-900"
         style={{ fontFamily: "var(--font-titillium)" }}
       >
         Login
@@ -137,7 +137,7 @@ export default function LoginForm() {
       </p>
 
       <label
-        className="font-semibold"
+        className="font-semibold text-gray-800"
         style={{ fontFamily: "var(--font-titillium)" }}
       >
         SAIT Email
@@ -147,7 +147,7 @@ export default function LoginForm() {
         placeholder="Enter your SAIT email"
         value={employeeEmail}
         onChange={(e) => setEmployeeEmail(e.target.value)}
-        className="w-full border px-3 py-2 border-gray-300 rounded-lg my-4 focus:outline-none focus:border-blue-500"
+        className="w-full border px-3 py-2 border-gray-300 rounded-lg my-4 focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-500"
       />
 
       {errors.employeeEmail && (
@@ -155,7 +155,7 @@ export default function LoginForm() {
       )}
 
       <label
-        className="font-semibold"
+        className="font-semibold text-gray-800"
         style={{ fontFamily: "var(--font-titillium)" }}
       >
         Password
@@ -165,7 +165,7 @@ export default function LoginForm() {
         placeholder="Enter your password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full border px-3 py-2 border-gray-300 rounded-lg my-4 focus:outline-none focus:border-blue-500"
+        className="w-full border px-3 py-2 border-gray-300 rounded-lg my-4 focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-500"
       />
 
       {errors.password && (
@@ -219,7 +219,7 @@ export default function LoginForm() {
             placeholder="Enter your SAIT email"
             value={employeeEmail}
             onChange={(e) => setEmployeeEmail(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
           />
           <button
             className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 mt-2 w-full"
