@@ -1,51 +1,123 @@
 "use client";
 import { useState } from "react";
 import Modal from "./Modal";
+import { useRouter } from "next/navigation";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+} from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../_utils/firebase";
+
 export default function LoginForm() {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const [employeeNumber, setEmployeeNumber] = useState("");
+  const [employeeEmail, setEmployeeEmail] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const router = useRouter();
+
+  const isSaitEmail = (email) => {
+    const lower = email.toLowerCase();
+    return lower.endsWith("@sait.ca") || lower.endsWith("@edu.sait.ca");
+  };
+
+  const checkAllowedUser = async (email) => {
+    const emailLower = email.toLowerCase();
+    const ref = doc(db, "allowedUsers", emailLower);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) return { allowed: false, reason: "not_whitelisted" };
+
+    const data = snap.data();
+    if (data.active !== true) return { allowed: false, reason: "inactive" };
+
+    return { allowed: true, role: data.role || "user" }; 
+  };
 
   const validate = () => {
     const newErrors = {};
-    if (!employeeNumber.trim()) {
-      newErrors.employeeNumber = "Employee Number is required";
-    } else if (!/^\d+$/.test(employeeNumber.trim())) {
-      newErrors.employeeNumber = "Employee Number must be numeric";
-    }
-    if (!password.trim()) {
-      newErrors.password = "Password is required";
-    }
+
+    if (!employeeEmail.trim()) newErrors.employeeEmail = "Email is required";
+    else if (!employeeEmail.includes("@"))
+      newErrors.employeeEmail = "Enter a valid email";
+    else if (!isSaitEmail(employeeEmail.trim()))
+      newErrors.employeeEmail = "Use a SAIT email";
+
+    if (!password.trim()) newErrors.password = "Password is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const handleEmployeeNumberChange = (e) => {
-    setEmployeeNumber(e.target.value);
-  };
-  const handleForgotSubmit = () => {
-    alert(
-      `If employee number ${employeeNumber} exists, an email will be sent with your password.`,
-    );
-    setShowForgotModal(false);
-    setEmployeeNumber("");
+
+  const handleForgotSubmit = async () => {
+    try {
+      if (!forgotEmail.trim()) {
+        alert("Please enter your email.");
+        return;
+      }
+      if (!isSaitEmail(forgotEmail.trim())) {
+        alert("Please use your SAIT email.");
+        return;
+      }
+
+      await sendPasswordResetEmail(auth, forgotEmail.trim().toLowerCase());
+      alert(`Password reset email sent to ${forgotEmail}`);
+
+      setShowForgotModal(false);
+      setForgotEmail("");
+    } catch (err) {
+      alert("Reset failed: " + err.message);
+    }
   };
 
   const handleRequestSubmit = () => {
-    alert(
-      `Access request for employee number ${employeeNumber} sent to admin.`,
-    );
-    setShowRequestModal(false);
-    setEmployeeNumber("");
-  };
-
-  const handleLogin = () => {
-    if (!validate()) {
+    if (!employeeEmail.trim()) {
+      alert("Please enter your email first.");
       return;
     }
-    alert(`Logging in with Employee Number: ${employeeNumber}`);
-    // Kiera: here is where you'd handle actual login logic, apparently using an API, but still you can modify as needed
+
+    // Change to real admin email later on
+    const adminEmail = "annaisabelle.yabut@edu.sait.ca";
+
+    const subject = "Access Request – Capstone App";
+    const body = `Hello,\n\nPlease approve access for:\n${employeeEmail
+      .trim()
+      .toLowerCase()}\n\nThanks.`;
+
+    window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+
+    setShowRequestModal(false);
+    setEmployeeEmail("");
+  };
+
+  const handleLogin = async () => {
+    if (!validate()) return;
+
+    try {
+      const cred = await signInWithEmailAndPassword(
+        auth,
+        employeeEmail.trim().toLowerCase(),
+        password
+      );
+
+      const allowed = await checkAllowedUser(cred.user.email);
+
+      if (!allowed.allowed) {
+        alert("You are not authorized to access this app.");
+        await signOut(auth);
+        setPassword("");
+        return;
+      }
+
+      router.push("/home");
+    } catch (err) {
+      alert("Login failed: " + err.message);
+    }
   };
 
   return (
@@ -68,18 +140,18 @@ export default function LoginForm() {
         className="font-semibold"
         style={{ fontFamily: "var(--font-titillium)" }}
       >
-        Employee Number
+        SAIT Email
       </label>
       <input
-        type="text"
-        placeholder="Enter your Employee Number"
-        value={employeeNumber}
-        onChange={(e) => setEmployeeNumber(e.target.value)}
+        type="email"
+        placeholder="Enter your SAIT email"
+        value={employeeEmail}
+        onChange={(e) => setEmployeeEmail(e.target.value)}
         className="w-full border px-3 py-2 border-gray-300 rounded-lg my-4 focus:outline-none focus:border-blue-500"
       />
 
-      {errors.employeeNumber && (
-        <p className="text-red-500 text-sm mb-2">{errors.employeeNumber}</p>
+      {errors.employeeEmail && (
+        <p className="text-red-500 text-sm mb-2">{errors.employeeEmail}</p>
       )}
 
       <label
@@ -131,8 +203,8 @@ export default function LoginForm() {
         <Modal
           title="Forgot Password"
           onClose={() => setShowForgotModal(false)}
-          employeeNum={employeeNumber}
-          employeeNumHandlerFunc={handleEmployeeNumberChange}
+          email={forgotEmail}
+          emailHandlerFunc={(e) => setForgotEmail(e.target.value)}
           handleForgotSubmit={handleForgotSubmit}
         />
       )}
@@ -143,10 +215,10 @@ export default function LoginForm() {
           onClose={() => setShowRequestModal(false)}
         >
           <input
-            type="text"
-            placeholder="Enter your Employee Number"
-            value={employeeNumber}
-            onChange={(e) => setEmployeeNumber(e.target.value)}
+            type="email"
+            placeholder="Enter your SAIT email"
+            value={employeeEmail}
+            onChange={(e) => setEmployeeEmail(e.target.value)}
             className="w-full border px-3 py-2 rounded"
           />
           <button
