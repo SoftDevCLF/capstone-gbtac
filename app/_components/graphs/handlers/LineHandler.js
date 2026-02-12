@@ -11,6 +11,13 @@ Chart.register(CategoryScale, TimeScale);
 const API_ENDPOINT = "http://127.0.0.1:8000";
 
 export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit}){
+
+    // const [errorFlag, setErrorFlag] = useState(false)
+
+    // if(endDate < startDate){
+    //     console.log("date error")
+    //     setErrorFlag(true)
+    // }
     
     // sensor id (array position) and sensor code (part after SaitSolarLab_)
     const [sensors, setSensors] = useState(() =>
@@ -82,60 +89,60 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
     // runs when sensorData is changed (so just on fetch at the moment)
     useEffect(() => {
         if(fetched){
-        // ** might change so it reflects more than just the one dataset?
-        const labels = sensorData[0].map(d => new Date(d.ts));
+            // ** might change so it reflects more than just the one dataset?
+            const labels = sensorData[0].map(d => new Date(d.ts));
 
-        // for each sensor in sensors array it sets the line label, data, and colour
-        const dataset = sensors.map(sensor => ({
-            label: sensor.name,
-            data: sensorData[sensor.id].map(d => d.data),
-            borderColor: colours[sensor.id],
-            backgroundColor: colours[sensor.id],
-            borderWidth: 2
-        }));
-        
-        setGraphData({
-            labels,
-            datasets: dataset
-        });
+            // for each sensor in sensors array it sets the line label, data, and colour
+            const dataset = sensors.map(sensor => ({
+                label: sensor.name,
+                data: sensorData[sensor.id].map(d => d.data),
+                borderColor: colours[sensor.id],
+                backgroundColor: colours[sensor.id],
+                borderWidth: 2
+            }));
+            
+            setGraphData({
+                labels,
+                datasets: dataset
+            });
         }
     }, [sensorData]);
 
     // options for graph display to be passed on to LineChart component
     const graphOptions = {
         scales: {
-        x: {
-            title: {
-            display: true,
-            text: xTitle
+            x: {
+                title: {
+                display: true,
+                text: xTitle
+                },
+                type: "time",
+                time: {
+                unit: xUnit, // ** might change to scale automatically
+                }
             },
-            type: "time",
-            time: {
-            unit: xUnit, // ** might change to scale automatically
+            y: {
+                title: {
+                display: true,
+                text: yTitle
+                }
             }
-        },
-        y: {
-            title: {
-            display: true,
-            text: yTitle
-            }
-        }
         },
         plugins: {
-        legend: {
-            position: 'right',
-        },
-        title: {
-            display: true,
-            text: graphTitle
-        },
+            legend: {
+                position: 'right',
+            },
+            title: {
+                display: true,
+                text: graphTitle
+            },
         },
     };
 
     // passes graph info onto LineChart component and displays it
     return (
         <div>
-        <LineChart options={graphOptions} data={graphData}/>
+            <LineChart options={graphOptions} data={graphData}/>
         </div>
     )
 }
