@@ -1,49 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
+import { useState } from "react";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
 import InfoCard from "../../../_components/InfoCard";
-import GraphPlaceholder from "../../../_components/GraphPlaceholder";
-import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 
-const STORAGE_KEY = "dashboard-energy";
+import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 
 export default function EnergyDashboard() {
-  const [state, setState] = useState(() =>
-    loadDashboardState(STORAGE_KEY, {
-      fromDate: "",
-      toDate: "",
-    }),
-  );
 
-  useEffect(() => {
-    saveDashboardState(STORAGE_KEY, state);
-  }, [state]);
-
-  const handleSaveScreen = () => {
-    saveDashboardState(STORAGE_KEY, state);
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login.",
-    );
-  };
-
-  useEffect(() => {
-    saveDashboardState(STORAGE_KEY, state);
-    saveRecentDashboard({
-      id: "energy",
-      title: "Energy Dashboard",
-      path: "/dashboards/energy",
-      summary: {
-        fromDate: state.fromDate,
-        toDate: state.toDate,
-        graphs: Object.keys(state.visibleGraphs || {}).filter(
-          (g) => state.visibleGraphs[g],
-        ),
-      },
-    });
-  }, [state]);
+  const [fromDate, setFromDate] = useState("2025-12-31")
+  const [toDate, setToDate] = useState("2025-12-31")
 
   return (
     <DashboardLayout title="Energy Dashboard">
@@ -57,24 +24,27 @@ export default function EnergyDashboard() {
       />
 
       <DatePicker
-        fromDate={state.fromDate}
-        toDate={state.toDate}
-        setFromDate={(v) => setState({ ...state, fromDate: v })}
-        setToDate={(v) => setState({ ...state, toDate: v })}
+        fromDate={fromDate}
+        toDate={toDate}
+        setFromDate={setFromDate}
+        setToDate={setToDate}        
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GraphPlaceholder />
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
 
-        <GraphPlaceholder />
-      </div>
-      <div className="flex justify-end mt-6">
-        <button
-          onClick={handleSaveScreen}
-          className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
-        >
-          Save Screen
-        </button>
+        <LineHandler 
+          sensorList={[
+            "30000_TL252",
+            "30000_TL253",            
+          ]}
+          startDate={fromDate}
+          endDate={toDate}
+          graphTitle={"Solar Panel Graph"}
+          yTitle={"kWh"}
+          xTitle={"hours"}
+          xUnit={"hour"}
+        />
+        
       </div>
     </DashboardLayout>
   );
