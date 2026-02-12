@@ -10,7 +10,7 @@ import Footer from "../../_components/Footer";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function StaffHome({ employeeName = "John Doe" }) {
+export default function StaffHome({ employeeName = "Kiera Johnson" }) {
   const [recent, setRecent] = useState([]);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function StaffHome({ employeeName = "John Doe" }) {
 
               <div className="absolute inset-0 bg-black/40"></div>
 
-              <div className="absolute inset-0 flex items-center px-12">
+              <div className="absolute inset-0 flex items-center px-12 z-0">
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-white">
                   Welcome, {employeeName}!
                 </h1>

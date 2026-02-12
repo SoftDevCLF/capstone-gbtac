@@ -23,7 +23,7 @@ export default function SecondaryNav({
     }
   };
 
-  const employeeName = "John Doe"; // Placeholder for actual employee name
+  const employeeName = "Kiera Johnson"; // Placeholder for actual employee name
   return (
     <nav className="flex flex-row items-center justify-between w-full bg-white py-3 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
       <div>
