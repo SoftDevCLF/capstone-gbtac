@@ -21,7 +21,7 @@ export default function LoginForm() {
 
   const isSaitEmail = (email) => {
     const lower = email.toLowerCase();
-    return lower.endsWith("@sait.ca") || lower.endsWith("@edu.sait.ca");
+    return lower.endsWith("@sait.ca") || lower.endsWith("@edu.sait.ca") || lower.endsWith("@gmail.com");
   };
 
   const checkAllowedUser = async (email) => {
@@ -63,8 +63,9 @@ export default function LoginForm() {
         return;
       }
 
-      await sendPasswordResetEmail(auth, forgotEmail.trim().toLowerCase());
-      alert(`Password reset email sent to ${forgotEmail}`);
+      const emailToSend = forgotEmail.trim().toLowerCase();
+      await sendPasswordResetEmail(auth, emailToSend);
+      alert(`Password reset email sent to ${emailToSend}`);
 
       setShowForgotModal(false);
       setForgotEmail("");
