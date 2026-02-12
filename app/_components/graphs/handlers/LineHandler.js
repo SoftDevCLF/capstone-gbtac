@@ -20,12 +20,9 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
             name: null
         }))
     );
-
-    console.log(sensors)
     
     const [fetched, setFetched] = useState(false); // if data has been fetched or not
     const [sensorData, setSensorData] = useState([]); // holds all the sensor data
-    
     
     // takes sensors array and fetches data based off of codes, puts it in the sensorData array
     // ** NOTE: add warning if no data is available (no sensor data during time period) 
@@ -68,13 +65,14 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
         }
     }
 
-    // fetches data and sensor names on render
+    // fetches data on render and date changes
     useEffect(() => {
         fetchData();
-        fetchNames();
+    }, [startDate, endDate]);
 
-        console.log(sensorData);
-    }, []);
+    useEffect(() => {
+        fetchNames();
+    }, [sensorList]);
     
     // sets defaults
     const labels = 0; // x axis labels
