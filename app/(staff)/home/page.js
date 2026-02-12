@@ -1,12 +1,26 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { loadRecentDashboards } from "../../utils/saveRecentDashboard";
+import RecentDashboardCard from "../../_components/RecentDashboardCard";
+
 import SecondaryNav from "../../_components/SecondaryNav";
 import Navbar from "../../_components/Navbar";
 import Footer from "../../_components/Footer";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function StaffHome() {
+export default function StaffHome({ employeeName = "John Doe" }) {
+  const [recent, setRecent] = useState([]);
+
+  useEffect(() => {
+    const savedDashboards = loadRecentDashboards().filter((d) => d.saved);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRecent(savedDashboards);
+  }, []);
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-black font-sans">
+    <div className="flex flex-col min-h-screen bg-gray-100 font-sans">
       <SecondaryNav
         displayLogin={false}
         displayLogout={true}
@@ -21,8 +35,7 @@ export default function StaffHome() {
 
       <main className="flex-1 py-12 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
         <section className="relative max-w-7xl mx-auto py-10">
-          <div className="relative bg-white dark:bg-neutral-900 rounded-md shadow-sm overflow-hidden">
-            {/* Header area with background image */}
+          <div className="relative bg-white rounded-md shadow-sm overflow-hidden">
             <div className="relative h-62.5">
               <Image
                 src="/current.jpg"
@@ -33,13 +46,11 @@ export default function StaffHome() {
                 priority
               />
 
-              {/* Dark overlay */}
               <div className="absolute inset-0 bg-black/40"></div>
 
-              {/* Header text */}
               <div className="absolute inset-0 flex items-center px-12">
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-white">
-                  Welcome, Staff!
+                  Welcome, {employeeName}!
                 </h1>
               </div>
             </div>
@@ -52,26 +63,35 @@ export default function StaffHome() {
               </p>
 
               <div className="mb-16 flex flex-wrap gap-6">
-                <Link href="/staff/reports">
+                <Link href="/reports">
                   <button className="px-6 py-3 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition">
                     Reports
                   </button>
                 </Link>
-                <Link href="/staff/dashboards">
-                  <button className="px-6 py-3 bg-[#6D2077] text-white rounded-sm hover:bg-[#581A60] font-bold transition">
-                    Graphs
-                  </button>
-                </Link>
-                <Link href="/staff/settings">
+                <Link href="/profile">
                   <button className="px-6 py-3 bg-[#A6192E] text-white rounded-sm hover:bg-[#7F121F] font-bold transition">
                     Profile
                   </button>
                 </Link>
               </div>
 
+              <h2 className="text-2xl font-semibold mb-6">
+                Recently Saved Dashboards
+              </h2>
+
+              {recent.length === 0 ? (
+                <p className="text-gray-500">No dashboards saved yet.</p>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {recent.map((dash) => (
+                    <RecentDashboardCard key={dash.id} data={dash} />
+                  ))}
+                </div>
+              )}
+
               <div className="mt-10">
                 <Image
-                  src="/staff-welcome.png"
+                  src="/gbtac2.jpg"
                   alt="Staff Welcome"
                   width={1200}
                   height={700}

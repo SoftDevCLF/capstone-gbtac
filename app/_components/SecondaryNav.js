@@ -42,7 +42,7 @@ export default function SecondaryNav({
         )}
         {displayProfile && (
           <li className="py-2 text-2xl font-semibold text-gray-800 hover:text-gray-600 transition">
-            <Link href="/about" className="hover:opacity-80 transition">
+            <Link href="/profile" className="hover:opacity-80 transition">
               {employeeName}
             </Link>
           </li>
