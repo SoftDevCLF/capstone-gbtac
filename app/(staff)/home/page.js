@@ -10,7 +10,7 @@ import Footer from "../../_components/Footer";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function StaffHome({ employeeName = "Kiera Johnson" }) {
+export default function StaffHome({ employeeName = "John Doe" }) {
   const [recent, setRecent] = useState([]);
 
   useEffect(() => {

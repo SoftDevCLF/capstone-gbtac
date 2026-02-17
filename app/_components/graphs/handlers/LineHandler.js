@@ -5,8 +5,9 @@ import { CategoryScale, TimeScale } from "chart.js";
 import { useState, useEffect } from "react";
 import LineChart from "../LineChart"
 import "chartjs-adapter-date-fns";
+import zoomPlugin from 'chartjs-plugin-zoom'
 
-Chart.register(CategoryScale, TimeScale);
+Chart.register(CategoryScale, TimeScale, zoomPlugin);
 
 const API_ENDPOINT = "http://127.0.0.1:8000";
 
@@ -136,6 +137,21 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
                 display: true,
                 text: graphTitle
             },
+            zoom: {
+                zoom: {
+                    wheel: {
+                        enabled: true,
+                    },
+                    mode: 'xy',
+                    // limits: {
+                    //     x: {
+                    //         min: labels[0],
+                    //         max: labels[labels.length - 1],
+                    //     }
+                    // }
+                },
+                
+            }
         },
     };
 
