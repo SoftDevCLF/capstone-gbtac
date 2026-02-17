@@ -9,16 +9,9 @@ import zoomPlugin from 'chartjs-plugin-zoom'
 
 Chart.register(CategoryScale, TimeScale, zoomPlugin);
 
-const API_ENDPOINT = "http://127.0.0.1:8000";
+const API_ENDPOINT = "http://127.0.0.1:8000/graphs";
 
 export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit}){
-
-    // const [errorFlag, setErrorFlag] = useState(false)
-
-    // if(endDate < startDate){
-    //     console.log("date error")
-    //     setErrorFlag(true)
-    // }
     
     // sensor id (array position) and sensor code (part after SaitSolarLab_)
     const [sensors, setSensors] = useState(() =>
@@ -31,6 +24,12 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
     
     const [fetched, setFetched] = useState(false); // if data has been fetched or not
     const [sensorData, setSensorData] = useState([]); // holds all the sensor data
+
+    // mins and maxes for zoom
+    const [xMin, setXMin] = useState();
+    const [xMax, setXMax] = useState();
+    const [yMin, setYMin] = useState();
+    const [yMax, setYMax] = useState();
     
     // takes sensors array and fetches data based off of codes, puts it in the sensorData array
     // ** NOTE: add warning if no data is available (no sensor data during time period) 
@@ -93,6 +92,19 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
             // ** might change so it reflects more than just the one dataset?
             const labels = sensorData[0].map(d => new Date(d.ts));
 
+            setXMin(labels[0])
+            setXMax(labels[labels.length-1])
+
+            let mins = [];
+            let maxes = [];
+            sensorData.forEach((sensor, index) => {
+                mins.push(Math.min(...sensor.map(point => point.data)))
+                maxes.push(Math.max(...sensor.map(point => point.data)))
+            });
+            setYMin(Math.min(...mins))
+            setYMax(Math.max(...maxes))
+            console.log(`min: ${yMin}\nmax: ${yMax}`);
+
             // for each sensor in sensors array it sets the line label, data, and colour
             const dataset = sensors.map(sensor => ({
                 label: sensor.name,
@@ -141,16 +153,20 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
                 zoom: {
                     wheel: {
                         enabled: true,
+                        speed: 0.3,
                     },
-                    mode: 'xy',
-                    // limits: {
-                    //     x: {
-                    //         min: labels[0],
-                    //         max: labels[labels.length - 1],
-                    //     }
-                    // }
+                    mode: 'x', // talk to Maeric about what type 
                 },
-                
+                limits: {
+                    x: {
+                        min: xMin,
+                        max: xMax,
+                    },
+                    y: {
+                        min: yMin,
+                        max: yMax,
+                    }
+                }
             }
         },
     };
