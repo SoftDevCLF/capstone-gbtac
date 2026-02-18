@@ -9,7 +9,7 @@ import zoomPlugin from 'chartjs-plugin-zoom'
 
 Chart.register(CategoryScale, TimeScale, zoomPlugin);
 
-const API_ENDPOINT = "http://127.0.0.1:8000/graphs";
+const API_ENDPOINT = "http://127.0.0.1:8000";
 
 export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit}){
     
@@ -38,7 +38,7 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
             let arr = [];
             
             for(let i = 0; i < sensors.length; i++){
-                const res = await fetch(`${API_ENDPOINT}/data/${sensors[i].code}?start=${startDate}&end=${endDate}`);
+                const res = await fetch(`${API_ENDPOINT}/graphs/data/${sensors[i].code}?start=${startDate}&end=${endDate}`);
                 const data = await res.json();
                 arr.push(data);
             }
@@ -57,7 +57,7 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
             const named = await Promise.all(
                 sensors.map(async (sensor) =>{
                     try{
-                        const res = await fetch(`${API_ENDPOINT}/name/${sensor.code}`);
+                        const res = await fetch(`${API_ENDPOINT}/graphs/name/${sensor.code}`);
                         const data = await res.json();
                         return {...sensor, name: data}
                     } catch {
@@ -83,7 +83,7 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
     
     // sets defaults
     const labels = 0; // x axis labels
-    const colours = ["#FF0000", "#0000FF", "#00FF00"]; // colours for lines, will need to add more
+    const colours = ["#DA291C", "#005EB8", "#6D2077", "#00A3E0", "#A6192E"]; // colours for lines, will need to add more
     const [graphData, setGraphData] = useState({labels, datasets: [{}]}); // data to be passed on to LineChart component
 
     // runs when sensorData is changed (so just on fetch at the moment)

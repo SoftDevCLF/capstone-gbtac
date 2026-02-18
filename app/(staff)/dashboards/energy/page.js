@@ -7,6 +7,7 @@ import DatePicker from "../../../_components/DatePicker";
 import InfoCard from "../../../_components/InfoCard";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
+import PieHandler from "@/app/_components/graphs/handlers/PieHandler";
 
 const STORAGE_KEY = "dashboard-energy";
 
@@ -67,7 +68,7 @@ export default function EnergyDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
 
-        <LineHandler 
+        {/* <LineHandler 
           sensorList={[
             "30000_TL252",
             "30000_TL253",            
@@ -78,6 +79,17 @@ export default function EnergyDashboard() {
           yTitle={"kWh"}
           xTitle={"hours"}
           xUnit={"hour"}
+        /> */}
+
+        <PieHandler
+          sensorList={[
+            "30000_TL252",
+            "30000_TL253",
+          ]}
+          startDate={state.fromDate}
+          endDate={state.toDate}
+          graphTitle={"Solar Panel Pie Chart"}
+          label={"kWh"}
         />
         
       </div>
