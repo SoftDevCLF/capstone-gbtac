@@ -80,7 +80,7 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
                         borderColor: colours,
                         backgroundColor: colours,
                         borderWidth: 2,
-                        radius: '85%'
+                        radius: '90%'
                     }
                 ]
             });

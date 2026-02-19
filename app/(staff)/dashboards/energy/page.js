@@ -89,8 +89,8 @@ export default function EnergyDashboard() {
           ]}
           startDate={state.fromDate}
           endDate={state.toDate}
-          graphTitle={"Solar Panel Pie Chart"}
-          label={"kWh"}
+          graphTitle={"Solar Panel Generation"}
+          label={"kWh"} // **check: unsure if right unit
         />
         
       </div>
