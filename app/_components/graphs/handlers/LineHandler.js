@@ -161,11 +161,15 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
                     x: {
                         min: xMin,
                         max: xMax,
+                        minRange: 3 * 60 * 60 * 1000, // hours * minutes * seconds * milliseconds
                     },
                     y: {
                         min: yMin,
                         max: yMax,
                     }
+                },
+                pan: {
+                    enabled: true,
                 }
             }
         },

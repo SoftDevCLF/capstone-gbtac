@@ -68,23 +68,24 @@ export default function EnergyDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
 
-        {/* <LineHandler 
+        <LineHandler 
           sensorList={[
-            "30000_TL252",
-            "30000_TL253",            
+            "30000_TL340", // GBT Generation Hourly Wh
+            "30000_TL341", // GBT Consumption Hourly Wh
+            "30000_TL339", // GBT Net Energy Hourly Wh   
           ]}
           startDate={state.fromDate}
           endDate={state.toDate}
-          graphTitle={"Solar Panel Graph"}
-          yTitle={"kWh"}
+          graphTitle={"Consumption vs Generation"}
+          yTitle={"Wh"}
           xTitle={"hours"}
           xUnit={"hour"}
-        /> */}
+        />
 
         <PieHandler
           sensorList={[
-            "30000_TL252",
-            "30000_TL253",
+            "30000_TL252", // PV-CarportSolar_Total
+            "30000_TL253", // PV-RooftopSolar_Total
           ]}
           startDate={state.fromDate}
           endDate={state.toDate}

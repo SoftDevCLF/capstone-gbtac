@@ -70,15 +70,6 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
         if(fetched){
             // ** might change so it reflects more than just the one dataset?
             const labels = sensors.map(sensor => sensor.name);
-
-            // for each sensor in sensors array it sets the line label, data, and colour
-            // const dataset = sensors.map(sensor => ({
-            //     label: sensor.name,
-            //     data: sensor.sum,
-            //     borderColor: colours[sensor.id],
-            //     backgroundColor: colours[sensor.id],
-            //     borderWidth: 2
-            // }));
             
             setGraphData({
                 labels,
@@ -88,7 +79,8 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
                         data: sensors.map((sensor) => sensor.sum),
                         borderColor: colours,
                         backgroundColor: colours,
-                        borderWidth: 2
+                        borderWidth: 2,
+                        radius: '85%'
                     }
                 ]
             });
