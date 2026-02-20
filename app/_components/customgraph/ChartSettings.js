@@ -11,7 +11,7 @@ export default function ChartSettings() {
 
   return (
     <div style={{ fontFamily: "var(--font-titillium)" }} className="bg-white rounded-sm shadow-sm p-4 mt-1 w-1/2">
-      <h2 className="font-semibold text-lg text-black mb-2">Chart Settings</h2>
+      <h2 className="font-semibold text-black mb-2">Chart Settings</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-500">
         <input
@@ -47,6 +47,12 @@ export default function ChartSettings() {
           onChange={(e) => setYAxisTitle(e.target.value)}
           className="border p-2 rounded text-gray-500"
         />
+      </div>
+      {/* Info text */}
+      <div className="mt-2 text-gray-500">
+        {chartTitle
+          ? "Chart title set. You can change it anytime."
+          : "Set a title for your customized chart to easily identify it later."}
       </div>
     </div>
   );

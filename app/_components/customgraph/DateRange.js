@@ -29,6 +29,12 @@ export default function DateRange({ from, to, onChange }) {
             className="border p-2 rounded text-gray-500"
           />
         </div>
+        {/* Info text */}
+      <div className="mt-5 text-gray-500">
+        {from && to
+          ? "Date range selected. You can change it anytime."
+          : "Select a date range to filter sensor data."}
+      </div>
       </div>
     </div>
   );
