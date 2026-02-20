@@ -1,5 +1,5 @@
 "use client";
-//Page for Customizable Graph Section
+// Page for Customizable Graph Section
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
@@ -13,25 +13,48 @@ import { useState } from "react";
 
 export default function Page() {
 
-  // State for currently loaded chart
+  // Applied chart state (what GraphContainer actually reads)
   const [currentChartId, setCurrentChartId] = useState(null);
   const [chartTitle, setChartTitle] = useState("");
   const [selectedSensors, setSelectedSensors] = useState([]);
   const [dateRange, setDateRange] = useState({ from: null, to: null });
 
- // Function to reset chart to default state for creating a new chart
+  // Temp state (user edits these before clicking Apply)
+  const [tempChartTitle, setTempChartTitle] = useState(chartTitle);
+  const [tempSelectedSensors, setTempSelectedSensors] = useState(selectedSensors);
+  const [tempDateRange, setTempDateRange] = useState(dateRange);
+
+  // Reset chart to default
   const resetChart = () => {
     setCurrentChartId(null);
     setChartTitle("");
     setSelectedSensors([]);
     setDateRange({ from: null, to: null });
+
+    // Also reset temp state
+    setTempChartTitle("");
+    setTempSelectedSensors([]);
+    setTempDateRange({ from: null, to: null });
   }
-// Function to load a chart's settings into the state when selected from ChartSelect
+
+  // Load a chart into state
   const loadChart = (chart) => {
     setCurrentChartId(chart.id);
     setChartTitle(chart.title);
     setSelectedSensors(chart.sensors);
     setDateRange({ from: chart.dateFrom, to: chart.dateTo });
+
+    // Also update temp state so the inputs match loaded chart
+    setTempChartTitle(chart.title);
+    setTempSelectedSensors(chart.sensors);
+    setTempDateRange({ from: chart.dateFrom, to: chart.dateTo });
+  }
+
+  // Apply button handler
+  const handleApply = () => {
+    setChartTitle(tempChartTitle);
+    setSelectedSensors(tempSelectedSensors);
+    setDateRange(tempDateRange);
   }
 
   return (
@@ -47,36 +70,46 @@ export default function Page() {
 
         {/* Chart Selection */}
         <div className="mb-5 w-full md:w-1/2">
-        <ChartSelect
-          currentChartId={currentChartId}
-          onLoadChart={loadChart}
-          onDeleteChart={resetChart}
-          onResetChart={resetChart}
-         />
+          <ChartSelect
+            currentChartId={currentChartId}
+            onLoadChart={loadChart}
+            onDeleteChart={resetChart}
+            onResetChart={resetChart}
+          />
         </div>
-        {/*Chart Settings and Date Range*/}
+
+        {/* Chart Settings and Date Range */}
         <div className="flex flex-col md:flex-row gap-4 mb-5 w-full">
           <ChartSettings
-            title={chartTitle}
-            setChartTitle={setChartTitle}
-           />
+            title={tempChartTitle}
+            setChartTitle={setTempChartTitle}
+          />
           <DateRange
-            dateRange={dateRange}
-            setDateRange={setDateRange}
-           />
+            dateRange={tempDateRange}
+            setDateRange={setTempDateRange}
+          />
         </div>
-      
+
         {/* Sensor Search and Selected Sensors */}
         <div className="flex gap-4 mb-4">
           <SensorSearch
-            selectedSensors={selectedSensors}
-            setSelectedSensors={setSelectedSensors}
+            selectedSensors={tempSelectedSensors}
+            setSelectedSensors={setTempSelectedSensors}
             className="flex-1"
           />
           <SelectedSensors
-            selectedSensors={selectedSensors}
+            selectedSensors={tempSelectedSensors}
             className="flex-1"
           />
+        </div>
+
+        <div className="mb-6">
+          <button
+            className="px-4 py-2 bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600"
+            onClick={handleApply}
+          >
+            Apply
+          </button>
         </div>
 
         {/* Graph below */}

@@ -53,10 +53,9 @@ export default function ChartSelect({
       className="bg-white rounded-sm shadow-sm p-4 mt-2 w-1/2"
     >
       <h2 className="font-semibold text-black mb-2">
-        Select Chart
+        Load An Existing Chart
       </h2>
 
-      {/* Flex row for alignment */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-500">
         {/* Dropdown */}
         <select
@@ -64,7 +63,7 @@ export default function ChartSelect({
           onChange={handleSelect}
           className="border p-2 rounded text-gray-500 flex-1"
         >
-          <option value="new">-- New Chart --</option>
+          <option value="new">-- Chart Title --</option>
           {charts.map(chart => (
             <option key={chart.id} value={chart.id}>
               {chart.title}
