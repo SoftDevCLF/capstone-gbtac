@@ -6,8 +6,8 @@
 
 export default function SelectedSensors({ selectedSensors = [], setSelectedSensors }) {
   // remove a sensor by id
-  const removeSensor = (id) => {
-    setSelectedSensors(selectedSensors.filter(sensor => sensor.id !== id));
+  const removeSensor = (code) => {
+    setSelectedSensors(selectedSensors.filter(sensor => sensor.code !== code));
   };
 
   return (
@@ -23,12 +23,12 @@ export default function SelectedSensors({ selectedSensors = [], setSelectedSenso
         ) : (
           selectedSensors.map(sensor => (
             <div
-              key={sensor.id}
+              key={sensor.code}
               className="flex justify-between items-center p-2 border-b"
             >
               <span>{sensor.name}</span>
               <button
-                onClick={() => removeSensor(sensor.id)}
+                onClick={() => removeSensor(sensor.code)}
                 className="bg-[#912932] text-white px-4 py-2 rounded-sm hover:bg-red-700"
               >
                 Remove

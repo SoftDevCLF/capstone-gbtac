@@ -3,11 +3,7 @@
 
 import { useState } from "react";
 
-export default function ChartSettings() {
-  const [chartTitle, setChartTitle] = useState("");
-  const [xAxisTitle, setXAxisTitle] = useState("");
-  const [yAxisTitle, setYAxisTitle] = useState("");
-  const [chartType, setChartType] = useState("line");
+export default function ChartSettings({settings, setSettings}) {
 
   return (
     <div style={{ fontFamily: "var(--font-titillium)" }} className="bg-white rounded-sm shadow-sm p-4 mt-1 w-1/2">
@@ -17,17 +13,18 @@ export default function ChartSettings() {
         <input
           type="text"
           placeholder="Chart Title"
-          value={chartTitle}
-          onChange={(e) => setChartTitle(e.target.value)}
+          value={settings.chartTitle}
+          onChange={(e) => setSettings(prev => ({...prev, chartTitle: e.target.value}))}
           className="border p-2 rounded text-gray-500"
         />
 
         <select
-          value={chartType}
-          onChange={(e) => setChartType(e.target.value)}
+          value={settings.chartType}
+          onChange={(e) => setSettings(prev => ({...prev, chartType: e.target.value}))}
           className="border p-2 rounded text-gray-500"
         >
           <option value="line">Line</option>
+          <option value="pie">Pie</option>
           <option value="bar">Bar</option>
           <option value="area">Area</option>
         </select>
@@ -35,22 +32,22 @@ export default function ChartSettings() {
         <input
           type="text"
           placeholder="X Axis Title"
-          value={xAxisTitle}
-          onChange={(e) => setXAxisTitle(e.target.value)}
+          value={settings.xAxisTitle}
+          onChange={(e) => setSettings(prev => ({...prev, xAxisTitle: e.target.value}))}
           className="border p-2 rounded text-gray-500"
         />
 
         <input
           type="text"
           placeholder="Y Axis Title"
-          value={yAxisTitle}
-          onChange={(e) => setYAxisTitle(e.target.value)}
+          value={settings.yAxisTitle}
+          onChange={(e) => setSettings(prev => ({...prev, yAxisTitle: e.target.value}))}
           className="border p-2 rounded text-gray-500"
         />
       </div>
       {/* Info text */}
       <div className="mt-2 text-gray-500">
-        {chartTitle
+        {settings.chartTitle
           ? "Chart title set. You can change it anytime."
           : "Set a title for your customized chart to easily identify it later."}
       </div>

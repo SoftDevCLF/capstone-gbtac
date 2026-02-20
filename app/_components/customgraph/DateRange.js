@@ -2,7 +2,7 @@
 //The component also includes basic styling to match the overall design of the application.
 "use client";
 
-export default function DateRange({ from, to, onChange }) {
+export default function DateRange({ dateRange, setDateRange }) {
   return (
     <div style={{ fontFamily: "var(--font-titillium)" }} className="bg-white rounded-sm shadow-sm p-4 mt-1 w-1/2">
       <h2 className="font-semibold text-black mb-4">Date Range</h2>
@@ -12,9 +12,9 @@ export default function DateRange({ from, to, onChange }) {
           <label className="text-sm text-black mb-1">From</label>
           <input
             type="date"
-            value={from}
-            onChange={(e) => onChange(e.target.value, to)}
-            max={to || undefined}
+            value={dateRange.from}
+            onChange={(e) => setDateRange(prev => ({...prev, from: e.target.value}))}
+            max={dateRange.to || undefined}
             className="border p-2 rounded text-gray-500"
           />
         </div>
@@ -23,15 +23,15 @@ export default function DateRange({ from, to, onChange }) {
           <label className="text-sm text-black mb-1">To</label>
           <input
             type="date"
-            value={to}
-            onChange={(e) => onChange(from, e.target.value)}
-            min={from || undefined}
+            value={dateRange.to}
+            onChange={(e) => setDateRange(prev => ({...prev, to: e.target.value}))}
+            min={dateRange.from || undefined}
             className="border p-2 rounded text-gray-500"
           />
         </div>
         {/* Info text */}
       <div className="mt-5 text-gray-500">
-        {from && to
+        {dateRange.from && dateRange.to
           ? "Date range selected. You can change it anytime."
           : "Select a date range to filter sensor data."}
       </div>

@@ -15,44 +15,59 @@ export default function Page() {
 
   // Applied chart state (what GraphContainer actually reads)
   const [currentChartId, setCurrentChartId] = useState(null);
-  const [chartTitle, setChartTitle] = useState("");
-  const [selectedSensors, setSelectedSensors] = useState([]);
-  const [dateRange, setDateRange] = useState({ from: null, to: null });
+  // const [chartTitle, setChartTitle] = useState("");
+  const [selectedSensors, setSelectedSensors] = useState([{code: "30000_TL92", name: "sensor1"}, {code: "30000_TL93", name: "sensor2"}]);
+  const [dateRange, setDateRange] = useState({ from: "2025-12-31", to: "2025-12-31" });
+  const [settings, setSettings] = useState({
+    chartTitle: "Title",
+    xAxisTitle: "x",
+    yAxisTitle: "y",
+    chartType: "line",
+  })
 
   // Temp state (user edits these before clicking Apply)
-  const [tempChartTitle, setTempChartTitle] = useState(chartTitle);
+  // const [tempChartTitle, setTempChartTitle] = useState(chartTitle);
   const [tempSelectedSensors, setTempSelectedSensors] = useState(selectedSensors);
   const [tempDateRange, setTempDateRange] = useState(dateRange);
+  const [tempSettings, setTempSettings] = useState(settings)
+
 
   // Reset chart to default
   const resetChart = () => {
     setCurrentChartId(null);
-    setChartTitle("");
+    // setChartTitle("");
+    setSettings({
+      chartTitle: "",
+      xAxisTitle: "",
+      yAxisTitle: "",
+      chartType: "line",
+    })
     setSelectedSensors([]);
     setDateRange({ from: null, to: null });
 
     // Also reset temp state
-    setTempChartTitle("");
-    setTempSelectedSensors([]);
-    setTempDateRange({ from: null, to: null });
+    // setTempChartTitle("");
+    setTempSettings(settings)
+    setTempSelectedSensors(selectedSensors);
+    setTempDateRange(dateRange);
   }
 
   // Load a chart into state
   const loadChart = (chart) => {
     setCurrentChartId(chart.id);
-    setChartTitle(chart.title);
+    setSettings(chart.settings);
     setSelectedSensors(chart.sensors);
     setDateRange({ from: chart.dateFrom, to: chart.dateTo });
 
     // Also update temp state so the inputs match loaded chart
-    setTempChartTitle(chart.title);
+    setTempSettings(chart.settings);
     setTempSelectedSensors(chart.sensors);
     setTempDateRange({ from: chart.dateFrom, to: chart.dateTo });
   }
 
   // Apply button handler
   const handleApply = () => {
-    setChartTitle(tempChartTitle);
+    setSettings(tempSettings);
     setSelectedSensors(tempSelectedSensors);
     setDateRange(tempDateRange);
   }
@@ -81,8 +96,8 @@ export default function Page() {
         {/* Chart Settings and Date Range */}
         <div className="flex flex-col md:flex-row gap-4 mb-5 w-full">
           <ChartSettings
-            title={tempChartTitle}
-            setChartTitle={setTempChartTitle}
+            settings={tempSettings}
+            setSettings={setTempSettings}
           />
           <DateRange
             dateRange={tempDateRange}
@@ -105,7 +120,8 @@ export default function Page() {
 
         <div className="mb-6">
           <button
-            className="px-4 py-2 bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600"
+            // className="px-4 py-2 bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-500 text-white rounded-sm hover:bg-blue-600"
             onClick={handleApply}
           >
             Apply
@@ -116,7 +132,8 @@ export default function Page() {
         <div className="w-full">
           <GraphContainer 
             selectedSensors={selectedSensors} 
-            dateRange={dateRange} 
+            dateRange={dateRange}
+            settings={settings}
           />
         </div>
       </div>

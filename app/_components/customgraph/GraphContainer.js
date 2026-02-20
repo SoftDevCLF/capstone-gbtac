@@ -2,7 +2,10 @@
 // It currently contains a title and a placeholder area where the graph will be rendered in the future.
 // The graph has two buttons for saving the current view and exporting the graph as a PDF
 
-export default function GraphContainer() {
+import CustomHandler from "../graphs/handlers/CustomHandler";
+
+
+export default function GraphContainer({selectedSensors, dateRange, settings}) {
   return (
     <div className="bg-white rounded-sm shadow-sm p-4 mb-8">
 
@@ -13,7 +16,12 @@ export default function GraphContainer() {
         Graph Container
       </p>
       <div className="h-64 bg-gray-200 rounded-sm flex items-center justify-center mb-4">
-        <p className="text-gray-500">Graph will be rendered here</p>
+        {/* <p className="text-gray-500">Graph will be rendered here</p> */}
+        <CustomHandler
+          selectedSensors={selectedSensors} 
+          dateRange={dateRange}
+          settings={settings}
+        />
       </div>
       <div className="flex justify-end gap-4">
         <button className="bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600">
