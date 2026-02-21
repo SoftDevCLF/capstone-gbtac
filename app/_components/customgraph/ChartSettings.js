@@ -24,7 +24,6 @@ export default function ChartSettings({settings, setSettings}) {
           className="border p-2 rounded text-gray-500"
         >
           <option value="line">Line</option>
-          <option value="pie">Pie</option>
           <option value="bar">Bar</option>
           <option value="area">Area</option>
         </select>

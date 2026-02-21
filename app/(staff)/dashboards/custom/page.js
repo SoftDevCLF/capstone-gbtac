@@ -15,13 +15,13 @@ export default function Page() {
 
   // Applied chart state (what GraphContainer actually reads)
   const [currentChartId, setCurrentChartId] = useState(null);
-  const [selectedSensors, setSelectedSensors] = useState([]);
+  const [selectedSensors, setSelectedSensors] = useState([{code: "30000_TL252", name: "PV-CarportSolar_Total"}, {code: "30000_TL253", name: "PV-RooftopSolar_Total"}]);
   const [dateRange, setDateRange] = useState({ from: "2025-12-31", to: "2025-12-31" });
   const [settings, setSettings] = useState({
     chartTitle: "",
     xAxisTitle: "",
     yAxisTitle: "",
-    chartType: "line",
+    chartType: "bar",
   })
 
   // Temp state (user edits these before clicking Apply)

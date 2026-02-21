@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import LineHandler from "./LineHandler"
-import PieHandler from "./PieHandler"
+import BarHandler from "./BarHandler"
 
 export default function CustomHandler({selectedSensors, dateRange, settings}){
     try{
@@ -27,27 +27,20 @@ export default function CustomHandler({selectedSensors, dateRange, settings}){
                         />
                     </div>
                 )
-            }else if(settings.chartType == "pie"){
-                <div>
-                    <p>pie chart goes here</p>
-                    {/* <PieHandler
-                        sensorList={sensors}
-                        startDate={dateRange.from}
-                        endDate={dateRange.to}
-                        graphTitle={settings.chartTitle}
-                        label={settings.xAxisTitle} //**temporary
-                    /> */}
-                    {/* <PieHandler
-                            sensorList={[
-                                "30000_TL252", // PV-CarportSolar_Total
-                                "30000_TL253", // PV-RooftopSolar_Total
-                            ]}
-                            startDate={"2025-12-31"}
-                            endDate={"2025-12-31"}
-                            graphTitle={"Solar Panel Generation"}
-                            label={"kWh"} // **check: unsure if right unit
-                    /> */}
-                </div>
+            }else if(settings.chartType == "bar"){
+                return(
+                    <div>
+                        <BarHandler
+                            sensorList={sensors}
+                            startDate={dateRange.from}
+                            endDate={dateRange.to}
+                            graphTitle={settings.chartTitle}
+                            yTitle={settings.xAxisTitle}
+                            xTitle={settings.yAxisTitle}
+                            xUnit={"hour"}
+                        />                    
+                    </div>
+                )
             }else{
                 return(
                     <div>
