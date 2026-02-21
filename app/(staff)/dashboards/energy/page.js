@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
-import InfoCard from "../../../_components/InfoCard";
+import CardCarousel from "../../../_components/CardCarousel";
 import GraphPlaceholder from "../../../_components/GraphPlaceholder";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 
@@ -24,13 +24,6 @@ export default function EnergyDashboard() {
 
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login.",
-    );
-  };
-
-  useEffect(() => {
-    saveDashboardState(STORAGE_KEY, state);
     saveRecentDashboard({
       id: "energy",
       title: "Energy Dashboard",
@@ -42,18 +35,26 @@ export default function EnergyDashboard() {
           (g) => state.visibleGraphs[g],
         ),
       },
+      saved: true,
     });
-  }, [state]);
+
+    alert(
+      "Dashboard state saved! Your graph settings are restored for next login.",
+    );
+  };
 
   return (
     <DashboardLayout title="Energy Dashboard">
-      <InfoCard
+      <CardCarousel
         items={[
           { label: "Current Usage", value: "120 kWh" },
           { label: "Daily Avg", value: "98 kWh" },
           { label: "Peak Usage", value: "180 kWh" },
-          { label: "Cost Today", value: "$14.20" },
+          { label: "Approximate Cost", value: "$14.20" },
+          { label: "Total Energy", value: "950 kWh" },
+          { label: "Utility Bill Calgary kWh", value: "1234 kWh" },
         ]}
+        horizontal
       />
 
       <DatePicker
@@ -63,11 +64,11 @@ export default function EnergyDashboard() {
         setToDate={(v) => setState({ ...state, toDate: v })}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <GraphPlaceholder />
-
         <GraphPlaceholder />
       </div>
+
       <div className="flex justify-end mt-6">
         <button
           onClick={handleSaveScreen}
