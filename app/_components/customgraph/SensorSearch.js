@@ -5,10 +5,10 @@
 import { useState, useMemo } from "react";
 //useMemo hook helps optimize performance by memorizing the filtered sensor list.
 
-export default function SensorSearch({ selectedSensors, setSelectedSensors, availableSensors = [] }) {
-  const [searchTerm, setSearchTerm] = useState("");
+export default function SensorSearch({ selectedSensors, setSelectedSensors, availableSensors }) {
 
-  //Memoized filtered sensor list based on search term
+  const [searchTerm, setSearchTerm] = useState("");
+  //Memorized filtered sensor list based on search term
   const filteredSensors = useMemo(() => {
     if (!searchTerm) return availableSensors;
     return availableSensors.filter(sensor =>
@@ -18,7 +18,7 @@ export default function SensorSearch({ selectedSensors, setSelectedSensors, avai
 
   //Function to add a sensor to the selectedSensors list if it's not already added
   const addSensor = (sensor) => {
-    if (!selectedSensors.some(s => s.id === sensor.id)) {
+    if (!selectedSensors.some(s => s.code === sensor.code)) {
       setSelectedSensors([...selectedSensors, sensor]);
     }
   };
@@ -38,22 +38,22 @@ export default function SensorSearch({ selectedSensors, setSelectedSensors, avai
 
       <p className="font-semibold text-black mb-2">Available Sensors</p>
       <div className="max-h-64 overflow-y-auto border rounded-sm bg-gray-100 text-gray-500">
-        {filteredSensors.length === 0 ? (
+        {(filteredSensors.length) === 0 ? (
           <p className="text-gray-500 p-2">No sensors found</p>
         ) : (
           filteredSensors.map(sensor => (
-            <div key={sensor.id} className="flex justify-between items-center p-2 border-b">
+            <div key={sensor.code} className="flex justify-between items-center p-2 border-b">
               <span>{sensor.name}</span>
               <button
                 onClick={() => addSensor(sensor)}
                 className={`px-2 py-1 rounded-sm text-white ${
-                  selectedSensors.some(s => s.id === sensor.id)
+                  selectedSensors.some(s => s.code === sensor.code)
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-blue-500 hover:bg-blue-600"
                 }`}
-                disabled={selectedSensors.some(s => s.id === sensor.id)}
+                disabled={selectedSensors.some(s => s.code === sensor.code)}
               >
-                {selectedSensors.some(s => s.id === sensor.id) ? "Added" : "Add"}
+                {selectedSensors.some(s => s.code === sensor.code) ? "Added" : "Add"}
               </button>
             </div>
           ))

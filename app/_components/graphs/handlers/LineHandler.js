@@ -24,13 +24,28 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
     
     const [fetched, setFetched] = useState(false); // if data has been fetched or not
     const [sensorData, setSensorData] = useState([]); // holds all the sensor data
-
+    
     // mins and maxes for zoom
     const [xMin, setXMin] = useState();
     const [xMax, setXMax] = useState();
     const [yMin, setYMin] = useState();
     const [yMax, setYMax] = useState();
     
+    // if sensorList changed, update sensors and reset fetched to false
+    useEffect(() => {
+        setFetched(false)
+        setSensors(
+            sensorList.map((code, i) => ({
+            id: i, 
+            code: code, 
+            name: null
+        })))
+    }, [sensorList])
+
+    useEffect(() => {
+        setFetched(false)
+    }, [startDate, endDate])
+
     // takes sensors array and fetches data based off of codes, puts it in the sensorData array
     // ** NOTE: add warning if no data is available (no sensor data during time period) 
     const fetchData = async () => {
@@ -74,12 +89,11 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
 
     // fetches data on render and date changes
     useEffect(() => {
-        fetchData();
-    }, [startDate, endDate]);
-
-    useEffect(() => {
-        fetchNames();
-    }, [sensorList]);
+        if(!fetched){
+            fetchData();
+            fetchNames();
+        }
+    }, [sensors, fetched]);
     
     // sets defaults
     const labels = 0; // x axis labels
@@ -103,7 +117,6 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
             });
             setYMin(Math.min(...mins))
             setYMax(Math.max(...maxes))
-            console.log(`min: ${yMin}\nmax: ${yMax}`);
 
             // for each sensor in sensors array it sets the line label, data, and colour
             const dataset = sensors.map(sensor => ({

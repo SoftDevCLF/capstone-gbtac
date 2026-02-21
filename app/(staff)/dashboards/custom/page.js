@@ -9,33 +9,45 @@ import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
 import GraphContainer from "../../../_components/customgraph/GraphContainer";
 import DateRange from "../../../_components/customgraph/DateRange";
 import ChartSelect from "../../../_components/customgraph/ChartSelect";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Page() {
 
   // Applied chart state (what GraphContainer actually reads)
   const [currentChartId, setCurrentChartId] = useState(null);
-  // const [chartTitle, setChartTitle] = useState("");
-  const [selectedSensors, setSelectedSensors] = useState([{code: "30000_TL92", name: "sensor1"}, {code: "30000_TL93", name: "sensor2"}]);
+  const [selectedSensors, setSelectedSensors] = useState([]);
   const [dateRange, setDateRange] = useState({ from: "2025-12-31", to: "2025-12-31" });
   const [settings, setSettings] = useState({
-    chartTitle: "Title",
-    xAxisTitle: "x",
-    yAxisTitle: "y",
+    chartTitle: "",
+    xAxisTitle: "",
+    yAxisTitle: "",
     chartType: "line",
   })
 
   // Temp state (user edits these before clicking Apply)
-  // const [tempChartTitle, setTempChartTitle] = useState(chartTitle);
   const [tempSelectedSensors, setTempSelectedSensors] = useState(selectedSensors);
   const [tempDateRange, setTempDateRange] = useState(dateRange);
   const [tempSettings, setTempSettings] = useState(settings)
+  
+  // full list of sensors and codes
+  const [sensorList, setSensorList] = useState([])
+  const fetchSensors = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/graphs/codesnames")
+      const data = await res.json()
+      setSensorList(data)
+    }catch (e){
+      console.log(e)
+    }
+  }
 
+  useEffect(()=> {
+    fetchSensors()
+  }, [])
 
   // Reset chart to default
   const resetChart = () => {
     setCurrentChartId(null);
-    // setChartTitle("");
     setSettings({
       chartTitle: "",
       xAxisTitle: "",
@@ -46,10 +58,14 @@ export default function Page() {
     setDateRange({ from: null, to: null });
 
     // Also reset temp state
-    // setTempChartTitle("");
-    setTempSettings(settings)
-    setTempSelectedSensors(selectedSensors);
-    setTempDateRange(dateRange);
+    setTempSettings({
+      chartTitle: "",
+      xAxisTitle: "",
+      yAxisTitle: "",
+      chartType: "line",
+    })
+    setTempSelectedSensors([]);
+    setTempDateRange({ from: null, to: null });
   }
 
   // Load a chart into state
@@ -71,6 +87,10 @@ export default function Page() {
     setSelectedSensors(tempSelectedSensors);
     setDateRange(tempDateRange);
   }
+  useEffect(() => {
+    console.log(settings)
+    
+  }, [selectedSensors])
 
   return (
     <main className="bg-gray-50 min-h-screen">
@@ -110,10 +130,12 @@ export default function Page() {
           <SensorSearch
             selectedSensors={tempSelectedSensors}
             setSelectedSensors={setTempSelectedSensors}
+            availableSensors={sensorList}
             className="flex-1"
           />
           <SelectedSensors
             selectedSensors={tempSelectedSensors}
+            setSelectedSensors={setTempSelectedSensors}
             className="flex-1"
           />
         </div>
