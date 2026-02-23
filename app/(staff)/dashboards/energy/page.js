@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
+import { useState } from "react";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
 import CardCarousel from "../../../_components/CardCarousel";
 import GraphPlaceholder from "../../../_components/GraphPlaceholder";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 
-const STORAGE_KEY = "dashboard-energy";
+import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 
 export default function EnergyDashboard() {
   const [state, setState] = useState(() =>
@@ -58,10 +57,10 @@ export default function EnergyDashboard() {
       />
 
       <DatePicker
-        fromDate={state.fromDate}
-        toDate={state.toDate}
-        setFromDate={(v) => setState({ ...state, fromDate: v })}
-        setToDate={(v) => setState({ ...state, toDate: v })}
+        fromDate={fromDate}
+        toDate={toDate}
+        setFromDate={setFromDate}
+        setToDate={setToDate}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">

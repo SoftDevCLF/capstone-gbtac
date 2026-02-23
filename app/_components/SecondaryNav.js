@@ -1,10 +1,28 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "../_utils/firebase";
+
 export default function SecondaryNav({
   displayLogin = true,
   displayLogout = false,
   displayProfile = false,
 }) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push("/login"); 
+      router.refresh();
+    } catch (err) {
+      alert("Logout failed: " + err.message);
+    }
+  };
+
   const employeeName = "John Doe"; // Placeholder for actual employee name
   return (
     <nav className="flex flex-row items-center justify-between w-full bg-white py-3 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
@@ -33,7 +51,7 @@ export default function SecondaryNav({
         {displayLogout && (
           <li>
             <button
-              // onClick={handleLogout}
+              onClick={handleLogout}
               className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition"
             >
               Logout
