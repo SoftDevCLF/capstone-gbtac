@@ -10,6 +10,8 @@ import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 
 import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 
+const STORAGE_KEY = "dashboard-energy";
+
 export default function EnergyDashboard() {
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, {
@@ -69,6 +71,14 @@ export default function EnergyDashboard() {
         <GraphPlaceholder />
       </div>
 
+      <div className="flex justify-end mt-6">
+        <button
+          onClick={handleSaveScreen}
+          className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+        >
+          Save Screen
+        </button>
+      </div>
       <div className="flex justify-end mt-6">
         <button
           onClick={handleSaveScreen}
