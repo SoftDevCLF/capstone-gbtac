@@ -6,28 +6,37 @@ import Footer from "@/app/_components/Footer";
 import ChartSettings from "../../../_components/customgraph/ChartSettings";
 import SensorSearch from "../../../_components/customgraph/SensorSearch";
 import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
-import GraphContainer from "../../../_components/customgraph/GraphContainer";
+import GraphPlaceholder from "@/app/_components/GraphPlaceholder";
 import DateRange from "../../../_components/customgraph/DateRange";
 import ChartSelect from "../../../_components/customgraph/ChartSelect";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import ExportPDFButton from "@/app/_components/ExportPDFButton";
+
+
 
 export default function Page() {
 
+  // State for erros
+  const [error, setError] = useState(null);
+
+  // Chart ref for PDF export
+  const chartRef = useRef(null);
+
   // Applied chart state (what GraphContainer actually reads)
   const [currentChartId, setCurrentChartId] = useState(null);
-  const [chartTitle, setChartTitle] = useState("");
+  const [chartSettings, setChartSettings] = useState("");
   const [selectedSensors, setSelectedSensors] = useState([]);
   const [dateRange, setDateRange] = useState({ from: null, to: null });
 
   // Temp state (user edits these before clicking Apply)
-  const [tempChartTitle, setTempChartTitle] = useState(chartTitle);
+  const [tempChartSettings, setTempChartSettings] = useState(chartSettings);
   const [tempSelectedSensors, setTempSelectedSensors] = useState(selectedSensors);
   const [tempDateRange, setTempDateRange] = useState(dateRange);
 
   // Reset chart to default
   const resetChart = () => {
     setCurrentChartId(null);
-    setChartTitle("");
+    setChartSettings("");
     setSelectedSensors([]);
     setDateRange({ from: null, to: null });
 
@@ -52,7 +61,26 @@ export default function Page() {
 
   // Apply button handler
   const handleApply = () => {
-    setChartTitle(tempChartTitle);
+    setError(null); // Clear previous errors
+    // Basic validation
+    if (!tempChartSettings) {
+      setError("Please enter chart settings.");
+      return;
+    } 
+    if (tempSelectedSensors.length === 0) {
+      setError("Please select at least one sensor.");
+      return;
+    }
+    if (!tempDateRange.from || !tempDateRange.to) {
+      setError("Please select a valid date range.");
+      return;
+    }
+    if (new Date(tempDateRange.from) > new Date(tempDateRange.to)) {
+      setError("Start date cannot be after end date.");
+      return;
+    }
+    // If all validations pass, update the main state with temp values
+    setChartSettings(tempChartSettings);
     setSelectedSensors(tempSelectedSensors);
     setDateRange(tempDateRange);
   }
@@ -81,8 +109,8 @@ export default function Page() {
         {/* Chart Settings and Date Range */}
         <div className="flex flex-col md:flex-row gap-4 mb-5 w-full">
           <ChartSettings
-            title={tempChartTitle}
-            setChartTitle={setTempChartTitle}
+            title={tempChartSettings}
+            setChartTitle={setTempChartSettings}
           />
           <DateRange
             dateRange={tempDateRange}
@@ -103,6 +131,13 @@ export default function Page() {
           />
         </div>
 
+          {/* Error Message Display*/}
+        {error && (
+          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-sm">
+            {error}
+          </div>
+        )}
+
         <div className="mb-6">
           <button
             className="px-4 py-2 bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600"
@@ -113,10 +148,18 @@ export default function Page() {
         </div>
 
         {/* Graph below */}
-        <div className="w-full">
-          <GraphContainer 
-            selectedSensors={selectedSensors} 
-            dateRange={dateRange} 
+        <div className="w-full" ref={chartRef}>
+          <GraphPlaceholder/>
+        </div>
+
+        {/* Ssve and Export PDF button */}
+        <div className="flex justify-end gap-4">
+          <button className="bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600">
+            Save View
+          </button>
+          <ExportPDFButton
+            chartRef={chartRef}
+            fileName={tempChartSettings || "custom_chart"}
           />
         </div>
       </div>

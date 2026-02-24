@@ -9,12 +9,12 @@ export default function ChartSettings() {
   const [xAxisTitle, setXAxisTitle] = useState("");
   const [yAxisTitle, setYAxisTitle] = useState("");
   const [timeInterval, setTimeInterval] = useState("hourly");
-  const [aggregation, setAggregation] = useState("sum");
+
   const [chartType, setChartType] = useState("line");
 
   return (
     <div style={{ fontFamily: "var(--font-titillium)" }} className="bg-white rounded-sm shadow-sm p-4 mt-1 w-1/2">
-      <h2 className="font-semibold text-black mb-2">Chart Settings</h2>
+      <h2 className="font-semibold text-black mb-7">Chart Settings</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-500">
         <input
@@ -50,31 +50,10 @@ export default function ChartSettings() {
           onChange={(e) => setYAxisTitle(e.target.value)}
           className="border p-2 rounded text-gray-500"
         />
-
-      <select 
-        value={timeInterval}
-        onChange={(e) => setTimeInterval(e.target.value)}
-        className="border p-2 rounded text-gray-500"
-      >
-        <option value="hourly">Hourly</option>
-        <option value="daily">Daily</option>
-        <option value="monthly">Monthly</option>
-        <option value="yearly">Yearly</option>
-      </select>
-
-      <select 
-        value={aggregation}
-        onChange={(e) => setAggregation(e.target.value)}
-        className="border p-2 rounded text-gray-500"
-      >
-        <option value="sum">Sum</option>
-        <option value="average">Average</option>
-      </select>
-
       </div>
 
       {/* Info text */}
-      <div className="mt-2 text-gray-500">
+      <div className="mt-4 text-gray-500">
         {chartTitle
           ? "Chart settings implemented. You can change it anytime."
           : "Implement the chart settings to customize your chart and easily identify it later."}
