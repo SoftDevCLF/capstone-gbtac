@@ -35,7 +35,7 @@ export default function Navbar({
           )}
 
           {displayDashboards && (
-            <li className="relative group">
+            <li className="relative group z-10">
               <span className="cursor-pointer hover:opacity-70 transition">
                 Graphs
               </span>

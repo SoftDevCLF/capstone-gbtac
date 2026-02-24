@@ -3,18 +3,17 @@ import { useState } from "react"
 export default function DateRangePicker({
   fromDate,
   toDate,
-  setFromDate,
-  setToDate,
+  setDate
 }) {
 
   const [tempFrom, setTempFrom] = useState(fromDate)
   const [tempTo, setTempTo] = useState(toDate)
 
   const setDates = () => {
-    if(tempFrom <= tempTo){
-      setFromDate(tempFrom)
-      setToDate(tempTo)
-    }
+    setDate({
+      fromDate: tempFrom,
+      toDate: tempTo
+    })
   }
 
   return (
@@ -40,8 +39,8 @@ export default function DateRangePicker({
       </div>
 
       <button
-      onClick={setDates}
-      className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+        onClick={setDates}
+        className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
       >
         Apply
       </button>
