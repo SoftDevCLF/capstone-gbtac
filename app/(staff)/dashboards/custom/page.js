@@ -140,7 +140,7 @@ export default function Page() {
 
         <div className="mb-6">
           <button
-            className="px-4 py-2 bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600"
+            className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
             onClick={handleApply}
           >
             Apply
@@ -153,15 +153,18 @@ export default function Page() {
         </div>
 
         {/* Ssve and Export PDF button */}
-        <div className="flex justify-end gap-4">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600">
-            Save View
-          </button>
-          <ExportPDFButton
-            chartRef={chartRef}
-            fileName={tempChartSettings || "custom_chart"}
-          />
+        <div className="flex justify-end mt-6">
         </div>
+          <div className="flex justify-end gap-4">
+            <button className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+          >
+            Save View
+            </button>
+            <ExportPDFButton
+              chartRef={chartRef}
+              fileName={tempChartSettings || "custom_chart"}
+            />
+          </div>
       </div>
       <Footer />
     </main>
