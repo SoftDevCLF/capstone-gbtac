@@ -21,10 +21,11 @@ export default function PDFViewer() {
 
       <div className="flex justify-center mt-10">
         <button
-          className="bg-[#A6192E] text-white font-bold px-5 py-3 rounded-4xl hover:bg-[#7A1222]"
+          className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"  
+
           // onClick={onClear}
         >
-          Create Another Report <span className="ml-5">{">"}</span>
+          Create Another Report <span className="ml-2">{">"}</span>
         </button>
       </div>
     </div>
