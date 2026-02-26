@@ -69,7 +69,7 @@ return (
 
     {/* Info Text */}
     <div className="mt-5 text-gray-500">
-      {from && to
+      {dateRange.from && dateRange.to
         ? "Select the time interval and aggregation to control the data going to be displayed."
         : "Choose a date range, time interval, and aggregation for your chart."}
     </div>

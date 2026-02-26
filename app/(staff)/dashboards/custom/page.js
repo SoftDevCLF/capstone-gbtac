@@ -6,12 +6,11 @@ import Footer from "@/app/_components/Footer";
 import ChartSettings from "../../../_components/customgraph/ChartSettings";
 import SensorSearch from "../../../_components/customgraph/SensorSearch";
 import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
-import GraphPlaceholder from "@/app/_components/GraphPlaceholder";
 import DateRange from "../../../_components/customgraph/DateRange";
 import ChartSelect from "../../../_components/customgraph/ChartSelect";
 import { useState, useRef, useEffect } from "react";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
-
+import GraphContainer from "@/app/_components/customgraph/GraphContainer";
 
 
 export default function Page() {
@@ -80,12 +79,12 @@ export default function Page() {
   // Load a chart into state
   const loadChart = (chart) => {
     setCurrentChartId(chart.id);
-    setSettings(chart.settings);
+    setChartSettings(chart.settings);
     setSelectedSensors(chart.sensors);
     setDateRange({ from: chart.dateFrom, to: chart.dateTo });
 
     // Also update temp state so the inputs match loaded chart
-    setTempSettings(chart.settings);
+    setTempChartSettings(chart.settings);
     setTempSelectedSensors(chart.sensors);
     setTempDateRange({ from: chart.dateFrom, to: chart.dateTo });
   }
@@ -115,10 +114,6 @@ export default function Page() {
     setSelectedSensors(tempSelectedSensors);
     setDateRange(tempDateRange);
   }
-  useEffect(() => {
-    console.log(settings)
-    
-  }, [selectedSensors])
 
   return (
     <main className="bg-gray-50 min-h-screen">
@@ -189,7 +184,7 @@ export default function Page() {
           <GraphContainer 
             selectedSensors={selectedSensors} 
             dateRange={dateRange}
-            settings={settings}
+            settings={chartSettings}
           />
         </div>
 

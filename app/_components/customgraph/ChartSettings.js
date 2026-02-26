@@ -46,7 +46,7 @@ export default function ChartSettings({settings, setSettings}) {
 
       {/* Info text */}
       <div className="mt-4 text-gray-500">
-        {chartTitle
+        {settings.chartTitle
           ? "Chart settings implemented. You can change it anytime."
           : "Implement the chart settings to customize your chart and easily identify it later."}
       </div>
