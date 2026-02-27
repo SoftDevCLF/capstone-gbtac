@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
 import InfoCard from "../../../_components/InfoCard";
-import GraphPlaceholder from "../../../_components/GraphPlaceholder";
+import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 
@@ -15,23 +15,19 @@ export default function WaterLevelDashboard() {
     loadDashboardState(STORAGE_KEY, {
       fromDate: "",
       toDate: "",
-      visibleGraphs: {},
     }),
   );
 
-  const { fromDate, toDate } = state;
-
-  const handleStateChange = (newState) => {
-    setState(newState);
-    saveDashboardState(STORAGE_KEY, newState);
-  };
+  useEffect(() => {
+    saveDashboardState(STORAGE_KEY, state);
+  }, [state]);
 
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
 
     saveRecentDashboard({
       id: "water-level",
-      title: "Cistern Level Dashboard",
+      title: "Water Level Dashboard",
       path: "/dashboards/water-level",
       summary: {
         fromDate: state.fromDate,
@@ -40,7 +36,7 @@ export default function WaterLevelDashboard() {
           (g) => state.visibleGraphs[g],
         ),
       },
-      saved: true,
+      saved: true, // mark as explicitly saved
     });
 
     alert(
@@ -49,24 +45,31 @@ export default function WaterLevelDashboard() {
   };
 
   return (
-    <DashboardLayout title="Cistern Level Dashboard">
+    <DashboardLayout title="Water Level Dashboard">
       <InfoCard
         items={[
-          { label: "Current Level", value: "82%" },
-          { label: "Daily Avg", value: "78%" },
-          { label: "Past 7 Days Max", value: "95%" },
-          { label: "Difference vs Yesterday", value: "+2%" },
+          { label: "Current Level", value: "3.2 m" },
+          { label: "Daily Avg", value: "3.0 m" },
+          { label: "Weekly Max", value: "3.8 m" },
+          { label: "Difference vs Yesterday", value: "1.0 m" },
         ]}
       />
 
       <DatePicker
-        fromDate={fromDate}
-        toDate={toDate}
-        setFromDate={(v) => handleStateChange({ ...state, fromDate: v })}
-        setToDate={(v) => handleStateChange({ ...state, toDate: v })}
+        fromDate={state.fromDate}
+        toDate={state.toDate}
+        setDate={setState}
       />
 
-      <GraphPlaceholder />
+      <LineHandler
+        sensorList={["20000_TL93"]}
+        startDate={state.fromDate}
+        endDate={state.toDate}
+        graphTitle={"Cistern Water Level"}
+        yTitle={"Water Level"}
+        xTitle={"hours"}
+        xUnit={"hour"}
+      />
 
       <div className="flex justify-end mt-6">
         <button
