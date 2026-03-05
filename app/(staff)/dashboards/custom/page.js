@@ -6,10 +6,14 @@ import Footer from "@/app/_components/Footer";
 import ChartSettings from "../../../_components/customgraph/ChartSettings";
 import SensorSearch from "../../../_components/customgraph/SensorSearch";
 import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
-import GraphContainer from "../../../_components/customgraph/GraphContainer";
+import GraphPlaceholder from "@/app/_components/GraphPlaceholder";
 import DateRange from "../../../_components/customgraph/DateRange";
+import ExportPDFButton from "@/app/_components/ExportPDFButton";
+import {useeRef } from "react";
 
 export default function Page() {
+  const chartRef = useRef(null);
+
   return (
     <main className="bg-gray-50 min-h-screen">
       <SecondaryNav />
@@ -32,7 +36,15 @@ export default function Page() {
           <SensorSearch />
           <SelectedSensors />
         </div>
-        <GraphContainer />
+        <div ref={chartRef}>
+          <GraphPlaceholder />
+        </div>
+        <div className="flex justify-end gap-4 mt-4">
+        <button className="bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition px-4 py-2">
+          Save View
+        </button>
+        <ExportPDFButton chartRef={chartRef} fileName="custom-chart" />
+      </div>
       </div>
       <Footer />
     </main>
