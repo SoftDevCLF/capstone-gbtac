@@ -124,14 +124,14 @@ export default function Page() {
         </div>
 
         {/* Chart Settings and Date Range */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-4 md:mb-5 w-full">
-          <div className="w-full lg:w-1/2">
+        <div className="flex flex-col lg:flex-row gap-4 mb-4 md:mb-5 w-full min-h-75">
+          <div className="w-full lg:w-1/2 flex flex-col">
             <ChartSettings
               settings={tempChartSettings}
               setSettings={setTempChartSettings}
             />
           </div>
-          <div className="w-full lg:w-1/2">
+          <div className="w-full lg:w-1/2 flex flex-col">
             <DateRange
               dateRange={tempDateRange}
               setDateRange={setTempDateRange}
@@ -140,20 +140,20 @@ export default function Page() {
         </div>
 
         {/* Sensor Search and Selected Sensors */}
-        <div className="flex flex-col xl:flex-row gap-4 mb-4">
-          <div className="w-full xl:w-1/2">
+        <div className="flex flex-col xl:flex-row gap-4 mb-4 min-h-100">
+          <div className="w-full xl:w-1/2 flex flex-col">
             <SensorSearch
               selectedSensors={tempSelectedSensors}
               setSelectedSensors={setTempSelectedSensors}
               availableSensors={sensorList}
-              className="w-full"
+              className="flex-1"
             />
           </div>
-          <div className="w-full xl:w-1/2">
+          <div className="w-full xl:w-1/2 flex flex-col">
             <SelectedSensors
               selectedSensors={tempSelectedSensors}
               setSelectedSensors={setTempSelectedSensors}
-              className="w-full"
+              className="flex-1"
             />
           </div>
         </div>
