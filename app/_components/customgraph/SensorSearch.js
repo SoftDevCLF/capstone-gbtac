@@ -24,7 +24,7 @@ export default function SensorSearch({ selectedSensors, setSelectedSensors, avai
   };
 
   return (
-    <div className="bg-white rounded-sm shadow-sm p-4 mb-5 mt-1 w-1/2" style={{ fontFamily: "var(--font-titillium)" }}>
+    <div className="bg-white rounded-sm shadow-sm p-4 mb-5 mt-1 w-full" style={{ fontFamily: "var(--font-titillium)" }}>
       <div className="flex items-center mb-4 gap-2">
         <p className="font-semibold text-black">Sensor Search:</p>
         <input

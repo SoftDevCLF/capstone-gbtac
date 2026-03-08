@@ -1,149 +1,119 @@
 "use client";
-<<<<<<< HEAD
 
 //Page for Customizable Graph Section
-=======
-// Page for Customizable Graph Section
->>>>>>> main
-import SecondaryNav from "@/app/_components/SecondaryNav";
-import Navbar from "@/app/_components/Navbar";
-import Footer from "@/app/_components/Footer";
 import ChartSettings from "../../../_components/customgraph/ChartSettings";
 import SensorSearch from "../../../_components/customgraph/SensorSearch";
 import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
-<<<<<<< HEAD
 import GraphPlaceholder from "@/app/_components/GraphPlaceholder";
 import DateRange from "../../../_components/customgraph/DateRange";
+import DashboardLayout from "@/app/_components/DashboardLayout";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
-import { useRef } from "react";
+import ChartSelect from "@/app/_components/customgraph/ChartSelect";
+import { useRef, useState, useEffect } from "react";
 
 export default function Page() {
   const chartRef = useRef(null);
 
-=======
-import DateRange from "../../../_components/customgraph/DateRange";
-import ChartSelect from "../../../_components/customgraph/ChartSelect";
-import { useState, useRef, useEffect } from "react";
-import ExportPDFButton from "@/app/_components/ExportPDFButton";
-import GraphContainer from "@/app/_components/customgraph/GraphContainer";
-
-
-export default function Page() {
-
-  // State for erros
-  const [error, setError] = useState(null);
-
-  // Chart ref for PDF export
-  const chartRef = useRef(null);
-
-  // Applied chart state (what GraphContainer actually reads)
+  // State variables
   const [currentChartId, setCurrentChartId] = useState(null);
+  const [tempChartSettings, setTempChartSettings] = useState({
+    chartTitle: "",
+    chartType: "line",
+    xAxisTitle: "",
+    yAxisTitle: ""
+  });
+  const [tempDateRange, setTempDateRange] = useState({
+    from: "",
+    to: ""
+  });
+  const [tempSelectedSensors, setTempSelectedSensors] = useState([]);
   const [selectedSensors, setSelectedSensors] = useState([]);
-  const [dateRange, setDateRange] = useState({ from: "2025-12-31", to: "2025-12-31" });
+  const [dateRange, setDateRange] = useState({
+    from: "",
+    to: ""
+  });
   const [chartSettings, setChartSettings] = useState({
     chartTitle: "",
-    xAxisTitle: "",
-    yAxisTitle: "",
     chartType: "line",
-  })
+    xAxisTitle: "",
+    yAxisTitle: ""
+  });
+  const [sensorList, setSensorList] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Temp state (user edits these before clicking Apply)
-  const [tempSelectedSensors, setTempSelectedSensors] = useState(selectedSensors);
-  const [tempDateRange, setTempDateRange] = useState(dateRange);
-  const [tempChartSettings, setTempChartSettings] = useState(chartSettings)
-  
-  // full list of sensors and codes
-  const [sensorList, setSensorList] = useState([])
-  const fetchSensors = async () => {
-    try {
-      const res = await fetch("http://127.0.0.1:8000/graphs/codesnames")
-      const data = await res.json()
-      setSensorList(data)
-    }catch (e){
-      console.log(e)
-    }
-  }
+  // Load available sensors on component mount
+  useEffect(() => {
+    const fetchSensors = async () => {
+      try {
+        const response = await fetch("/api/sensors");
+        const sensors = await response.json();
+        setSensorList(sensors);
+      } catch (err) {
+        console.error("Failed to fetch sensors:", err);
+        setError("Failed to load sensors");
+      }
+    };
+    fetchSensors();
+  }, []);
 
-  useEffect(()=> {
-    fetchSensors()
-  }, [])
+  // Function to load a saved chart
+  const loadChart = (chartData) => {
+    setCurrentChartId(chartData.id);
+    setTempChartSettings(chartData.settings || tempChartSettings);
+    setTempDateRange(chartData.dateRange || tempDateRange);
+    setTempSelectedSensors(chartData.selectedSensors || []);
+    setError(null);
+  };
 
-  // Reset chart to default
+  // Function to reset chart to new state
   const resetChart = () => {
     setCurrentChartId(null);
-    setChartSettings({
-      chartTitle: "",
-      xAxisTitle: "",
-      yAxisTitle: "",
-      chartType: "line",
-    })
-    setSelectedSensors([]);
-    setDateRange({ from: null, to: null });
-
-    // Also reset temp state
     setTempChartSettings({
       chartTitle: "",
-      xAxisTitle: "",
-      yAxisTitle: "",
       chartType: "line",
-    })
+      xAxisTitle: "",
+      yAxisTitle: ""
+    });
+    setTempDateRange({
+      from: "",
+      to: ""
+    });
     setTempSelectedSensors([]);
-    setTempDateRange({ from: null, to: null });
-  }
+    setSelectedSensors([]);
+    setDateRange({
+      from: "",
+      to: ""
+    });
+    setChartSettings({
+      chartTitle: "",
+      chartType: "line",
+      xAxisTitle: "",
+      yAxisTitle: ""
+    });
+    setError(null);
+  };
 
-  // Load a chart into state
-  const loadChart = (chart) => {
-    setCurrentChartId(chart.id);
-    setChartSettings(chart.settings);
-    setSelectedSensors(chart.sensors);
-    setDateRange({ from: chart.dateFrom, to: chart.dateTo });
-
-    // Also update temp state so the inputs match loaded chart
-    setTempChartSettings(chart.settings);
-    setTempSelectedSensors(chart.sensors);
-    setTempDateRange({ from: chart.dateFrom, to: chart.dateTo });
-  }
-
-  // Apply button handler
+  // Function to apply temporary settings to final settings
   const handleApply = () => {
-    setError(null); // Clear previous errors
-    // Basic validation
-    if (!tempChartSettings) {
-      setError("Please enter chart settings.");
-      return;
-    } 
     if (tempSelectedSensors.length === 0) {
-      setError("Please select at least one sensor.");
+      setError("Please select at least one sensor");
       return;
     }
     if (!tempDateRange.from || !tempDateRange.to) {
-      setError("Please select a valid date range.");
+      setError("Please select a date range");
       return;
     }
-    if (new Date(tempDateRange.from) > new Date(tempDateRange.to)) {
-      setError("Start date cannot be after end date.");
-      return;
-    }
-    // If all validations pass, update the main state with temp values
-    setChartSettings(tempChartSettings);
-    setSelectedSensors(tempSelectedSensors);
-    setDateRange(tempDateRange);
-  }
+    setSelectedSensors([...tempSelectedSensors]);
+    setDateRange({...tempDateRange});
+    setChartSettings({...tempChartSettings});
+    setError(null);
+  };
 
->>>>>>> main
   return (
-    <main className="bg-gray-50 min-h-screen">
-      <SecondaryNav />
-      <Navbar />
-
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-10 dark:text-black"
-          style={{ fontFamily: "var(--font-titillium)" }}>
-          Create Custom Chart
-        </h1>
-
+    <DashboardLayout title="Create Custom Chart">
+      <div className="container mx-auto px-4 py-4 md:py-8">
         {/* Chart Selection */}
-        <div className="mb-5 w-full md:w-1/2">
+        <div className="mb-4 md:mb-5 w-full max-w-md md:max-w-none md:w-1/2">
           <ChartSelect
             currentChartId={currentChartId}
             onLoadChart={loadChart}
@@ -153,53 +123,50 @@ export default function Page() {
         </div>
 
         {/* Chart Settings and Date Range */}
-        <div className="flex flex-col md:flex-row gap-4 mb-5 w-full">
-          <ChartSettings
-            settings={tempChartSettings}
-            setSettings={setTempChartSettings}
-          />
-          <DateRange
-            dateRange={tempDateRange}
-            setDateRange={setTempDateRange}
-          />
+        <div className="flex flex-col lg:flex-row gap-4 mb-4 md:mb-5 w-full">
+          <div className="w-full lg:w-1/2">
+            <ChartSettings
+              settings={tempChartSettings}
+              setSettings={setTempChartSettings}
+            />
+          </div>
+          <div className="w-full lg:w-1/2">
+            <DateRange
+              dateRange={tempDateRange}
+              setDateRange={setTempDateRange}
+            />
+          </div>
         </div>
-<<<<<<< HEAD
-        <div ref={chartRef}>
-          <GraphPlaceholder />
-        </div>
-        <div className="flex justify-end gap-4 mt-4">
-        <button className="bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition px-4 py-2">
-          Save View
-        </button>
-        <ExportPDFButton chartRef={chartRef} fileName="custom-chart" />
-      </div>
-=======
 
         {/* Sensor Search and Selected Sensors */}
-        <div className="flex gap-4 mb-4">
-          <SensorSearch
-            selectedSensors={tempSelectedSensors}
-            setSelectedSensors={setTempSelectedSensors}
-            availableSensors={sensorList}
-            className="flex-1"
-          />
-          <SelectedSensors
-            selectedSensors={tempSelectedSensors}
-            setSelectedSensors={setTempSelectedSensors}
-            className="flex-1"
-          />
+        <div className="flex flex-col xl:flex-row gap-4 mb-4">
+          <div className="w-full xl:w-1/2">
+            <SensorSearch
+              selectedSensors={tempSelectedSensors}
+              setSelectedSensors={setTempSelectedSensors}
+              availableSensors={sensorList}
+              className="w-full"
+            />
+          </div>
+          <div className="w-full xl:w-1/2">
+            <SelectedSensors
+              selectedSensors={tempSelectedSensors}
+              setSelectedSensors={setTempSelectedSensors}
+              className="w-full"
+            />
+          </div>
         </div>
 
           {/* Error Message Display*/}
         {error && (
-          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-sm">
+          <div className="mb-4 p-3 md:p-2 bg-red-100 text-red-700 rounded-sm text-sm md:text-base">
             {error}
           </div>
         )}
 
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6 flex justify-center md:justify-start">
           <button
-            className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+            className="px-6 py-2 md:px-4 md:py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition w-full md:w-auto"
             onClick={handleApply}
           >
             Apply
@@ -208,29 +175,26 @@ export default function Page() {
 
         {/* Graph below */}
         <div className="w-full" ref={chartRef}>
-          <GraphContainer 
+          <GraphPlaceholder
             selectedSensors={selectedSensors} 
             dateRange={dateRange}
             settings={chartSettings}
           />
         </div>
 
-        {/* Ssve and Export PDF button */}
-        <div className="flex justify-end mt-6">
-        </div>
-          <div className="flex justify-end gap-4">
-            <button className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
-          >
+        {/* Save and Export PDF buttons */}
+        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6">
+          <button className="px-6 py-2 md:px-4 md:py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition w-full sm:w-auto order-2 sm:order-1">
             Save View
-            </button>
+          </button>
+          <div className="w-full sm:w-auto order-1 sm:order-2">
             <ExportPDFButton
               chartRef={chartRef}
-              fileName={tempChartSettings || "custom_chart"}
+              fileName={tempChartSettings.chartTitle || "custom_chart"}
             />
           </div>
->>>>>>> main
+        </div>
       </div>
-      <Footer />
-    </main>
+    </DashboardLayout>
   );
 }

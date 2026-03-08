@@ -12,7 +12,7 @@ export default function SelectedSensors({ selectedSensors = [], setSelectedSenso
 
   return (
     <div
-      className="bg-white rounded-sm shadow-sm p-4 mb-5 mt-1 w-1/2"
+      className="bg-white rounded-sm shadow-sm p-4 mb-5 mt-1 w-full"
       style={{ fontFamily: "var(--font-titillium)" }}
     >
       <p className="font-semibold text-black mb-4">Selected Sensors</p>

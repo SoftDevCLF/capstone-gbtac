@@ -12,7 +12,7 @@ export default function DateRange({ dateRange, setDateRange }) {
 return (
   <div
     style={{ fontFamily: "var(--font-titillium)" }}
-    className="bg-white rounded-sm shadow-sm p-4 mt-1 w-1/2"
+    className="bg-white rounded-sm shadow-sm p-4 mt-1 w-full"
   >
     <h2 className="font-semibold text-black mb-1">Time and Aggregation Settings</h2>
 
