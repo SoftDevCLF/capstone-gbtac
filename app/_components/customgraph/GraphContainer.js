@@ -6,7 +6,7 @@ import CustomHandler from "../graphs/handlers/CustomHandler";
 
 export default function GraphContainer({selectedSensors, dateRange, settings}) {
   return (
-    <div className="bg-white rounded-sm shadow-sm p-4 mb-8">
+    <div className="w-full h-64 bg-white rounded-lg shadow flex items-center justify-center text-gray-400`">
 
       <p
         style={{ fontFamily: "var(--font-titillium)" }}
@@ -20,15 +20,6 @@ export default function GraphContainer({selectedSensors, dateRange, settings}) {
           settings={settings}
         />
       </div>
-      <div className="flex justify-end gap-4">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600">
-          Save View
-        </button>
-        <button className="bg-[#912932] text-white px-4 py-2 rounded-sm hover:bg-red-700">
-          Export PDF
-        </button>
-      </div>
-
     </div>
   );
 }

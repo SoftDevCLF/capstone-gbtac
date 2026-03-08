@@ -50,39 +50,42 @@ export default function ChartSelect({
   return (
     <div
       style={{ fontFamily: "var(--font-titillium)" }}
-      className="bg-white rounded-sm shadow-sm p-4 mt-2 w-1/2"
+      className="bg-white rounded-sm shadow-sm p-4 w-1/2"
     >
       <h2 className="font-semibold text-black mb-2">
         Load An Existing Chart
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-500">
-        {/* Dropdown */}
-        <select
-          value={currentChartId || "new"}
-          onChange={handleSelect}
-          className="border p-2 rounded text-gray-500 flex-1"
-        >
-          <option value="new">-- Chart Title --</option>
-          {charts.map(chart => (
-            <option key={chart.id} value={chart.id}>
-              {chart.title}
-            </option>
-          ))}
-        </select>
-
-        {/* Delete button */}
-        <button
-          onClick={handleDelete}
-          disabled={!currentChartId}
-          className={`px-10 py-2 rounded text-white ${
-            currentChartId
-              ? "bg-[#912932] hover:bg-red-700"
-              : "bg-gray-300 cursor-not-allowed"
-          }`}
-        >
-          Delete
-        </button>
+        <div className="flex flex-col">
+          <label className="text-sm text-black mb-1">Chart Title</label>
+          <select
+            value={currentChartId || "new"}
+            onChange={handleSelect}
+            className="border p-2 rounded text-gray-500 flex-1"
+          >
+            <option value="new">Chart Title</option>
+            {charts.map(chart => (
+              <option key={chart.id} value={chart.id}>
+                {chart.title}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div className="flex flex-col justify-end">
+          <button
+            onClick={handleDelete}
+            disabled={!currentChartId}
+            className={`px-10 py-2 rounded text-white font-semibold ${
+              currentChartId
+                ? "bg-[#912932] hover:bg-red-700"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       {/* Info text */}

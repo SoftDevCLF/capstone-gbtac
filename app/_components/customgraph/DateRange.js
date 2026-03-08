@@ -40,30 +40,32 @@ return (
       </div>
     </div>
 
-    {/* Dropdown Row */}
+  
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
       <div className="flex flex-col">
-        <select
-          value={timeInterval}
-          onChange={(e) => setTimeInterval(e.target.value)}
-          className="border p-2 rounded text-gray-500"
-        >
-          <option value="hourly">Hourly</option>
-          <option value="daily">Daily</option>
-          <option value="monthly">Monthly</option>
-          <option value="yearly">Yearly</option>
-        </select>
+        <label className="text-sm text-black mb-1">Time Interval</label>
+          <select
+            value={timeInterval}
+            onChange={(e) => setTimeInterval(e.target.value)}
+            className="border p-2 rounded text-gray-500"
+          >
+            <option value="hourly">Hourly</option>
+            <option value="daily">Daily</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
       </div>
 
       <div className="flex flex-col">
-        <select
-          value={aggregation}
-          onChange={(e) => setAggregation(e.target.value)}
-          className="border p-2 rounded text-gray-500"
-        >
-          <option value="sum">Sum</option>
-          <option value="average">Average</option>
-        </select>
+        <label className="text-sm text-black mb-1">Aggregation</label>
+          <select
+            value={aggregation}
+            onChange={(e) => setAggregation(e.target.value)}
+            className="border p-2 rounded text-gray-500"
+          >
+            <option value="sum">Sum</option>
+            <option value="average">Average</option>
+          </select>
       </div>
     </div>
 

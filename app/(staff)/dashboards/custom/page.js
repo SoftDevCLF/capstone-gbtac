@@ -5,6 +5,7 @@ import ChartSettings from "../../../_components/customgraph/ChartSettings";
 import SensorSearch from "../../../_components/customgraph/SensorSearch";
 import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
 import GraphPlaceholder from "@/app/_components/GraphPlaceholder";
+import GraphContainer from "@/app/_components/customgraph/GraphContainer";
 import DateRange from "../../../_components/customgraph/DateRange";
 import DashboardLayout from "@/app/_components/DashboardLayout";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
@@ -173,9 +174,8 @@ export default function Page() {
           </button>
         </div>
 
-        {/* Graph below */}
         <div className="w-full" ref={chartRef}>
-          <GraphPlaceholder
+          <GraphContainer
             selectedSensors={selectedSensors} 
             dateRange={dateRange}
             settings={chartSettings}
