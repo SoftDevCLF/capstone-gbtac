@@ -15,6 +15,7 @@ export default function WaterLevelDashboard() {
     loadDashboardState(STORAGE_KEY, {
       fromDate: "",
       toDate: "",
+      viewMode: "percent",
     }),
   );
 
@@ -22,7 +23,7 @@ export default function WaterLevelDashboard() {
     saveDashboardState(STORAGE_KEY, state);
   }, [state]);
 
-  const handleSaveScreen = () => {
+   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
 
     saveRecentDashboard({
@@ -32,11 +33,9 @@ export default function WaterLevelDashboard() {
       summary: {
         fromDate: state.fromDate,
         toDate: state.toDate,
-        graphs: Object.keys(state.visibleGraphs || {}).filter(
-          (g) => state.visibleGraphs[g],
-        ),
+        viewMode: state.viewMode,
       },
-      saved: true, // mark as explicitly saved
+      saved: true,
     });
 
     alert(
@@ -45,30 +44,83 @@ export default function WaterLevelDashboard() {
   };
 
   return (
-    <DashboardLayout title="Water Level Dashboard">
+    <DashboardLayout title="Cistern Water Level Dashboard (~32,000 litres)">
       <InfoCard
         items={[
-          { label: "Current Level", value: "3.2 m" },
-          { label: "Daily Avg", value: "3.0 m" },
-          { label: "Weekly Max", value: "3.8 m" },
-          { label: "Difference vs Yesterday", value: "1.0 m" },
+          { label: "Current Level", value: "3.2 L" },
+          { label: "Daily Avg", value: "3.0 L" },
+          { label: "Daily Max", value: "3.8 L" },
+          { label: "Daily Min", value: "1.0 L" },
         ]}
       />
 
-      <DatePicker
-        fromDate={state.fromDate}
-        toDate={state.toDate}
-        setDate={setState}
-      />
+      <div className="flex flex-wrap items-end gap-6 mb-6">
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-400 mb-1">From</label>
+          <input
+            type="date"
+            value={state.fromDate}
+            onChange={(e) =>
+              setState((prev) => ({
+                ...prev,
+                fromDate: e.target.value,
+              }))
+            }
+            className="h-10 px-4 rounded border border-gray-500 bg-black text-white"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-400 mb-1">To</label>
+          <input
+            type="date"
+            value={state.toDate}
+            onChange={(e) =>
+              setState((prev) => ({
+                ...prev,
+                toDate: e.target.value,
+              }))
+            }
+            className="h-10 px-4 rounded border border-gray-500 bg-black text-white"
+          />
+        </div>
+
+        <div className="flex flex-col justify-end">
+          <button
+            className="h-10 px-6 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+          >
+            Apply
+          </button>
+        </div>
+
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-400 mb-1">View</label>
+          <select
+            value={state.viewMode}
+            onChange={(e) =>
+              setState((prev) => ({
+                ...prev,
+                viewMode: e.target.value,
+              }))
+            }
+            className="h-10 px-4 rounded border border-gray-500 bg-black text-white"
+          >
+            <option value="percent">Level (%)</option>
+            <option value="liters">Volume (L)</option>
+          </select>
+        </div>
+      </div>
 
       <LineHandler
         sensorList={["20000_TL93"]}
         startDate={state.fromDate}
         endDate={state.toDate}
-        graphTitle={"Cistern Water Level"}
-        yTitle={"Water Level"}
-        xTitle={"hours"}
-        xUnit={"hour"}
+        graphTitle="Cistern Water Level"
+        yTitle={state.viewMode === "liters" ? "Water Volume (L)" : "Water Level (%)"}
+        xTitle="hours"
+        xUnit="hour"
+        mode={state.viewMode}
+        capacityLiters={32000}
       />
 
       <div className="flex justify-end mt-6">

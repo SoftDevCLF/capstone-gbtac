@@ -11,7 +11,7 @@ Chart.register(CategoryScale, TimeScale, zoomPlugin);
 
 const API_ENDPOINT = "http://127.0.0.1:8000";
 
-export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit}){
+export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit, mode = "percent", capacityLiters = 32000}){
     
     // sensor id (array position) and sensor code (part after SaitSolarLab_)
     const [sensors, setSensors] = useState(() =>
@@ -111,17 +111,32 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
 
             let mins = [];
             let maxes = [];
-            sensorData.forEach((sensor, index) => {
-                mins.push(Math.min(...sensor.map(point => point.data)))
-                maxes.push(Math.max(...sensor.map(point => point.data)))
+
+            sensorData.forEach((sensor) => {
+                const values = sensor.map(point =>
+                    mode === "liters"
+                        ? (point.data / 100) * capacityLiters
+                        : point.data
+                );
+
+                mins.push(Math.min(...values));
+                maxes.push(Math.max(...values));
             });
-            setYMin(Math.min(...mins))
-            setYMax(Math.max(...maxes))
+
+            setYMin(Math.min(...mins));
+            setYMax(Math.max(...maxes));
 
             // for each sensor in sensors array it sets the line label, data, and colour
             const dataset = sensors.map(sensor => ({
-                label: sensor.name,
-                data: sensorData[sensor.id].map(d => d.data),
+                label:
+                    mode === "liters"
+                        ? `${sensor.name} (L)`
+                        : `${sensor.name} (%)`,
+                data: sensorData[sensor.id].map(d =>
+                    mode === "liters"
+                        ? (d.data / 100) * capacityLiters
+                        : d.data
+                ),
                 borderColor: colours[sensor.id],
                 backgroundColor: colours[sensor.id],
                 borderWidth: 2
@@ -132,7 +147,7 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
                 datasets: dataset
             });
         }
-    }, [sensorData]);
+    }, [sensorData, fetched, mode, capacityLiters, sensors]);
 
     // options for graph display to be passed on to LineChart component
     const graphOptions = {
