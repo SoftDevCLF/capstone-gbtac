@@ -4,18 +4,19 @@
 import ChartSettings from "../../../_components/customgraph/ChartSettings";
 import SensorSearch from "../../../_components/customgraph/SensorSearch";
 import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
-import GraphPlaceholder from "@/app/_components/GraphPlaceholder";
 import GraphContainer from "@/app/_components/customgraph/GraphContainer";
 import DateRange from "../../../_components/customgraph/DateRange";
 import DashboardLayout from "@/app/_components/DashboardLayout";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
 import ChartSelect from "@/app/_components/customgraph/ChartSelect";
+import { saveCustomDashboard } from "@/app/utils/saveCustomizedCharts";
+import { auth } from "@/app/_utils/firebase";
 import { useRef, useState, useEffect } from "react";
 
 export default function Page() {
   const chartRef = useRef(null);
 
-  // State variables
+  //State variables
   const [currentChartId, setCurrentChartId] = useState(null);
   const [tempChartSettings, setTempChartSettings] = useState({
     chartTitle: "",
@@ -25,7 +26,9 @@ export default function Page() {
   });
   const [tempDateRange, setTempDateRange] = useState({
     from: "",
-    to: ""
+    to: "",
+    timeInterval: "hourly",
+    aggregation: "sum"
   });
   const [tempSelectedSensors, setTempSelectedSensors] = useState([]);
   const [selectedSensors, setSelectedSensors] = useState([]);
@@ -41,8 +44,10 @@ export default function Page() {
   });
   const [sensorList, setSensorList] = useState([]);
   const [error, setError] = useState(null);
+  const [refreshChart, setRefreshChart] = useState(0);
 
-  // Load available sensors on component mount
+
+  //Load available sensors on component
   useEffect(() => {
     const fetchSensors = async () => {
       try {
@@ -77,7 +82,9 @@ export default function Page() {
     });
     setTempDateRange({
       from: "",
-      to: ""
+      to: "",
+      timeInterval: "hourly",
+      aggregation: "sum"
     });
     setTempSelectedSensors([]);
     setSelectedSensors([]);
@@ -94,7 +101,7 @@ export default function Page() {
     setError(null);
   };
 
-  // Function to apply temporary settings to final settings
+  //Function to apply temporary settings to final settings
   const handleApply = () => {
     if (tempSelectedSensors.length === 0) {
       setError("Please select at least one sensor");
@@ -110,6 +117,27 @@ export default function Page() {
     setError(null);
   };
 
+  //Function to save chart to Firestore
+  const handleSave = async () => {
+    const user = auth.currentUser;
+    try {
+      const savedId = await saveCustomDashboard({
+        userEmail: user.email,
+        chartId: currentChartId,
+        settings: tempChartSettings,
+        dateRange: tempDateRange,
+        selectedSensors: tempSelectedSensors
+      });
+      setCurrentChartId(savedId);
+      alert("Chart saved successfully!")
+      setRefreshChart(prev => prev + 1);
+    } catch (err) {
+      console.error("Failed to save chart:", err);
+      alert("Failed to save chart");
+    }
+  };
+
+
   return (
     <DashboardLayout title="Create Custom Chart">
       <div className="container mx-auto px-4 py-4 md:py-8">
@@ -119,6 +147,7 @@ export default function Page() {
             onLoadChart={loadChart}
             onDeleteChart={resetChart}
             onResetChart={resetChart}
+            refreshChart={refreshChart}
           />
         </div>
 
@@ -179,7 +208,7 @@ export default function Page() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6">
-          <button className="px-6 py-2 md:px-4 md:py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition w-full sm:w-auto order-2 sm:order-1">
+          <button onClick={handleSave} className="px-6 py-2 md:px-4 md:py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition w-full sm:w-auto order-2 sm:order-1">
             Save Chart
           </button>
           <div className="w-full sm:w-auto order-1 sm:order-2">

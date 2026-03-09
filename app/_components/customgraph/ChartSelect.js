@@ -3,48 +3,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { auth } from "@/app/_utils/firebase";
+import { fetchUserCharts, fetchChartById, deleteChart } from "@/app/utils/storage";
 
 export default function ChartSelect({
   currentChartId,
   onLoadChart,
   onDeleteChart,
-  onResetChart
+  onResetChart,
+  refreshChart
 }) {
   const [charts, setCharts] = useState([]);
 
-  //Fetch previously SAVED charts from the backend 
+  // Fetch previously saved charts from Firestore
   useEffect(() => {
-    fetch("/api/charts")
-      .then(res => res.json())
-      .then(data => setCharts(data))
-      .catch(err => console.error("Failed to fetch charts:", err));
-  }, []);
+    const loadCharts = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        const data = await fetchUserCharts(user.email);
+        setCharts(data);
+      } catch (err) {
+        console.error("Failed to fetch charts:", err);
+      }
+    };
+    loadCharts();
+  }, [refreshChart]);
 
-  //Handle chart selection from dropdown
+  // Handle chart selection from dropdown
   const handleSelect = async (e) => {
     const id = e.target.value;
-
     if (id === "new") {
       onResetChart();
       return;
     }
-
-    const res = await fetch(`/api/charts/${id}`);
-    const chart = await res.json();
-
-    onLoadChart(chart);
+    const user = auth.currentUser;
+    if (!user) return;
+    try {
+      const chart = await fetchChartById(user.email, id);
+      if (chart) onLoadChart(chart);
+    } catch (err) {
+      console.error("Failed to fetch chart:", err);
+    }
   };
 
-  //Handle chart deletion
+  // Handle chart deletion
   const handleDelete = async () => {
     if (!currentChartId) return;
-
     if (!window.confirm("Are you sure you want to delete this chart?")) return;
-
-    await fetch(`/api/charts/${currentChartId}`, { method: "DELETE" });
-
-    onDeleteChart();
-    setCharts(charts.filter(chart => chart.id !== currentChartId));
+    const user = auth.currentUser;
+    if (!user) return;
+    try {
+      await deleteChart(user.email, currentChartId);
+      onDeleteChart();
+      setCharts(charts.filter(chart => chart.id !== currentChartId));
+      alert("Chart deleted successfully!");
+    } catch (err) {
+      console.error("Failed to delete chart:", err);
+      alert("Failed to delete chart");
+    }
   };
 
   return (
