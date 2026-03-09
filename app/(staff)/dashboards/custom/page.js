@@ -113,7 +113,6 @@ export default function Page() {
   return (
     <DashboardLayout title="Create Custom Chart">
       <div className="container mx-auto px-4 py-4 md:py-8">
-        {/* Chart Selection */}
         <div className="mb-4 md:mb-5 w-full max-w-md md:max-w-none md:w-1/2">
           <ChartSelect
             currentChartId={currentChartId}
@@ -123,7 +122,6 @@ export default function Page() {
           />
         </div>
 
-        {/* Chart Settings and Date Range */}
         <div className="flex flex-col lg:flex-row gap-4 mb-4 md:mb-5 w-full min-h-75">
           <div className="w-full lg:w-1/2 flex flex-col">
             <ChartSettings
@@ -139,7 +137,6 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Sensor Search and Selected Sensors */}
         <div className="flex flex-col xl:flex-row gap-4 mb-4 min-h-100">
           <div className="w-full xl:w-1/2 flex flex-col">
             <SensorSearch
@@ -158,7 +155,6 @@ export default function Page() {
           </div>
         </div>
 
-          {/* Error Message Display*/}
         {error && (
           <div className="mb-4 p-3 md:p-2 bg-red-100 text-red-700 rounded-sm text-sm md:text-base">
             {error}
@@ -182,10 +178,9 @@ export default function Page() {
           />
         </div>
 
-        {/* Save and Export PDF buttons */}
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6">
           <button className="px-6 py-2 md:px-4 md:py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition w-full sm:w-auto order-2 sm:order-1">
-            Save View
+            Save Chart
           </button>
           <div className="w-full sm:w-auto order-1 sm:order-2">
             <ExportPDFButton
