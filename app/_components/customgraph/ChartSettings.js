@@ -1,8 +1,27 @@
 //This component contains various settings for customizing the chart display such as titles, axis, and chart type. 
 //This component also has two other dropdowns containing the times (Hourly, Daily, Monthly, Yearly) and the aggregation.
 "use client";
+import { useState } from "react";
 
-export default function ChartSettings({settings, setSettings}) {
+export default function ChartSettings({ settings, setSettings }) {
+  const [errors, setErrors] = useState({});
+
+  const validate = (field, value) => {
+    if (field === "chartTitle") {
+      if (!value) return "Chart title is required";
+      if (value.length > 50) return "Chart title must be under 50 characters";
+    }
+    if (field === "xAxisTitle" && value.length > 30)
+      return "X-Axis title must be under 30 characters";
+    if (field === "yAxisTitle" && value.length > 30)
+      return "Y-Axis title must be under 30 characters";
+    return null;
+  };
+
+  const handleChange = (field, value) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field]: validate(field, value) }));
+  };
 
   return (
     <div style={{ fontFamily: "var(--font-titillium)" }} className="bg-white rounded-sm shadow-sm p-4 w-full h-full">
@@ -15,16 +34,19 @@ export default function ChartSettings({settings, setSettings}) {
             type="text"
             placeholder="Chart Title"
             value={settings.chartTitle}
-            onChange={(e) => setSettings(prev => ({...prev, chartTitle: e.target.value}))}
-            className="border p-2 rounded text-gray-500"
+            onChange={(e) => handleChange("chartTitle", e.target.value)}
+            className={`border p-2 rounded text-gray-500 ${errors.chartTitle ? "border-red-500" : ""}`}
           />
+          {errors.chartTitle && (
+            <p className="text-red-500 text-xs mt-1">{errors.chartTitle}</p>
+          )}
         </div>
 
         <div className="flex flex-col">
           <label className="text-sm text-black mb-1">Chart Type</label>
           <select
             value={settings.chartType}
-            onChange={(e) => setSettings(prev => ({...prev, chartType: e.target.value}))}
+            onChange={(e) => setSettings(prev => ({ ...prev, chartType: e.target.value }))}
             className="border p-2 rounded text-gray-500"
           >
             <option value="line">Line</option>
@@ -35,13 +57,16 @@ export default function ChartSettings({settings, setSettings}) {
 
         <div className="flex flex-col">
           <label className="text-sm text-black mb-1">X-Axis Title</label>
-            <input
-              type="text"
-              placeholder="X-Axis Title"
-              value={settings.xAxisTitle}
-              onChange={(e) => setSettings(prev => ({...prev, xAxisTitle: e.target.value}))}
-              className="border p-2 rounded text-gray-500"
-            />
+          <input
+            type="text"
+            placeholder="X-Axis Title"
+            value={settings.xAxisTitle}
+            onChange={(e) => handleChange("xAxisTitle", e.target.value)}
+            className={`border p-2 rounded text-gray-500 ${errors.xAxisTitle ? "border-red-500" : ""}`}
+          />
+          {errors.xAxisTitle && (
+            <p className="text-red-500 text-xs mt-1">{errors.xAxisTitle}</p>
+          )}
         </div>
 
         <div className="flex flex-col">
@@ -50,13 +75,15 @@ export default function ChartSettings({settings, setSettings}) {
             type="text"
             placeholder="Y-Axis Title"
             value={settings.yAxisTitle}
-            onChange={(e) => setSettings(prev => ({...prev, yAxisTitle: e.target.value}))}
-            className="border p-2 rounded text-gray-500"
+            onChange={(e) => handleChange("yAxisTitle", e.target.value)}
+            className={`border p-2 rounded text-gray-500 ${errors.yAxisTitle ? "border-red-500" : ""}`}
           />
-          </div>
+          {errors.yAxisTitle && (
+            <p className="text-red-500 text-xs mt-1">{errors.yAxisTitle}</p>
+          )}
+        </div>
       </div>
 
-      {/* Info text */}
       <div className="mt-4 text-gray-500">
         {settings.chartTitle
           ? "Chart settings implemented. You can change it anytime."
@@ -65,4 +92,3 @@ export default function ChartSettings({settings, setSettings}) {
     </div>
   );
 }
-
