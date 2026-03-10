@@ -1,17 +1,17 @@
 "use client"
 
 import Chart from "chart.js/auto";
-import { CategoryScale, TimeScale } from "chart.js";
+import { CategoryScale, TimeScale, Filler } from "chart.js";
 import { useState, useEffect } from "react";
 import LineChart from "../LineChart"
 import "chartjs-adapter-date-fns";
 import zoomPlugin from 'chartjs-plugin-zoom'
 
-Chart.register(CategoryScale, TimeScale, zoomPlugin);
+Chart.register(CategoryScale, TimeScale, zoomPlugin, Filler);
 
 const API_ENDPOINT = "http://127.0.0.1:8000";
 
-export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit, mode = "percent", capacityLiters = 32000}){
+export default function LineHandler({sensorList, startDate, endDate, graphTitle, yTitle, xTitle, xUnit}){
     
     // sensor id (array position) and sensor code (part after SaitSolarLab_)
     const [sensors, setSensors] = useState(() =>
@@ -94,11 +94,6 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
             fetchNames();
         }
     }, [sensors, fetched]);
-        if(!fetched){
-            fetchData();
-            fetchNames();
-        }
-    }, [sensors, fetched]);
     
     // sets defaults
     const labels = 0; // x axis labels
@@ -116,35 +111,21 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
 
             let mins = [];
             let maxes = [];
-
-            sensorData.forEach((sensor) => {
-                const values = sensor.map(point =>
-                    mode === "liters"
-                        ? (point.data / 100) * capacityLiters
-                        : point.data
-                );
-
-                mins.push(Math.min(...values));
-                maxes.push(Math.max(...values));
+            sensorData.forEach((sensor, index) => {
+                mins.push(Math.min(...sensor.map(point => point.data)))
+                maxes.push(Math.max(...sensor.map(point => point.data)))
             });
-
-            setYMin(Math.min(...mins));
-            setYMax(Math.max(...maxes));
+            setYMin(Math.min(...mins))
+            setYMax(Math.max(...maxes))
 
             // for each sensor in sensors array it sets the line label, data, and colour
             const dataset = sensors.map(sensor => ({
-                label:
-                    mode === "liters"
-                        ? `${sensor.name} (L)`
-                        : `${sensor.name} (%)`,
-                data: sensorData[sensor.id].map(d =>
-                    mode === "liters"
-                        ? (d.data / 100) * capacityLiters
-                        : d.data
-                ),
+                label: sensor.name,
+                data: sensorData[sensor.id].map(d => d.data),
                 borderColor: colours[sensor.id],
                 backgroundColor: colours[sensor.id],
-                borderWidth: 2
+                borderWidth: 2,
+                fill: 'stack',
             }));
             
             setGraphData({
@@ -152,7 +133,7 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
                 datasets: dataset
             });
         }
-    }, [sensorData, fetched, mode, capacityLiters, sensors]);
+    }, [sensorData]);
 
     // options for graph display to be passed on to LineChart component
     const graphOptions = {
@@ -194,7 +175,7 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
                     x: {
                         min: xMin,
                         max: xMax,
-                        minRange: 1  * 60 * 60 * 1000, // hours * minutes * seconds * milliseconds
+                        minRange: 3 * 60 * 60 * 1000, // hours * minutes * seconds * milliseconds
                     },
                     y: {
                         min: yMin,

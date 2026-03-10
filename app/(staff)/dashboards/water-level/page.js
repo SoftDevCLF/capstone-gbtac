@@ -44,7 +44,18 @@ export default function WaterLevelDashboard() {
   };
 
   return (
+<<<<<<< HEAD
     <DashboardLayout title="Cistern Water Level Dashboard">
+=======
+    <DashboardLayout title="Cistern Level Dashboard">
+      <DatePicker
+        fromDate={fromDate}
+        toDate={toDate}
+        setFromDate={(v) => handleStateChange({ ...state, fromDate: v })}
+        setToDate={(v) => handleStateChange({ ...state, toDate: v })}
+      />
+
+>>>>>>> origin/main
       <InfoCard
         items={[
           { label: "Current Level", value: "3.2 L" },
@@ -54,6 +65,7 @@ export default function WaterLevelDashboard() {
         ]}
       />
 
+<<<<<<< HEAD
       <div className="flex flex-wrap items-end gap-6 mb-6">
         <div className="flex flex-col">
           <label className="text-sm text-gray-400 mb-1">From</label>
@@ -122,6 +134,9 @@ export default function WaterLevelDashboard() {
         mode={state.viewMode}
         capacityLiters={32000}
       />
+=======
+      <GraphPlaceholder />
+>>>>>>> origin/main
 
       <div className="flex justify-end mt-6">
         <button
