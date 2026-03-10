@@ -94,11 +94,6 @@ export default function LineHandler({sensorList, startDate, endDate, graphTitle,
             fetchNames();
         }
     }, [sensors, fetched]);
-        if(!fetched){
-            fetchData();
-            fetchNames();
-        }
-    }, [sensors, fetched]);
     
     // sets defaults
     const labels = 0; // x axis labels
