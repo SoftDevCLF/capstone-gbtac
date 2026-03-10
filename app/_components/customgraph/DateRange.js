@@ -9,21 +9,28 @@ export default function DateRange({ dateRange, setDateRange }) {
 
   const validate = (field, value, otherDate) => {
     if (field === "from") {
-      if (!value) return "Start date is required";
-      if (otherDate && value > otherDate) return "Start date must be before end date";
+      if (!value) return "From date is required";
+      if (otherDate && value > otherDate) return "From date must be before To date";
     }
     if (field === "to") {
-      if (!value) return "End date is required";
-      if (otherDate && value < otherDate) return "End date must be after start date";
+      if (!value) return "To date is required";
+      if (otherDate && value < otherDate) return "To date must be after From date";
     }
     if (field === "from") {
-      if (!value) return "Start date is required";
-      if (otherDate && value > otherDate) return "Start date must be before end date";
+      if (!value) return "i  date is required";
+      if (otherDate && value > otherDate) return "From date must be before To date";
       const today = new Date();
       const from = new Date(value);
       const diffYears = (today - from) / (1000 * 60 * 60 * 24 * 365);
       if (diffYears > 8) return "Start date cannot be more than 8 years ago";
     }
+    if (field === "to") {
+    if (!value) return "To date is required";
+    if (otherDate && value < otherDate) return "To date must be after From date";
+    const maxToDate = new Date("2025-12-31");
+    const toDate = new Date(value);
+    if (toDate > maxToDate) return "To date cannot be past December 31, 2025";
+  }
     return null;
   };
 

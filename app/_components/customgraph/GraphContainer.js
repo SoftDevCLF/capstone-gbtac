@@ -4,23 +4,14 @@
 
 import CustomHandler from "../graphs/handlers/CustomHandler";
 
-export default function GraphContainer({selectedSensors, dateRange, settings}) {
+export default function GraphContainer({ selectedSensors, dateRange, settings }) {
   return (
-    <div className="w-full h-64 bg-white rounded-lg shadow flex items-center justify-center text-gray-400`">
-
-      <p
-        style={{ fontFamily: "var(--font-titillium)" }}
-        className="font-semibold text-black mb-4"
-      >
-      </p>
-      <div className="w-full bg-gray-200 rounded-sm flex items-center justify-center mb-4">
-        <CustomHandler
-          selectedSensors={selectedSensors} 
-          dateRange={dateRange}
-          settings={settings}
-        />
-      </div>
+    <div className="w-full h-full bg-white rounded-lg shadow p-4">
+      <CustomHandler
+        selectedSensors={selectedSensors}
+        dateRange={dateRange}
+        settings={settings}
+      />
     </div>
   );
 }
-
