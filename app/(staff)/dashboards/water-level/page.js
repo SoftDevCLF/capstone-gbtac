@@ -44,7 +44,7 @@ export default function WaterLevelDashboard() {
   };
 
   return (
-    <DashboardLayout title="Cistern Water Level Dashboard (~32,000 litres)">
+    <DashboardLayout title="Cistern Water Level Dashboard">
       <InfoCard
         items={[
           { label: "Current Level", value: "3.2 L" },
@@ -115,7 +115,7 @@ export default function WaterLevelDashboard() {
         sensorList={["20000_TL93"]}
         startDate={state.fromDate}
         endDate={state.toDate}
-        graphTitle="Cistern Water Level"
+        graphTitle="Cistern Water Level (~32,000 litres)"
         yTitle={state.viewMode === "liters" ? "Water Volume (L)" : "Water Level (%)"}
         xTitle="hours"
         xUnit="hour"
