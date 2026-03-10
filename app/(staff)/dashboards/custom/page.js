@@ -212,7 +212,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6 mb-6">
+        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-5">
           <button
             onClick={() => setShowSaveModal(true)}
             className="px-6 py-2 md:px-4 md:py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition w-full sm:w-auto order-2 sm:order-1"
