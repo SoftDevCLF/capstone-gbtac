@@ -16,7 +16,9 @@ export default function LineHandler({sensorList, sensorLabels, startDate, endDat
     // Auto-compute the chart x-axis time unit — must match backend aggregation tiers
     const getTimeUnit = () => {
         try {
-            const days = (new Date(endDate) - new Date(startDate)) / 86400000 + 1;
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = (end - start) / 86400000 + 1;
             if (days <= 1) return "hour";    // hourly averages (0..23)
             if (days <= 60) return "day";    // daily averages (1..31)
             if (days <= 730) return "month"; // monthly averages (January..)
@@ -25,9 +27,8 @@ export default function LineHandler({sensorList, sensorLabels, startDate, endDat
     };
 
     // X-axis display format per tier — client spec:
-    // yearly=2020,2021 | monthly=January,February | daily=1,2..31 | hourly=0..23 | minute=0..59
+    // yearly=2020,2021 | monthly=January,February | daily=1,2..31 | hourly=0..23
     const getDisplayFormats = () => ({
-        minute: "m",    // 0, 1, 2 ... 59
         hour:   "H",    // 0, 1, 2 ... 23
         day:    "d",    // 1, 2, 3 ... 31
         month:  "MMMM", // January, February ...
@@ -114,7 +115,7 @@ export default function LineHandler({sensorList, sensorLabels, startDate, endDat
     
     // sets defaults
     const labels = 0; // x axis labels
-    // 16 visually distinct colours — enough for all sensor combinations
+    // 21+ visually distinct colours — enough for all wall/ambient sensors
     const colours = [
         "#E63946", // red
         "#2196F3", // blue
@@ -132,6 +133,11 @@ export default function LineHandler({sensorList, sensorLabels, startDate, endDat
         "#FF5722", // deep orange
         "#3F51B5", // indigo
         "#009688", // dark teal
+        "#1D3557", // navy
+        "#FFD54F", // yellow
+        "#C62828", // dark red
+        "#8BC34A", // light green
+        "#FF1493", // hot pink
     ];
     const [graphData, setGraphData] = useState({labels, datasets: [{}]}); // data to be passed on to LineChart component
 
@@ -141,16 +147,25 @@ export default function LineHandler({sensorList, sensorLabels, startDate, endDat
             const labels = sensorData[0].map(d => new Date(d.ts));
 
             // for each sensor in sensors array it sets the line label, data, and colour
-            const dataset = sensors.map(sensor => ({
-                label: sensorLabels?.[sensor.code] || sensor.code,
-                data: (sensorData[sensor.id] || []).map((d) => d.data),
-                borderColor: colours[sensor.id % colours.length],
-                backgroundColor: colours[sensor.id % colours.length],
-                borderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 6,
-                tension: 0.1
-            }));
+            const dataset = sensors.map(sensor => {
+                const locationName = sensorLabels?.[sensor.code];
+                // Use the fetched API name (which contains the E0FTHC034 format) or fallback to code
+                const codeName = sensor.name && sensor.name !== "null" ? sensor.name : sensor.code;
+                
+                // If a location name exists, use it instead of the code name as requested by client
+                const finalLabel = locationName || codeName;
+
+                return {
+                    label: finalLabel,
+                    data: (sensorData[sensor.id] || []).map((d) => d.data),
+                    borderColor: colours[sensor.id % colours.length],
+                    backgroundColor: colours[sensor.id % colours.length],
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    tension: 0.1
+                };
+            });
             
             setGraphData({
                 labels,
