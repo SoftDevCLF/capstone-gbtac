@@ -6,6 +6,14 @@ import { useState } from "react";
 
 export default function DateRange({ dateRange, setDateRange, aggSettings, setAggSettings }) {
   const [errors, setErrors] = useState({});
+  const safeDateRange = {
+    from: dateRange?.from ?? "",
+    to: dateRange?.to ?? ""
+  };
+  const safeAggSettings = {
+    time: aggSettings?.time ?? "H",
+    type: aggSettings?.type ?? "mean"
+  };
 
   const validate = (field, value, otherDate) => {
     if (field === "from") {
@@ -35,8 +43,9 @@ export default function DateRange({ dateRange, setDateRange, aggSettings, setAgg
   };
 
   const handleChange = (field, value) => {
+    if (!setDateRange) return;
     setDateRange(prev => ({ ...prev, [field]: value }));
-    const otherDate = field === "from" ? dateRange.to : dateRange.from;
+    const otherDate = field === "from" ? safeDateRange.to : safeDateRange.from;
     setErrors(prev => ({ ...prev, [field]: validate(field, value, otherDate) }));
   };
 
@@ -52,7 +61,7 @@ export default function DateRange({ dateRange, setDateRange, aggSettings, setAgg
           <label className="text-sm text-black mb-1">From</label>
           <input
             type="date"
-            value={dateRange.from}
+            value={safeDateRange.from}
             onChange={(e) => handleChange("from", e.target.value)}
             className={`border p-2 rounded text-gray-500 ${errors.from ? "border-red-500" : ""}`}
           />
@@ -65,7 +74,7 @@ export default function DateRange({ dateRange, setDateRange, aggSettings, setAgg
           <label className="text-sm text-black mb-1">To</label>
           <input
             type="date"
-            value={dateRange.to}
+            value={safeDateRange.to}
             onChange={(e) => handleChange("to", e.target.value)}
             className={`border p-2 rounded text-gray-500 ${errors.to ? "border-red-500" : ""}`}
           />
@@ -80,8 +89,8 @@ export default function DateRange({ dateRange, setDateRange, aggSettings, setAgg
       <div className="flex flex-col">
         <label className="text-sm text-black mb-1">Time Interval</label>
         <select
-          value={aggSettings.time}
-          onChange={(e) => setAggSettings(prev => ({...prev, time: e.target.value}))}
+          value={safeAggSettings.time}
+          onChange={(e) => setAggSettings?.(prev => ({...prev, time: e.target.value}))}
           className="border p-2 rounded text-gray-500"
         >
           <option value="H">Hourly</option>
@@ -94,8 +103,8 @@ export default function DateRange({ dateRange, setDateRange, aggSettings, setAgg
       <div className="flex flex-col">
         <label className="text-sm text-black mb-1">Aggregation</label>
         <select
-          value={aggSettings.type}
-          onChange={(e) => setAggSettings(prev => ({...prev, type: e.target.value}))}
+          value={safeAggSettings.type}
+          onChange={(e) => setAggSettings?.(prev => ({...prev, type: e.target.value}))}
           className="border p-2 rounded text-gray-500"
         >
           <option value="mean">Average</option>
@@ -105,8 +114,8 @@ export default function DateRange({ dateRange, setDateRange, aggSettings, setAgg
     </div>
 
       <div className="mt-5 text-gray-500">
-        {dateRange.from && dateRange.to
-          ? "Select the time interval and aggregation to control the data going to be displayed."
+        {safeDateRange.from && safeDateRange.to
+          ? "Select the time range, interval, and aggregation for the displayed data."
           : "Choose a date range, time interval, and aggregation for your chart."}
       </div>
     </div>

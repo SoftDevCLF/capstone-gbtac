@@ -33,7 +33,7 @@ export default function ChartSettings({ settings, setSettings }) {
           <input
             type="text"
             placeholder="Chart Title"
-            value={settings.chartTitle}
+            value={settings.chartTitle ?? ""}
             onChange={(e) => handleChange("chartTitle", e.target.value)}
             className={`border p-2 rounded text-gray-500 ${errors.chartTitle ? "border-red-500" : ""}`}
           />
@@ -59,7 +59,7 @@ export default function ChartSettings({ settings, setSettings }) {
           <input
             type="text"
             placeholder="X-Axis Title"
-            value={settings.xAxisTitle}
+            value={settings.xAxisTitle ?? ""}
             onChange={(e) => handleChange("xAxisTitle", e.target.value)}
             className={`border p-2 rounded text-gray-500 ${errors.xAxisTitle ? "border-red-500" : ""}`}
           />
@@ -73,7 +73,7 @@ export default function ChartSettings({ settings, setSettings }) {
           <input
             type="text"
             placeholder="Y-Axis Title"
-            value={settings.yAxisTitle}
+            value={settings.yAxisTitle ?? ""}
             onChange={(e) => handleChange("yAxisTitle", e.target.value)}
             className={`border p-2 rounded text-gray-500 ${errors.yAxisTitle ? "border-red-500" : ""}`}
           />

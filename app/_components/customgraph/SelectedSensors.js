@@ -17,7 +17,7 @@ export default function SelectedSensors({ selectedSensors = [], setSelectedSenso
     >
       <p className="font-semibold text-black mb-4">Selected Sensors</p>
 
-      <div className="flex-1 overflow-y-auto border rounded-sm bg-gray-100 text-gray-500 min-h-0">
+      <div className="flex-1 overflow-y-auto border rounded-sm bg-gray-100 text-gray-500 min-h-0 max-h-80 xl:max-h-104">
         {selectedSensors.length === 0 ? (
           <p className="text-gray-500 p-2">No sensors selected</p>
         ) : (
