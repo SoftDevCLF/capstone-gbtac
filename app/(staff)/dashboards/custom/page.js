@@ -207,7 +207,7 @@ export default function Page() {
           />
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-4 mb-4 min-h-100">
+        <div className="flex flex-col xl:flex-row gap-4 mb-4">
           <div className="w-full xl:w-1/2 flex flex-col">
             <SensorSearch
               selectedSensors={tempSelectedSensors}
@@ -231,7 +231,7 @@ export default function Page() {
           </div>
         )}
 
-        <div className="mb-4 md:mb-6 flex justify-center md:justify-start">
+        <div className="mb-4 md:mb-6 flex justify-right md:justify-start">
           <button
             className="px-6 py-2 md:px-4 md:py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition w-full md:w-auto"
             onClick={handleApply}
