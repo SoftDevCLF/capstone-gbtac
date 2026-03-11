@@ -245,7 +245,7 @@ export default function Page() {
 
         {/* Graph below */}
         <div className="w-full overflow-hidden shadow-sm rounded-lg" ref={chartRef}>
-          <div style={{ height: "600px" }} className="w-full">
+          <div style={{ height: "700px" }} className="w-full">
           <GraphContainer 
             key={currentChartId ?? "new"}
             selectedSensors={selectedSensors} 
