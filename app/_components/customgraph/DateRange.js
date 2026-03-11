@@ -4,7 +4,7 @@
 "use client";
 import { useState } from "react";
 
-export default function DateRange({ dateRange, setDateRange }) {
+export default function DateRange({ dateRange, setDateRange, aggSettings, setAggSettings }) {
   const [errors, setErrors] = useState({});
 
   const validate = (field, value, otherDate) => {
@@ -75,33 +75,34 @@ export default function DateRange({ dateRange, setDateRange }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div className="flex flex-col">
-          <label className="text-sm text-black mb-1">Time Interval</label>
-          <select
-            value={dateRange.timeInterval || "hourly"}
-            onChange={(e) => setDateRange(prev => ({ ...prev, timeInterval: e.target.value }))}
-            className="border p-2 rounded text-gray-500"
-          >
-            <option value="hourly">Hourly</option>
-            <option value="daily">Daily</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-        </div>
-
-        <div className="flex flex-col">
-          <label className="text-sm text-black mb-1">Aggregation</label>
-          <select
-            value={dateRange.aggregation || "sum"}
-            onChange={(e) => setDateRange(prev => ({ ...prev, aggregation: e.target.value }))}
-            className="border p-2 rounded text-gray-500"
-          >
-            <option value="sum">Sum</option>
-            <option value="average">Average</option>
-          </select>
-        </div>
+    {/* Dropdown Row */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div className="flex flex-col">
+        <label className="text-sm text-black mb-1">Time Interval</label>
+        <select
+          value={aggSettings.time}
+          onChange={(e) => setAggSettings(prev => ({...prev, time: e.target.value}))}
+          className="border p-2 rounded text-gray-500"
+        >
+          <option value="H">Hourly</option>
+          <option value="D">Daily</option>
+          <option value="M">Monthly</option>
+          <option value="Y">Yearly</option>
+        </select>
       </div>
+
+      <div className="flex flex-col">
+        <label className="text-sm text-black mb-1">Aggregation</label>
+        <select
+          value={aggSettings.type}
+          onChange={(e) => setAggSettings(prev => ({...prev, type: e.target.value}))}
+          className="border p-2 rounded text-gray-500"
+        >
+          <option value="mean">Average</option>
+          <option value="sum">Sum</option>
+        </select>
+      </div>
+    </div>
 
       <div className="mt-5 text-gray-500">
         {dateRange.from && dateRange.to

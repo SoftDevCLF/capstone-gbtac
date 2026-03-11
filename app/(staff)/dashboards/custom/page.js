@@ -19,6 +19,7 @@ export default function Page() {
 
   //State variables
   const [currentChartId, setCurrentChartId] = useState(null);
+  // Temp state (user edits these before clicking Apply)
   const [tempChartSettings, setTempChartSettings] = useState({
     chartTitle: "",
     chartType: "line",
@@ -32,48 +33,42 @@ export default function Page() {
     aggregation: "sum"
   });
   const [tempSelectedSensors, setTempSelectedSensors] = useState([]);
-  const [selectedSensors, setSelectedSensors] = useState([]);
-  const [dateRange, setDateRange] = useState({
-    from: "",
-    to: ""
-  });
+  // const [selectedSensors, setSelectedSensors] = useState([]);
+  const [dateRange, setDateRange] = useState({ from: "2025-12-31", to: "2025-12-31" });
+
+  const [tempAggregationSettings, setTempAggregationSettings] = useState(aggregationSettings)
   const [chartSettings, setChartSettings] = useState({
     chartTitle: "",
     chartType: "line",
-    xAxisTitle: "",
-    yAxisTitle: ""
-  });
-  const [sensorList, setSensorList] = useState([]);
-  const [error, setError] = useState(null);
-  const [refreshChart, setRefreshChart] = useState(0);
-  const [showSaveModal, setShowSaveModal] = useState(false);
+    // chartType: "bar",
+  })
+  const [selectedSensors, setSelectedSensors] = useState([ // temp for testing
+    // {code: "30000_TL252", name: "Carport"},
+    // {code: "30000_TL253", name: "Rooftop"}
+  ]);
+  const [aggregationSettings, setAggregationSettings] = useState({time: "H", type: "mean"})
 
+  
+  
 
-  //Load available sensors on component
-  useEffect(() => {
-    const fetchSensors = async () => {
-      try {
-        const response = await fetch("/api/sensors");
-        const sensors = await response.json();
-        setSensorList(sensors);
-      } catch (err) {
-        console.error("Failed to fetch sensors:", err);
-        setError("Failed to load sensors");
-      }
-    };
-    fetchSensors();
-  }, []);
+  
+  // full list of sensors and codes
+  const [sensorList, setSensorList] = useState([])
+  const fetchSensors = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/graphs/codesnames")
+      const data = await res.json()
+      setSensorList(data)
+    }catch (e){
+      console.log(e)
+    }
+  }
 
-  // Function to load a saved chart
-  const loadChart = (chartData) => {
-    setCurrentChartId(chartData.id);
-    setTempChartSettings(chartData.settings || tempChartSettings);
-    setTempDateRange(chartData.dateRange || tempDateRange);
-    setTempSelectedSensors(chartData.selectedSensors || []);
-    setError(null);
-  };
+  useEffect(()=> {
+    fetchSensors()
+  }, [])
 
-  // Function to reset chart to new state
+  // Reset chart to default
   const resetChart = () => {
     setCurrentChartId(null);
     setTempChartSettings({
@@ -90,20 +85,37 @@ export default function Page() {
     });
     setTempSelectedSensors([]);
     setSelectedSensors([]);
-    setDateRange({
-      from: "",
-      to: ""
-    });
-    setChartSettings({
+    setDateRange({ from: null, to: null });
+    setAggregationSettings({time: null, type: null})
+
+    // Also reset temp state
+    setTempChartSettings({
       chartTitle: "",
       chartType: "line",
-      xAxisTitle: "",
-      yAxisTitle: ""
-    });
-    setError(null);
-  };
+      yAxisTitle: "",
+      chartType: "line",
+    })
+    setTempSelectedSensors([]);
+    setTempDateRange({ from: null, to: null });
+    setTempAggregationSettings({time: null, type: null})
+  }
 
-  //Function to apply temporary settings to final settings
+  // Load a chart into state
+  const loadChart = (chart) => {
+    setCurrentChartId(chart.id);
+    setChartSettings(chart.settings);
+    setSelectedSensors(chart.sensors);
+    setDateRange({ from: chart.dateFrom, to: chart.dateTo });
+    setAggregationSettings({time: chart.time, type:chart.type})
+
+    // Also update temp state so the inputs match loaded chart
+    setTempChartSettings(chart.settings);
+    setTempSelectedSensors(chart.sensors);
+    setTempDateRange({ from: chart.dateFrom, to: chart.dateTo });
+    setTempAggregationSettings({time: chart.time, type:chart.type})
+  }
+
+  // Apply button handler
   const handleApply = () => {
     if (tempSelectedSensors.length === 0) {
       setError("Please select at least one sensor");
@@ -113,13 +125,18 @@ export default function Page() {
       setError("Please select a date range");
       return;
     }
-    setSelectedSensors([...tempSelectedSensors]);
-    setDateRange({...tempDateRange});
-    setChartSettings({...tempChartSettings});
-    setError(null);
+    if (new Date(tempDateRange.from) > new Date(tempDateRange.to)) {
+      setError("Start date cannot be after end date.");
+      return;
+    }
+    // If all validations pass, update the main state with temp values
+    setChartSettings(tempChartSettings);
+    setSelectedSensors(tempSelectedSensors);
+    setDateRange(tempDateRange);
+    setAggregationSettings(tempAggregationSettings)
   };
 
-  //Function to save chart to Firestore
+   //Function to save chart to Firestore
   const handleSave = async () => {
     const user = auth.currentUser;
     try {
@@ -140,7 +157,6 @@ export default function Page() {
     }
   };
 
-
   return (
     <DashboardLayout title="Create Custom Chart">
       <div className="container mx-auto px-4 py-4 md:py-8">
@@ -154,19 +170,18 @@ export default function Page() {
           />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4 mb-4 md:mb-5 w-full min-h-75">
-          <div className="w-full lg:w-1/2 flex flex-col">
-            <ChartSettings
-              settings={tempChartSettings}
-              setSettings={setTempChartSettings}
-            />
-          </div>
-          <div className="w-full lg:w-1/2 flex flex-col">
-            <DateRange
-              dateRange={tempDateRange}
-              setDateRange={setTempDateRange}
-            />
-          </div>
+        {/* Chart Settings and Date Range */}
+        <div className="flex flex-col md:flex-row gap-4 mb-5 w-full">
+          <ChartSettings
+            settings={tempChartSettings}
+            setSettings={setTempChartSettings}
+          />
+          <DateRange
+            dateRange={tempDateRange}
+            setDateRange={setTempDateRange}
+            aggSettings={tempAggregationSettings}
+            setAggSettings={setTempAggregationSettings}
+          />
         </div>
 
         <div className="flex flex-col xl:flex-row gap-4 mb-4 min-h-100">
@@ -202,14 +217,20 @@ export default function Page() {
           </button>
         </div>
 
+        {/* Graph below */}
         <div className="w-full overflow-hidden" ref={chartRef}>
           <div style={{ height: "600px" }} className="w-full">
-            <GraphContainer
-              selectedSensors={selectedSensors}
-              dateRange={dateRange}
-              settings={chartSettings}
-            />
+          <GraphContainer 
+            selectedSensors={selectedSensors} 
+            dateRange={dateRange}
+            settings={chartSettings}
+            aggSettings={aggregationSettings}
+          />
           </div>
+        </div>
+
+        {/* Ssve and Export PDF button */}
+        <div className="flex justify-end mt-6">
         </div>
 
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-5">

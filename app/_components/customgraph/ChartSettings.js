@@ -46,12 +46,11 @@ export default function ChartSettings({ settings, setSettings }) {
           <label className="text-sm text-black mb-1">Chart Type</label>
           <select
             value={settings.chartType}
-            onChange={(e) => setSettings(prev => ({ ...prev, chartType: e.target.value }))}
+            onChange={(e) => setSettings(prev => ({...prev, chartType: e.target.value}))}
             className="border p-2 rounded text-gray-500"
           >
             <option value="line">Line</option>
             <option value="bar">Bar</option>
-            <option value="area">Area</option>
           </select>
         </div>
 
