@@ -32,10 +32,13 @@ export default function Page() {
     timeInterval: "hourly",
     aggregation: "sum"
   });
+  const [aggregationSettings, setAggregationSettings] = useState({time: "H", type: "mean"})
   const [tempSelectedSensors, setTempSelectedSensors] = useState([]);
   // const [selectedSensors, setSelectedSensors] = useState([]);
   const [dateRange, setDateRange] = useState({ from: "2025-12-31", to: "2025-12-31" });
-
+  const [refreshChart, setRefreshChart] = useState(0); // Used to trigger re-render of graph when loading/saving charts
+  const [error, setError] = useState("");
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const [tempAggregationSettings, setTempAggregationSettings] = useState(aggregationSettings)
   const [chartSettings, setChartSettings] = useState({
     chartTitle: "",
@@ -46,7 +49,6 @@ export default function Page() {
     // {code: "30000_TL252", name: "Carport"},
     // {code: "30000_TL253", name: "Rooftop"}
   ]);
-  const [aggregationSettings, setAggregationSettings] = useState({time: "H", type: "mean"})
 
   
   
@@ -65,6 +67,7 @@ export default function Page() {
   }
 
   useEffect(()=> {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSensors()
   }, [])
 
@@ -85,8 +88,8 @@ export default function Page() {
     });
     setTempSelectedSensors([]);
     setSelectedSensors([]);
-    setDateRange({ from: null, to: null });
-    setAggregationSettings({time: null, type: null})
+    setDateRange({ from: "", to: "" });
+    setAggregationSettings({time: "H", type: "mean"})
 
     // Also reset temp state
     setTempChartSettings({
@@ -96,23 +99,42 @@ export default function Page() {
       chartType: "line",
     })
     setTempSelectedSensors([]);
-    setTempDateRange({ from: null, to: null });
-    setTempAggregationSettings({time: null, type: null})
+    setTempDateRange({ from: "", to: "" });
+    setTempAggregationSettings({time: "H", type: "mean"})
   }
 
   // Load a chart into state
   const loadChart = (chart) => {
+    setError("");
+    const chartSensors = Array.isArray(chart?.selectedSensors)
+      ? chart.selectedSensors
+      : (Array.isArray(chart?.sensors) ? chart.sensors : []);
+    const chartFrom = chart?.dateRange?.from ?? chart?.dateFrom ?? "";
+    const chartTo = chart?.dateRange?.to ?? chart?.dateTo ?? "";
+    const chartAggTime = chart?.aggSettings?.time ?? chart?.time ?? "H";
+    const chartAggType = chart?.aggSettings?.type ?? chart?.type ?? "mean";
+
     setCurrentChartId(chart.id);
-    setChartSettings(chart.settings);
-    setSelectedSensors(chart.sensors);
-    setDateRange({ from: chart.dateFrom, to: chart.dateTo });
-    setAggregationSettings({time: chart.time, type:chart.type})
+    setChartSettings(chart.settings ?? {
+      chartTitle: "",
+      chartType: "line",
+      xAxisTitle: "",
+      yAxisTitle: ""
+    });
+    setSelectedSensors(chartSensors);
+    setDateRange({ from: chartFrom, to: chartTo });
+    setAggregationSettings({time: chartAggTime, type: chartAggType})
 
     // Also update temp state so the inputs match loaded chart
-    setTempChartSettings(chart.settings);
-    setTempSelectedSensors(chart.sensors);
-    setTempDateRange({ from: chart.dateFrom, to: chart.dateTo });
-    setTempAggregationSettings({time: chart.time, type:chart.type})
+    setTempChartSettings(chart.settings ?? {
+      chartTitle: "",
+      chartType: "line",
+      xAxisTitle: "",
+      yAxisTitle: ""
+    });
+    setTempSelectedSensors(chartSensors);
+    setTempDateRange({ from: chartFrom, to: chartTo });
+    setTempAggregationSettings({time: chartAggTime, type: chartAggType})
   }
 
   // Apply button handler
@@ -145,7 +167,8 @@ export default function Page() {
         chartId: currentChartId,
         settings: tempChartSettings,
         dateRange: tempDateRange,
-        selectedSensors: tempSelectedSensors
+        selectedSensors: tempSelectedSensors,
+        aggSettings: tempAggregationSettings
       });
       setCurrentChartId(savedId);
       setShowSaveModal(false);
@@ -221,6 +244,7 @@ export default function Page() {
         <div className="w-full overflow-hidden" ref={chartRef}>
           <div style={{ height: "600px" }} className="w-full">
           <GraphContainer 
+            key={currentChartId ?? "new"}
             selectedSensors={selectedSensors} 
             dateRange={dateRange}
             settings={chartSettings}
@@ -229,10 +253,7 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Ssve and Export PDF button */}
-        <div className="flex justify-end mt-6">
-        </div>
-
+        {/* Save and Export PDF button */}
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-5">
           <button
             onClick={() => setShowSaveModal(true)}

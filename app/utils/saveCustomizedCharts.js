@@ -4,8 +4,12 @@ import { db } from "../_utils/firebase";
 import { collection, addDoc, setDoc, doc, serverTimestamp } from "firebase/firestore";
 
 //Save or update a chart for a user
-export async function saveCustomDashboard({ userEmail, chartId, settings, dateRange, selectedSensors }) {
+export async function saveCustomDashboard({ userEmail, chartId, settings, dateRange, selectedSensors, aggSettings }) {
   const chartsRef = collection(db, "allowedUsers", userEmail, "charts");
+  const normalizedAggSettings = {
+    time: aggSettings?.time ?? "H",
+    type: aggSettings?.type ?? "mean"
+  };
 
   //If chartId exists, update the existing chart
   if (chartId) {
@@ -14,6 +18,7 @@ export async function saveCustomDashboard({ userEmail, chartId, settings, dateRa
       settings,
       dateRange,
       selectedSensors,
+      aggSettings: normalizedAggSettings,
       updatedAt: serverTimestamp()
     });
     return chartId;
@@ -25,6 +30,7 @@ export async function saveCustomDashboard({ userEmail, chartId, settings, dateRa
     settings,
     dateRange,
     selectedSensors,
+    aggSettings: normalizedAggSettings,
     createdAt: serverTimestamp()
   });
   return docRef.id;
