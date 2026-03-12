@@ -17,6 +17,7 @@ export default function Page() {
   const chartRef2 = useRef(null);
 
   const STORAGE_KEY = "dashboard-natural-gas";
+  const UNIT_OPTIONS = ["Watts", "kWh",];
 
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, {
@@ -30,6 +31,25 @@ export default function Page() {
   useEffect(() => {
     saveDashboardState(STORAGE_KEY, state);
   }, [state]);
+
+  const handleMultiSelect = (key, value) => {
+    const currentValues = state[key] || [];
+
+    const updatedValues = currentValues.includes(value)
+      ? currentValues.filter((v) => v !== value)
+      : [...currentValues, value];
+
+    setState({ ...state, [key]: updatedValues });
+  };
+
+  const handleSelectAll = (key, options) => {
+    const currentValues = state[key] || [];
+
+    setState({
+      ...state,
+      [key]: currentValues.length === options.length ? [] : options,
+    });
+  };
 
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
@@ -69,9 +89,34 @@ export default function Page() {
         </button>
       }
     >
-      <div className="container mx-auto px-4 py-8"
-      style={{ fontFamily: "var(--font-titillium)" }}>
-        <DateRangePicker />
+      <div className="container mx-auto px-4 py-8" style={{ fontFamily: "var(--font-titillium)" }}>
+        <div className="flex flex-wrap gap-6 items-end mb-6">
+          <DateRangePicker />
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-1">Units</label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => handleSelectAll("unit", UNIT_OPTIONS)}
+                className="px-2 py-1 text-lg border rounded"
+              >
+                All
+              </button>
+
+              {UNIT_OPTIONS.map((unit) => (
+                <button
+                  key={unit}
+                  onClick={() => handleMultiSelect("unit", unit)}
+                  className={`px-2 py-1 text-lg border rounded ${
+                    state.unit?.includes(unit) ? "bg-[#6D2077] text-white" : ""
+                  }`}
+                >
+                  {unit}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <InfoCard
           items={[
             { label: "Total Energy Consumption", value: "134,350 kWh" },
@@ -80,7 +125,8 @@ export default function Page() {
             { label: "Peak Energy Month", value: "January" },
           ]}
         />
-        {/* Chart Section */}
+
+
         <div className="mt-10 flex flex-col gap-4 relative">
             <div ref={chartRef}>
               <GraphPlaceholder />
