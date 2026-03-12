@@ -13,7 +13,7 @@ export default function Page() {
       style={{ fontFamily: "var(--font-titillium)" }}
     >
       <Navbar />
-      <SecondaryNav />
+      <SecondaryNav displayLogin={false} displayLogout displayProfile={true}/>
 
       <div className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto"

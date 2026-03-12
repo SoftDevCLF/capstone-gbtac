@@ -13,11 +13,11 @@ export default function Page() {
 
   return (
     <main className="bg-gray-50 min-h-screen">
-        <SecondaryNav />
+        <SecondaryNav displayLogin={false} displayLogout displayProfile={true} />
         <Navbar />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-10 text-[#212529]" style={{ fontFamily: "var(--font-titillium)" }}>
+        <h1 className="text-3xl font-bold mb-10 text-[#212529]" style={{ fontFamily: "var(--font-titillium)" }}>
           Manage Accounts
         </h1>
         <div className="mb-6 flex items-center justify-between gap-4">

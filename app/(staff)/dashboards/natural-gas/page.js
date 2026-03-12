@@ -53,23 +53,16 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="">
+    <DashboardLayout title="Natural Gas Dashboard">
       <div className="container mx-auto px-4 py-8"
       style={{ fontFamily: "var(--font-titillium)" }}>
-        {/* Custom Header with title and tooltip inline */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">
-            Natural Gas Dashboard
-          </h1>
-
-          {/* Information Icon with tooltip */}
-          <div className="relative group">
-            <FiInfo className="w-6 h-6 text-black-600 cursor-pointer hover:text-gray-800 transition-colors" />
-
-            <div className="absolute right-0 top-8 w-80 p-3 bg-white text-black text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
-              Values are converted to kWh using a standard conversion factor of
-              X kWh per unit of gas.
-            </div>
+      
+        {/* Information Icon pinned to viewport top-right */}
+        <div className="fixed top-24 right-6 z-50 group">
+          <FiInfo className="w-6 h-6 text-black-600 cursor-pointer hover:text-gray-800 transition-colors" />
+          <div className="absolute right-0 top-8 w-80 p-3 bg-white text-black text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            Values are converted to kWh using a standard conversion factor of X
+            kWh per unit of gas.
           </div>
         </div>
         <DateRangePicker />
@@ -81,7 +74,6 @@ export default function Page() {
             { label: "Peak Energy Month", value: "January" },
           ]}
         />
-
         {/* Chart Section */}
         <div className="mt-10 flex flex-col gap-4 relative">
             <div ref={chartRef}>

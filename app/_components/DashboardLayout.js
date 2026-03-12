@@ -20,7 +20,7 @@ export default function DashboardLayout({ title, children }) {
         py-8
       "
       >
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6">{title}</h1>
+        <h1 className="text-3xl font-semibold text-gray-800 mb-6">{title}</h1>
 
         {children}
       </main>
