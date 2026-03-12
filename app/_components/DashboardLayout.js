@@ -1,5 +1,3 @@
-"use client";
-
 import SecondaryNav from "./SecondaryNav";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -17,7 +15,7 @@ export default function DashboardLayout({ title, children }) {
         className="
         flex-1
         sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32
-        py-8
+        p-8
       "
       >
         <h1 className="text-2xl font-semibold text-gray-800 mb-6">{title}</h1>
