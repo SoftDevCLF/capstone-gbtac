@@ -25,14 +25,17 @@ export default function SecondaryNav({
   };
 
   return (
-    <nav className="flex flex-row items-center justify-between w-full bg-[#fdfdfd] py-3 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
-      <div>
+    <nav className="flex flex-row items-center justify-between w-full bg-[#fdfdfd] p-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
+      <div
+        className="relative w-[180px] sm:w-[220px] md:w-[253px] h-[46px]
+      "
+      >
         <Link href="https://www.sait.ca">
           <Image
             src="/sait_extended_horizontal_full_colour_rgb.png"
             alt="Logo"
-            height={46}
-            width={253}
+            fill
+            className="object-contain"
           />
         </Link>
       </div>
