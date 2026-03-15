@@ -164,6 +164,8 @@ export default function LineHandler({chartType, sensorList, startDate, endDate, 
 
     // options for graph display to be passed on to LineChart component
     const graphOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
             x: {
                 title: {
