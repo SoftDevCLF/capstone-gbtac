@@ -122,7 +122,7 @@ export default function Navbar({
         {displayDashboardMngmt && (
           <li>
             <Link
-              href="/dashboard-management"
+              href="/dashboard-manager"
               className="hover:opacity-70 transition"
             >
               Manage Dashboard
