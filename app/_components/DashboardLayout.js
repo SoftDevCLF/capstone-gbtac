@@ -3,6 +3,27 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Breadcrumbs from "./Breadcrumbs";
 
+/**
+ * DashboardLayout component
+ *
+ * Shared full-page layout for all dashboard pages. Composes the secondary nav,
+ * primary nav, breadcrumbs, a titled main content area, a disclaimer, and footer.
+ *
+ * @param {string} title - Page title displayed as an h1 at the top of main content
+ * @param {React.ReactNode} [titleRight=null] - Optional content rendered to the right of the title
+ *                                              (e.g. action buttons, export controls)
+ * @param {React.ReactNode} children - Page-specific content rendered inside main
+ *
+ * Notes:
+ * - SecondaryNav manages its own auth state via Firebase — no auth props needed here
+ * - Navbar hides Home and About since dashboard pages have their own navigation context
+ * - The disclaimer is rendered outside main intentionally, above the footer
+ *
+ * @returns A full-page dashboard layout with nav, content area, and footer
+ *
+ * @author Frontend Developer: [Cintya Lara Flores]
+ */
+
 export default function DashboardLayout({
   title,
   titleRight = null,
@@ -10,11 +31,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex flex-col min-h-screen bg-[#FdFdFd] font-sans">
-      <SecondaryNav
-        displayLogout={true}
-        displayProfile={true}
-        displayLogin={false}
-      />
+      <SecondaryNav />
       <Navbar
         displayDashboards
         displayHome={false}
