@@ -30,7 +30,9 @@ export default function AccountRow({ account }) {
           </button>
         </Link>
         
-        <button className="bg-[#912932] hover:bg-[#8B1625] text-white font-semibold px-4 py-2 rounded-md transition-colors">
+        <button className="bg-[#912932] hover:bg-[#8B1625] text-white font-semibold px-4 py-2 rounded-md transition-colors"
+          onClick={() => setShowConfirmModal(true)}
+        >
           Delete
         </button>
         {showConfirmModal && (
