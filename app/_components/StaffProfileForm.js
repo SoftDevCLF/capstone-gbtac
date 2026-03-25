@@ -285,11 +285,6 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   placeholder="New Password"
                   className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                 />
-                {errors.newPassword && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.newPassword}
-                  </p>
-                )}
                 <button
                   type="button"
                   className="absolute right-3 top-4"
@@ -321,6 +316,11 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   />
                 </button>
               </div>
+              {errors.newPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.newPassword}
+                </p>
+              )}
             </div>
           )}
 
