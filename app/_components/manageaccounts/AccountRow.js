@@ -3,11 +3,12 @@
 //Optionally you could pass callbacks for edit/delete if needed in future.
 import Link from "next/link";
 import ConfirmModal from "../ConfirmModal";
+import NotificationModal from "../NotificationModal";
 import { useState } from "react";
 
 export default function AccountRow({ account }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   return (
     <tr>
@@ -42,8 +43,16 @@ export default function AccountRow({ account }) {
             onConfirm={() => {
               // TODO: Implement delete functionality
               setShowConfirmModal(false);
+              setShowNotificationModal(true);
             }}
             onCancel={() => setShowConfirmModal(false)}
+          />
+        )}
+        {showNotificationModal && (
+          <NotificationModal
+            title="Account Deleted"
+            message="The account has been successfully deleted."
+            onClose={() => setShowNotificationModal(false)}
           />
         )}
       </td>
