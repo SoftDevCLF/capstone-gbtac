@@ -75,7 +75,6 @@ export default function Page() {
     }
   }
   useEffect(()=> {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSensors()
   }, [])
 
@@ -218,17 +217,21 @@ export default function Page() {
         </div>
 
         {/* Chart Settings and Date Range */}
-        <div className="flex flex-col md:flex-row gap-4 mb-5 w-full">
-          <ChartSettings
-            settings={tempChartSettings}
-            setSettings={setTempChartSettings}
-          />
-          <DateRange
-            dateRange={tempDateRange}
-            setDateRange={setTempDateRange}
-            aggSettings={tempAggregationSettings}
-            setAggSettings={setTempAggregationSettings}
-          />
+        <div className="flex flex-col md:flex-row items-stretch gap-4 mb-5 w-full">
+          <div className="w-full md:w-1/2 flex">
+            <ChartSettings
+              settings={tempChartSettings}
+              setSettings={setTempChartSettings}
+            />
+          </div>
+          <div className="w-full md:w-1/2 flex">
+            <DateRange
+              dateRange={tempDateRange}
+              setDateRange={setTempDateRange}
+              aggSettings={tempAggregationSettings}
+              setAggSettings={setTempAggregationSettings}
+            />
+          </div>
         </div>
 
         <div className="flex flex-col xl:flex-row gap-4 mb-4">
