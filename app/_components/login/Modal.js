@@ -19,7 +19,7 @@
  *
  * @returns A centered modal dialog with backdrop
  *
- * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Cintya Lara Flores
  */
 export default function Modal({
   title,

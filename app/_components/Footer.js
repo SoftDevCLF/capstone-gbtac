@@ -11,7 +11,7 @@ import Image from "next/image";
  *
  * @returns A responsive footer bar
  *
- * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Cintya Lara Flores
  */
 export default function Footer() {
   return (

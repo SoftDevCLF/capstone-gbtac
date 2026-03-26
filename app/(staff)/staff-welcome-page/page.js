@@ -24,7 +24,7 @@ import { doc, getDoc } from "firebase/firestore";
  *
  * @returns The staff welcome page
  *
- * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Cintya Lara Flores
  */
 
 export default function StaffHome() {

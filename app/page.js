@@ -22,7 +22,7 @@ import Link from "next/link";
  *
  * @returns The GBTAC Analytics landing page
  *
- * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Cintya Lara Flores
  */
 
 export default function Home() {

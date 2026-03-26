@@ -21,7 +21,7 @@ import Image from "next/image";
  *
  * @returns A paginated card carousel with dot indicators
  *
- * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Cintya Lara Flores
  */
 
 export default function Carousel({ items = [], horizontal }) {

@@ -31,7 +31,7 @@ const FROM_CRUMB_MAP = {
  * - Last segment is rendered as plain text (not a link)
  * - URL segments are formatted (kebab-case → readable text)
  *
- *  @author Frontend Developer: [Cintya Lara Flores]
+ *  @author Cintya Lara Flores
  */
 export default function Breadcrumbs() {
   const pathname = usePathname();

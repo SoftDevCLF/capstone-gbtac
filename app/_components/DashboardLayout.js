@@ -21,7 +21,7 @@ import Breadcrumbs from "./Breadcrumbs";
  *
  * @returns A full-page dashboard layout with nav, content area, and footer
  *
- * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Cintya Lara Flores
  */
 
 export default function DashboardLayout({
