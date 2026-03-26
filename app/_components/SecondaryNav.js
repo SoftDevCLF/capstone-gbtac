@@ -7,8 +7,6 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../_utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
-const API_BASE = "http://localhost:8000";
-
 /**
  * SecondaryNav component
  *
@@ -61,15 +59,34 @@ export default function SecondaryNav() {
         setLastName("");
       }
     });
-    return () => unsubscribe();
+
+    // Listen for profile updates
+    const handleProfileUpdate = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userDoc = doc(db, "allowedUsers", user.email);
+        const docSnap = await getDoc(userDoc);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setFirstName(data.firstName || "");
+          setLastName(data.lastName || "");
+        }
+      }
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+    };
   }, []);
 
   // Handles logout by invalidating server session and signing out of Firebase
   const handleLogout = async (e) => {
     e.preventDefault();
     try {
-      // Invalidate server-side session cookie before signing out of Firebase
-      await fetch(`${API_BASE}/auth/logout`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
