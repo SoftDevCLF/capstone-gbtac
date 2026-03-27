@@ -17,6 +17,7 @@ export function saveDashboardState(key, state) {
   localStorage.setItem(key, JSON.stringify(state));
 }
 
+export function loadCustomChartState() {
 //Custom Chart specific functions
   return loadDashboardState("customChart", {
     id: null,
@@ -25,6 +26,7 @@ export function saveDashboardState(key, state) {
     dateFrom: null,
     dateTo: null
   });
+}
 
 export function saveCustomChartState(chart) {
   saveDashboardState("customChart", chart);
