@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Modal from "./Modal";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,12 +13,18 @@ export default function LoginForm() {
   const [employeeEmail, setEmployeeEmail] = useState("");
   const [forgotEmail, setForgotEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [step, setStep] = useState("email");
+  const [resetCodeArray, setResetCodeArray] = useState(["", "", "", "", "", ""]);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loginCooldownSeconds, setLoginCooldownSeconds] = useState(0);
   const [resetCooldownSeconds, setResetCooldownSeconds] = useState(0);
   const [captchaToken, setCaptchaToken] = useState("");
+
   const router = useRouter();
+  const inputRefs = useRef([]);
 
   useEffect(() => {
     if (resetCooldownSeconds <= 0) return;
@@ -164,17 +170,23 @@ export default function LoginForm() {
   };
 
   const requestPasswordReset = async (email) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/request-password-reset`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     });
 
+    const data = await res.json().catch(() => null);
+
     if (!res.ok) {
-      throw new Error("Failed to request password reset");
+      throw new Error(
+        typeof data?.detail === "string"
+          ? data.detail
+          : JSON.stringify(data?.detail || data || "Failed to request password reset")
+      );
     }
 
-    return res.json();
+    return data;
   };
 
   const verifyCaptcha = async (token) => {
@@ -215,6 +227,46 @@ export default function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const verifyResetCode = async (email, code) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify-reset-code`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code }),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      throw new Error(
+        typeof data?.detail === "string"
+          ? data.detail
+          : JSON.stringify(data?.detail || data || "Invalid code")
+      );
+    }
+
+    return data;
+  };
+
+  const confirmPasswordReset = async (email, code, newPassword) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/confirm-password-reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code, newPassword }),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      throw new Error(
+        typeof data?.detail === "string"
+          ? data.detail
+          : JSON.stringify(data?.detail || data || "Reset failed")
+      );
+    }
+
+    return data;
+  };
+
   const handleForgotSubmit = async () => {
     try {
       if (!forgotEmail.trim()) {
@@ -222,26 +274,18 @@ export default function LoginForm() {
         return;
       }
 
-      if (!isSaitEmail(forgotEmail.trim())) {
-        alert("Please use your SAIT email.");
-        return;
-      }
-
       const emailToSend = forgotEmail.trim().toLowerCase();
+
       const result = await requestPasswordReset(emailToSend);
 
       if (!result.success) {
         setResetCooldownSeconds(result.remainingSeconds || 0);
-        alert(
-          `Please wait ${result.remainingSeconds} seconds before requesting another reset email.`,
-        );
+        alert(`Please wait ${result.remainingSeconds}s`);
         return;
       }
 
-      alert(`Password reset email sent to ${emailToSend}`);
-      setResetCooldownSeconds(60);
-      setShowForgotModal(false);
-      setForgotEmail("");
+      alert("Verification code sent!");
+      setStep("code"); 
     } catch (err) {
       alert("Reset failed: " + err.message);
     }
@@ -403,6 +447,78 @@ export default function LoginForm() {
     }
   };
 
+  const handleVerifyCode = async () => {
+    try {
+      const code = resetCodeArray.join("");
+
+      if (code.length !== 6) {
+        alert("Please enter the full 6-digit code.");
+        return;
+      }
+
+      const result = await verifyResetCode(forgotEmail, code);
+      alert(result.message || "Code verified!");
+      setStep("password");
+    } catch (err) {
+      alert(
+        typeof err?.message === "string"
+          ? err.message
+          : "Failed to verify code"
+      );
+    }
+  };
+
+  const handleResetPassword = async () => {
+    try {
+      if (newPassword !== confirmPassword) {
+        alert("Passwords do not match");
+        return;
+      }
+
+      const code = resetCodeArray.join("");
+
+      if (code.length !== 6) {
+        alert("Please enter the full 6-digit code.");
+        return;
+      }
+
+      await confirmPasswordReset(forgotEmail, code, newPassword);
+
+      alert("Password reset successful!");
+
+      // reset everything
+      setShowForgotModal(false);
+      setStep("email");
+      setForgotEmail("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setResetCodeArray(["", "", "", "", "", ""]);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleCodeChange = (value, index) => {
+    if (!/^\d?$/.test(value)) return; 
+
+    const newCode = [...resetCodeArray];
+    newCode[index] = value;
+    setResetCodeArray(newCode);
+
+    // move forward
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace") {
+      if (!resetCodeArray[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-md bg-white/85 rounded-sm shadow-md p-8 relative">
       {/* Heading */}
@@ -504,21 +620,123 @@ export default function LoginForm() {
 
       {showForgotModal && (
         <Modal
-          title="Forgot Password"
-          onClose={() => setShowForgotModal(false)}
-          onSubmit={handleForgotSubmit}
-          submitText={
-            resetCooldownSeconds > 0 ? `Wait ${resetCooldownSeconds}s` : "Send"
+          title={
+            step === "email"
+              ? "Forgot Password"
+              : step === "code"
+              ? "Verify Code"
+              : "Reset Password"
           }
-          submitDisabled={resetCooldownSeconds > 0}
+          onClose={() => {
+            setShowForgotModal(false);
+            setStep("email");
+            setForgotEmail("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setResetCooldownSeconds(0);
+            setResetCodeArray(["", "", "", "", "", ""]);
+          }}
+          onSubmit={
+            step === "email"
+              ? handleForgotSubmit
+              : step === "code"
+              ? handleVerifyCode
+              : handleResetPassword
+          }
+          submitText={
+            step === "email"
+              ? resetCooldownSeconds > 0
+                ? `Wait ${resetCooldownSeconds}s`
+                : "Send Code"
+              : step === "code"
+              ? "Verify Code"
+              : "Reset Password"
+          }
+          submitDisabled={
+            (step === "email" &&
+              (!forgotEmail.trim() || resetCooldownSeconds > 0)) ||
+            (step === "code" && resetCodeArray.join("").length !== 6) ||
+            (step === "password" &&
+              (!newPassword.trim() || !confirmPassword.trim()))
+          }
         >
-          <input
-            type="email"
-            placeholder="Enter your SAIT email"
-            value={forgotEmail}
-            onChange={(e) => setForgotEmail(e.target.value)}
-            className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
-          />
+          {step === "email" && (
+            <div className="flex flex-col gap-2">
+              <input
+                type="email"
+                placeholder="Enter your SAIT email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
+              />
+
+              <p className="text-sm text-gray-500">
+                We’ll send a 6-digit verification code to your email.
+              </p>
+            </div>
+          )}
+
+          {step === "code" && (
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-center gap-2">
+                {resetCodeArray.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) =>
+                      handleCodeChange(e.target.value, index)
+                    }
+                    onKeyDown={(e) => handleKeyDown(e, index)}
+                    className="w-10 h-12 text-center text-lg border rounded focus:outline-none focus:border-blue-500"
+                  />
+                ))}
+              </div>
+
+              <p className="text-sm text-gray-500 text-center">
+                Enter the code sent to <strong>{forgotEmail}</strong>
+              </p>
+
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:underline text-center disabled:text-gray-400"
+                onClick={handleForgotSubmit}
+                disabled={resetCooldownSeconds > 0}
+              >
+                {resetCooldownSeconds > 0
+                  ? `Resend in ${resetCooldownSeconds}s`
+                  : "Resend Code"}
+              </button>
+            </div>
+          )}
+
+          {step === "password" && (
+            <div className="flex flex-col gap-2">
+              <input
+                type="password"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
+              />
+
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
+              />
+
+              <p className="text-xs text-gray-500">
+                Password must be at least 8 characters and include an uppercase
+                letter, number, and special character.
+              </p>
+            </div>
+          )}
         </Modal>
       )}
 
