@@ -1,6 +1,7 @@
 import { Titillium_Web, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthContextProvider } from "./_utils/auth-context";
+import IdleSessionManager from "./_components/IdleSessionManager";
 
 const titilliumWeb = Titillium_Web({
   variable: "--font-titillium-web",
@@ -24,7 +25,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${titilliumWeb.variable} ${dmSans.variable} antialiased`}
       >
-        <AuthContextProvider>{children}</AuthContextProvider>
+        <AuthContextProvider>
+          <IdleSessionManager />
+          {children}
+        </AuthContextProvider>
       </body>
     </html>
   );

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, db } from "../../_utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { useAuth } from "../../_utils/auth-context";
 
 export default function LoginForm() {
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -24,6 +25,7 @@ export default function LoginForm() {
   const [captchaToken, setCaptchaToken] = useState("");
 
   const router = useRouter();
+  const { refreshSession } = useAuth();
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -383,6 +385,7 @@ export default function LoginForm() {
 
       console.log("Before createSessionLogin");
       await createSessionLogin(idToken);
+      await refreshSession();
       console.log("After createSessionLogin");
       await resetLoginAttempts(emailLower);
 
