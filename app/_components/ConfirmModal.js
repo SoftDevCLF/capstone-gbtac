@@ -9,13 +9,18 @@ export default function ConfirmModal({
   cancelText = "Cancel",
   variant = "primary",
   onConfirm,
-  onCancel
+  onCancel,
+  disableBackdropClose = false
 }) {
   return (
     // Backdrop - click outside to close
     <div
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40"
-      onClick={onCancel}
+      onClick={() => {
+        if (!disableBackdropClose) {
+          onConfirm?.(); 
+        }
+      }}
     >
       {/* Modal box - stop click from bubbling to backdrop */}
       <div
