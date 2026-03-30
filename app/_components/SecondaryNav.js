@@ -75,9 +75,11 @@ export default function SecondaryNav() {
     };
 
     window.addEventListener("profileUpdated", handleProfileUpdate);
+    window.addEventListener("profileUpdated", handleProfileUpdate);
 
     return () => {
       unsubscribe();
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
       window.removeEventListener("profileUpdated", handleProfileUpdate);
     };
   }, []);
@@ -100,13 +102,12 @@ export default function SecondaryNav() {
   };
 
   return (
-    <nav className="flex items-center-safe justify-between w-full bg-[#fdfdfd] p-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
-      {/* SAIT logo — links to main site */}
-      <div className="relative w-[180px] sm:w-[220px] md:w-[253px] h-[46px] me-5 lg:me-1">
+    <nav className="flex flex-row items-center-safe justify-between w-full bg-[#fdfdfd] p-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
+      <div className="relative w-[60px] sm:w-[75px] md:w-[80px] h-[45px] ms-0 lg:me-1">
         <Link href="https://www.sait.ca">
           <Image
-            src="/sait_extended_horizontal_full_colour_rgb.png"
-            alt="Sait Horizontal Logo"
+            src="/collegiate_logo_red2.png"
+            alt="Logo"
             fill
             className="object-contain"
           />

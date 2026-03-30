@@ -19,11 +19,10 @@ export default function Footer() {
       <div className="text-[#F1FAF5] text-xs md:text-lg">
         <p>{new Date().getFullYear()}. Capstone Project for GBTAC, SAIT.</p>
       </div>
-      {/* SAIT reverse logo for use on dark backgrounds */}
-      <div className="relative w-[150px] sm:w-[170px] md:w-[200px] lg:w-[250px] h-[50px]">
+      <div className="relative w-[60px] sm:w-[65px] md:w-[70px] lg:w-[75px] h-[42px]">
         <Image
-          src="/sait_extended_horizontal_reverse.png"
-          alt="SAIT Logo"
+          src="/collegiate_logo_white2.png"
+          alt="Logo"
           fill
           className="object-contain"
         />

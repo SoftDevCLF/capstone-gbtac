@@ -18,7 +18,8 @@ export default function Background() {
   return (
     <Image
       alt="GBTAC Building"
-      src="/login/loginbackground.jpg"
+      src="/login/IMG_1439.jpg"
+      quality={100}
       fill
       className="object-cover"
     />
