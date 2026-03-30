@@ -16,13 +16,13 @@ import { getDataRange } from "@/app/_utils/get-data-range";
 
 const dataRange = await getDataRange();
 // defaults
-const stateDefaults = { fromDate: dataRange.newest, toDate: dataRange.newest}
+const stateDefaults = { fromDate: dataRange.newest, toDate: dataRange.newest };
 
 const STORAGE_KEY = "dashboard-energy";
 
 export default function EnergyDashboard() {
   const [state, setState] = useState(() =>
-    loadDashboardState(STORAGE_KEY, stateDefaults)
+    loadDashboardState(STORAGE_KEY, stateDefaults),
   );
 
   //initialize from saved state so charts load immediately on page load
@@ -44,7 +44,7 @@ export default function EnergyDashboard() {
     if (!dateStr) return null;
 
     const [year, month, day] = dateStr.split("-");
-    return new Date(year, month - 1, day); // local time ✅
+    return new Date(year, month - 1, day);
   };
 
   const formatDateRange = (from, to) => {
@@ -80,29 +80,37 @@ export default function EnergyDashboard() {
     if (state.fromDate && state.toDate) {
       validateAll(state.fromDate, state.toDate);
     }
-  }, [  state.fromDate, state.toDate, validateAll]);
-
+  }, [state.fromDate, state.toDate, validateAll]);
 
   // Base stats
   const [stats, setStats] = useState([
-    { label: "Average Generation", value: "-"},
-    { label: "Maximum Generation", value: "-"},
-    { label: "Minimum Generation", value: "-"},
-    { label: "Average Generation", value: "-"},
-    { label: "Maximum Consumption", value: "-"},
-    { label: "Minimum Consumption", value: "-"},
-  ])
+    { label: "Average Generation", value: "-" },
+    { label: "Maximum Generation", value: "-" },
+    { label: "Minimum Generation", value: "-" },
+    { label: "Average Generation", value: "-" },
+    { label: "Maximum Consumption", value: "-" },
+    { label: "Minimum Consumption", value: "-" },
+  ]);
 
-  const fetchStats = async() => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/energy/cards?start=${appliedState?.fromDate}&end=${appliedState?.toDate}`, {credentials: "include"});
+  const fetchStats = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/energy/cards?start=${appliedState?.fromDate}&end=${appliedState?.toDate}`,
+      { credentials: "include" },
+    );
     const data = await res.json();
+    console.log("stats data:", data);
     setStats(data);
-  }
+  };
 
   // Compute displayed values based on unit
   const displayStats = stats.map((item) => ({
     ...item,
-    value: unit === "kWh" ? item.value / 1000 : item.value,
+    value:
+      typeof item.value === "number"
+        ? parseFloat(
+            (unit === "kWh" ? item.value / 1000 : item.value).toFixed(2),
+          )
+        : item.value,
     unit: unit,
     subtitle: formatDateRange(appliedState?.fromDate, appliedState?.toDate),
   }));
@@ -137,8 +145,11 @@ export default function EnergyDashboard() {
             toDate={state.toDate}
             errors={errors}
             onDateChange={(field, value) => {
-               setState((prev) => ({ ...prev, [field === "from" ? "fromDate" : "toDate"]: value }));
-              }}
+              setState((prev) => ({
+                ...prev,
+                [field === "from" ? "fromDate" : "toDate"]: value,
+              }));
+            }}
             setDate={({ fromDate, toDate }) => {
               const nextState = { ...state, fromDate, toDate };
               setState(nextState);
@@ -154,15 +165,10 @@ export default function EnergyDashboard() {
           />
         </div>
       </div>
-      <div className="lg:hidden mb-6">
-        <Carousel items={displayStats} horizontal />
+      <div className="mb-6">
+        <Carousel items={displayStats} horizontal maxVisible={3} />
       </div>
-      <div className="hidden lg:block">
-        <InfoCard
-          colsClass="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-          items={displayStats}
-        />
-      </div>
+
       <div className="flex justify-center mb-6 lg:justify-start">
         <button
           onClick={() => setUnit(unit === "kWh" ? "W" : "kWh")}
