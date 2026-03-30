@@ -8,7 +8,8 @@ export default function DateRangePicker({
   errors = {},
   onDateChange,
   aggregation,
-  setAggregation
+  setAggregation,
+  aggregationOptions,
 }) {
 
   const [tempFrom, setTempFrom] = useState(fromDate)
@@ -66,7 +67,11 @@ export default function DateRangePicker({
 
       <div className="flex flex-col">
         <label className="block text-sm mb-1">Aggregation</label>
-        <TimeGranularityDropdown value={tempAggregation} onChange={setTempAggregation} />
+        <TimeGranularityDropdown 
+          value={tempAggregation} 
+          onChange={setTempAggregation} 
+          options={aggregationOptions} 
+        />
         <div className="h-4 mt-1"/>
     </div>
 

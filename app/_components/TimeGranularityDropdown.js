@@ -8,9 +8,20 @@ export default function TimeGranularityDropdown({
   value,
   onChange = () => {},
   className = "",
+  options,
 }) {
   const [timeInterval, setTimeInterval] = useState("none");
   const selectedValue = value ?? timeInterval;
+
+  const defaultOptions = [
+    { value: "none", label: "None" },
+    { value: "H", label: "Hourly" },
+    { value: "D", label: "Daily" },
+    { value: "M", label: "Monthly" },
+    { value: "Y", label: "Yearly" },
+  ];
+
+  const dropdownOptions = options || defaultOptions;
 
   const handleChange = (e) => {
     const selectedInterval = e.target.value;
@@ -28,11 +39,11 @@ export default function TimeGranularityDropdown({
           onChange={handleChange}
           className="border p-2 rounded text-gray-600 w-full"
         >
-          <option value="none">None</option>
-          <option value="H">Hourly</option>
-          <option value="D">Daily</option>
-          <option value="M">Monthly</option>
-          <option value="Y">Yearly</option>
+          {dropdownOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
       </div>
     </div>
