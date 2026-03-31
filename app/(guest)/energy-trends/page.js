@@ -60,10 +60,10 @@ export default function EnergyData() {
           {/* ── Page header ── */}
           <div className="mb-5">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Energy Data
+              Energy Trends
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              View historical building energy consumption and generation data.
+              View GBTAC building energy data over time
             </p>
           </div>
 
