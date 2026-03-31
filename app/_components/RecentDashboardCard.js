@@ -1,4 +1,27 @@
+"use client";
 import Link from "next/link";
+/**
+ * RecentDashboardCard component
+ *
+ * Displays a summary card for a recently saved dashboard.
+ * Links to the dashboard path stored in the data object.
+ *
+ * @param {object} data - Saved dashboard data
+ * @param {string} data.path - URL path to navigate to on click
+ * @param {string} data.title - Display title of the dashboard
+ * @param {string|number} [data.lastVisited] - Timestamp of last visit; shown as formatted date
+ * @param {object} [data.summary] - Dashboard-specific summary fields
+ * @param {string} [data.summary.fromDate] - Start date of the saved date range
+ * @param {string} [data.summary.toDate] - End date of the saved date range
+ *
+ * Notes:
+ * - Marked as client component to avoid hydration mismatch from new Date()
+ * - Summary fields are optional and rendered only when present
+ *
+ * @returns A clickable dashboard summary card
+ *
+ * @author Cintya Lara Flores
+ */
 
 export default function RecentDashboardCard({ data }) {
   return (

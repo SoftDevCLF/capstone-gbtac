@@ -4,6 +4,26 @@ import { useState, useEffect } from "react";
 import InfoCard from "./InfoCard";
 import Image from "next/image";
 
+/**
+ * Carousel component
+ *
+ * Displays items as paginated cards, showing one card on mobile and
+ * two side-by-side on md+ screens. Navigation is via prev/next arrow
+ * buttons and clickable indicator dots.
+ *
+ * @param {Array} items - List of items to render inside InfoCard
+ * @param {boolean} horizontal - Passed through to InfoCard to control its layout
+ *
+ * Notes:
+ * - Wraps around on both ends
+ * - On md+ screens, two cards are shown; index advances by 1 but both slots update
+ * - Indicator dots reflect the active index, not the full visible range
+ *
+ * @returns A paginated card carousel with dot indicators
+ *
+ * @author Cintya Lara Flores
+ */
+
 export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
   const [index, setIndex] = useState(0);
   const [isLarge, setIsLarge] = useState(
@@ -35,6 +55,9 @@ export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
   const visibleCount = isLarge ? maxVisible : isMedium ? 2 : 1;
   const step = visibleCount;
 
+  // Bail out early — modulo on 0 would produce NaN and break navigation
+  if (items.length === 0) return null;
+
   const next = () => {
     setIndex((prev) => (prev + step) % items.length);
   };
@@ -43,16 +66,18 @@ export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
     setIndex((prev) => (prev - step + items.length) % items.length);
   };
 
+  const cardClass = "w-[300px]";
+
   return (
     <div className="relative w-full">
       <div className="flex justify-center gap-4">
         {items[index] && (
-          <div className="w-[300px]">
+          <div className={cardClass}>
             <InfoCard items={[items[index]]} horizontal={horizontal} />
           </div>
         )}
         {items[index + 1] && (
-          <div className="w-[300px] hidden md:block">
+          <div className={`${cardClass} hidden md:block`}>
             <InfoCard items={[items[index + 1]]} horizontal={horizontal} />
           </div>
         )}
@@ -63,7 +88,7 @@ export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
         )}
       </div>
 
-      {/* Indicators */}
+      {/* Dot indicators — one per item, active dot reflects current index */}
       <div className="flex justify-center gap-2 mt-4">
         {Array.from({ length: Math.ceil(items.length / step) }).map((_, i) => (
           <button
