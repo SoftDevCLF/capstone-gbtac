@@ -125,18 +125,6 @@ export default function Navbar({
             </Link>
           </li>
         )}
-
-        {/*Display Manage Dashboard link*/}
-        {displayDashboardMngmt && (
-          <li>
-            <Link
-              href="/dashboard-manager"
-              className="hover:opacity-70 transition"
-            >
-              Manage Dashboard
-            </Link>
-          </li>
-        )}
       </ul>
     </nav>
   );
