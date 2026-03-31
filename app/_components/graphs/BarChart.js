@@ -1,12 +1,25 @@
-import {Bar} from 'react-chartjs-2';
+"use client";
 
-export default function BarChart({options, data }){
-    return (
-        <div className="bg-white p-5 m-5 min-h-150">
-            <Bar
-                data= {data}
-                options={options}
-            />
-        </div>
-    );
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export default function BarChart({ options, data }) {
+  return <Bar data={data} options={options} />;
 }
