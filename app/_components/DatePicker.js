@@ -35,6 +35,7 @@ export default function DateRangePicker({
   onDateChange,
   aggregation,
   setAggregation,
+  aggregationOptions,
 }) {
   const [tempFrom, setTempFrom] = useState(fromDate);
   const [tempTo, setTempTo] = useState(toDate);
@@ -97,8 +98,8 @@ export default function DateRangePicker({
         <TimeGranularityDropdown
           value={tempAggregation}
           onChange={setTempAggregation}
+          options={aggregationOptions}
         />
-        {/* Reserved space to align baseline with the date inputs */}
         <div className="h-4 mt-1" />
       </div>
 
