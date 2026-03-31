@@ -12,11 +12,9 @@ import Carousel from "@/app/_components/Carousel";
 import { useSearchParams } from "next/navigation";
 import { useDateValidation } from "@/app/_components/hooks/useDateValidation";
 
-
 const STORAGE_KEY = "dashboard-ambient-temp";
 const DEFAULT_FROM_DATE = "2024-10-01";
 const DEFAULT_TO_DATE = "2024-10-07";
-
 
 // 13 sensors mapped by floor from building floor plans
 const FLOOR_SENSOR_MAP = {
@@ -70,6 +68,16 @@ const SENSOR_LABELS = {
   "20016_TL2": "South 2 2nd Floor",
 };
 
+/**
+ * formatAsOf
+ *
+ * Formats a sensor timestamp and sensor name into a human-readable subtitle
+ * string used on KPI stat cards.
+ *
+ * @param {string | null} ts         - ISO timestamp string, or null
+ * @param {string}        sensorCode - Sensor code key into SENSOR_LABELS
+ * @returns {string | null} Formatted string, or null if ts is falsy
+ */
 const formatAsOf = (ts, sensorCode) => {
   if (!ts) return null;
   const formatted = new Date(ts).toLocaleString([], {
@@ -90,6 +98,29 @@ const FLOOR_IMAGES = {
   "2nd Floor": "/floors/GBTAC-level2.png",
 };
 
+/**
+ * AmbientTempDashboard
+ *
+ * Dashboard page for visualizing ambient temperature readings across GBTAC
+ * building sensors. Allows filtering by date range, floor level, and cardinal
+ * orientation, then renders a line chart and three KPI stat cards (average,
+ * high, low). Floor layout images update to reflect the active floor selection.
+ *
+ * Notes:
+ * - State is split into `state` (staged, updates on every control change) and
+ *   `appliedState` (committed, drives the chart and KPIs). The chart only
+ *   re-renders when Apply is clicked on the DatePicker, keeping expensive
+ *   fetches out of the filter toggle handlers.
+ * - Floor and orientation filters apply immediately on toggle without requiring
+ *   Apply, because they filter the already-fetched sensor list rather than
+ *   triggering a new fetch.
+ * - Sensor list is derived in two steps: floor filter → orientation filter.
+ *   An empty selection in either dimension means "all" for that dimension.
+ * - The Carousel / InfoCard split renders the stat cards as a horizontal
+ *   scroll on small screens and a 3-column grid on large screens.
+ *
+ * @author Cintya Lara Flores
+ */
 export default function AmbientTempDashboard() {
   const [state, setState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, {});
@@ -110,6 +141,7 @@ export default function AmbientTempDashboard() {
     }
   }, [from]);
 
+  // appliedState is null until the user has committed a valid date range via Apply
   const [appliedState, setAppliedState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, {});
     if (saved.fromDate && saved.toDate) {
@@ -130,22 +162,22 @@ export default function AmbientTempDashboard() {
 
   const [kpiStats, setKpiStats] = useState(null);
 
+  // Wrapped in useCallback so LineHandler's onStatsReady prop reference is stable and doesn't cause unnecessary re-renders or effect re-runs in LineHandler that depend on it
   const handleStatsReady = useCallback((stats) => setKpiStats(stats), []);
 
   const { fromDate, toDate, floors = [], orientations = [] } = state;
 
-
+  // Persist staged state on every change so settings survive a page reload
   useEffect(() => {
     saveDashboardState(STORAGE_KEY, state);
   }, [state]);
 
+  // Re-run validation whenever the staged dates change to keep error UI current
   useEffect(() => {
     if (state.fromDate && state.toDate) {
       validateAll(state.fromDate, state.toDate);
     }
   }, [state.fromDate, state.toDate, validateAll]);
-
-
 
   // Step 1: filter by floor (empty = all floors after Apply)
   const floorFiltered = !appliedState
@@ -163,6 +195,8 @@ export default function AmbientTempDashboard() {
           appliedState.orientations.includes(SENSOR_ORIENTATION[code]),
         );
 
+  // Toggles a single value in a multi-select filter and immediately applies it if a valid date range is already committed.
+  // Also resets KPI stats to null to trigger loading state on the cards until new stats come in for the updated sensor list.
   const handleMultiSelect = (key, value) => {
     setKpiStats(null);
     setState((prev) => {
@@ -172,6 +206,7 @@ export default function AmbientTempDashboard() {
         ? currentValues.filter((v) => v !== value)
         : [...currentValues, value];
 
+      // Preserve the canonical display order rather than toggle order
       const optionOrder =
         key === "floors" ? FLOOR_OPTIONS : ORIENTATION_OPTIONS;
 
@@ -194,14 +229,15 @@ export default function AmbientTempDashboard() {
     });
   };
 
+  // Selects all options for a dimension, or clears it if all are already selected
   const handleSelectAll = (key, options) => {
     setKpiStats(null);
     setState((prev) => {
       const currentValues = prev[key] || [];
 
+      // Toggle: if everything is already selected, deselect all; otherwise select everything
       const updatedValues =
         currentValues.length === options.length ? [] : [...options];
-
       const nextState = {
         ...prev,
         [key]: updatedValues,
@@ -220,6 +256,15 @@ export default function AmbientTempDashboard() {
     });
   };
 
+  /**
+   * parseLocalDate
+   *
+   * Parses a YYYY-MM-DD string as a local-time Date to avoid UTC offset shifts
+   * that would occur with new Date(dateStr) on date-only strings.
+   *
+   * @param {string | null} dateStr - Date string in YYYY-MM-DD format
+   * @returns {Date | null} Parsed local Date, or null if dateStr is falsy
+   */
   const parseLocalDate = (dateStr) => {
     if (!dateStr) return null;
 
@@ -227,6 +272,16 @@ export default function AmbientTempDashboard() {
     return new Date(year, month - 1, day); // local time
   };
 
+  /**
+   * formatDateRange
+   *
+   * Formats a from/to date pair into a compact range string for KPI subtitles
+   * when live sensor stats are not yet available.
+   *
+   * @param {string} from - Start date in YYYY-MM-DD format
+   * @param {string} to   - End date in YYYY-MM-DD format
+   * @returns {string | null} Formatted range string, or null if either date is false
+   */
   const formatDateRange = (from, to) => {
     if (!from || !to) return null;
 
@@ -246,6 +301,10 @@ export default function AmbientTempDashboard() {
     return `As of: ${fromFormatted} - ${toFormatted}`;
   };
 
+  // KPI cards show live sensor stats once the chart reports them; fall back to
+  // the applied date range as a subtitle while data is loading or unavailable.
+  // The date range subtitle is also used if the user has selected a range but not yet clicked Apply,
+  // since the KPIs reflect the last applied state, not the live staged state.
   const stats = [
     {
       label: "Average Building Temperature",
@@ -300,6 +359,7 @@ export default function AmbientTempDashboard() {
 
   return (
     <DashboardLayout title="Ambient Temperature Dashboard">
+      {/* ── Controls row: date range, floor filter, orientation filter ── */}
       <div className="flex flex-wrap gap-6 items-start mb-6">
         <div>
           <DatePicker
@@ -325,6 +385,7 @@ export default function AmbientTempDashboard() {
                   orientations: nextState.orientations,
                 });
               } else {
+                // Invalid range — clear applied state so the chart is hidden and KPIs show the date range subtitle instead of stale stats
                 setAppliedState(null);
               }
             }}
@@ -384,6 +445,7 @@ export default function AmbientTempDashboard() {
         </div>
       </div>
 
+      {/* Carousel on small screens, 3-column grid on large screens */}
       <div className="lg:hidden mb-6">
         <Carousel items={stats} horizontal />
       </div>
@@ -394,6 +456,7 @@ export default function AmbientTempDashboard() {
         />
       </div>
 
+      {/* ── Line chart — keyed on dates + sensor list to force remount on change ── */}
       <div
         id="chart-print-area"
         className="bg-white rounded-lg shadow-md p-4 mt-6"
@@ -420,6 +483,7 @@ export default function AmbientTempDashboard() {
         )}
       </div>
 
+      {/* ── Floor layout images — only rendered for floors with a known image ── */}
       <div className="mt-6 p-4 border rounded bg-white">
         <h3 className="font-semibold mb-4">Selected Floor Layout</h3>
 

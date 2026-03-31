@@ -4,10 +4,23 @@ import Footer from "../../_components/Footer";
 import Image from "next/image";
 import Breadcrumbs from "@/app/_components/Breadcrumbs";
 
+/**
+ * About
+ *
+ * Static informational page describing GBTAC's mission, services, and
+ * facilities. Contains no dynamic data or client-side interactivity.
+ *
+ * Notes:
+ * - displayAbout={false} hides the About link in the Navbar since this is
+ *   the About page itself.
+ *
+ * @author Cintya Lara Flores
+ */
 export default function About() {
   return (
     <div className="flex flex-col min-h-screen bg-[#FdFdFd] font-sans">
       <SecondaryNav />
+      {/* About link hidden — this is the About page */}
       <Navbar displayAbout={false} />
       <div className="bg-gray-100">
         <Breadcrumbs />
@@ -15,15 +28,14 @@ export default function About() {
       <main className="flex-1 bg-gray-100">
         <div className="sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 px-4 pb-8 pt-4">
           <section className="mx-auto bg-white rounded-md shadow-sm px-12 py-16 space-y-16">
+            {/* ── About Us ── */}
             <div>
               <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
                 About Us
               </h1>
-
-              <p className="mt-6 text-xl md:text-2xl font-light text-gray-600 ">
+              <p className="mt-6 text-xl md:text-2xl font-light text-gray-600">
                 Building the future
               </p>
-
               <div className="mt-10 space-y-6 text-lg text-gray-700 text-justify">
                 <p>
                   Founded in 2008, the Green Building Technology Access Centre
@@ -32,7 +44,6 @@ export default function About() {
                   systems, and services that will fundamentally change how we
                   build, educate, and develop skilled labour.
                 </p>
-
                 <p>
                   Our mission is to prove, implement, and commercialize new
                   building materials, systems, and methods that lead to the
@@ -44,7 +55,6 @@ export default function About() {
                   also developing training and support systems to upskill both
                   the residential and commercial construction industries.
                 </p>
-
                 <p>
                   We support a broad range of industry partners, industry
                   organizations, municipalities, governments, academic
@@ -58,11 +68,10 @@ export default function About() {
               </div>
             </div>
 
-            {/* ===== Services ===== */}
+            {/* ── Services ── */}
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 ">Services</h2>
-
-              <ul className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12 text-lg text-gray-700  list-disc list-inside">
+              <h2 className="text-3xl font-bold text-gray-900">Services</h2>
+              <ul className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12 text-lg text-gray-700 list-disc list-inside">
                 <li>Early-stage business development for commercialization</li>
                 <li>
                   Net-Zero energy and Net Zero emissions advisory and analysis
@@ -81,14 +90,12 @@ export default function About() {
               </ul>
             </div>
 
-            {/* ===== Our Facilities ===== */}
+            {/* ── Our Facilities ── */}
             <div>
               <h2 className="text-3xl font-bold text-gray-900">
                 Our Facilities
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Card 1 */}
                 <div className="bg-gray-50 rounded-md shadow-sm overflow-hidden mt-8">
                   <Image
                     src="/image3.png"
@@ -98,10 +105,10 @@ export default function About() {
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 ">
+                    <h3 className="text-xl font-bold text-gray-900">
                       Green Building Technology Lab and Demonstration Centre
                     </h3>
-                    <p className="mt-4 text-gray-700  text-justify">
+                    <p className="mt-4 text-gray-700 text-justify">
                       Explore our 6,350-square-foot living, breathing example of
                       energy efficiency, building-integrated green technologies
                       and renewable energy solutions.
@@ -109,7 +116,6 @@ export default function About() {
                   </div>
                 </div>
 
-                {/* Card 2 */}
                 <div className="bg-gray-50 rounded-md shadow-sm overflow-hidden mt-8">
                   <Image
                     src="/image4.png"
@@ -119,10 +125,10 @@ export default function About() {
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 ">
+                    <h3 className="text-xl font-bold text-gray-900">
                       Solar Roller Mobile Lab
                     </h3>
-                    <p className="mt-4 text-gray-700  text-justify">
+                    <p className="mt-4 text-gray-700 text-justify">
                       Powered by solar generation, this 14 x 8 foot cargo
                       trailer is used for research, training, education and
                       outreach events.
@@ -130,7 +136,6 @@ export default function About() {
                   </div>
                 </div>
 
-                {/* Card 3 */}
                 <div className="bg-gray-50 rounded-md shadow-sm overflow-hidden mt-8">
                   <Image
                     src="/image5.png"
@@ -140,10 +145,10 @@ export default function About() {
                     className="w-full h-48 object-cover"
                   />
                   <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 ">
+                    <h3 className="text-xl font-bold text-gray-900">
                       Integrated Solar and Rainwater Harvesting Labs
                     </h3>
-                    <p className="mt-4 text-gray-700  text-justify">
+                    <p className="mt-4 text-gray-700 text-justify">
                       Used primarily for research, training and demonstration
                       this lab is home to industry-leading solar energy
                       generation and water filtration solutions.
@@ -155,7 +160,6 @@ export default function About() {
           </section>
         </div>
       </main>
-
       <Footer />
     </div>
   );
