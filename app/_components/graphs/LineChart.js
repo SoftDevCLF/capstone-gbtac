@@ -1,12 +1,30 @@
-import {Line} from 'react-chartjs-2';
+"use client";
 
-export default function LineChart({options, data }){
-    return (
-        <div className="bg-white p-5 m-5 min-h-150">
-            <Line
-                data= {data}
-                options={options}
-            />
-        </div>
-    );
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+import "chartjs-adapter-date-fns";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale
+);
+
+export default function LineChart({ options, data }) {
+  return <Line data={data} options={options} />;
 }

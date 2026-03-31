@@ -9,12 +9,18 @@ import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import { useDateValidation } from "../../../_components/hooks/useDateValidation";
 import { getDataRange } from "@/app/_utils/get-data-range";
 
+// ****BUG****Top-level await is not supported in "use client" components — getDataRange
+// should be called inside a useEffect or fetched server-side and passed as a prop
 const dataRange = await getDataRange();
 const STORAGE_KEY = "dashboard-wall-temp";
 const DEFAULT_FROM_DATE = "2018-10-13";
 const DEFAULT_TO_DATE = dataRange.newest;
 
-// Mapping for the 24 Wall sensors derived from database naming
+// 24 wall sensors mapped by floor, derived from database naming conventions.
+// ****BUG****
+// 2nd Floor is in FLOOR_OPTIONS but has an empty array in FLOOR_SENSOR_MAP —
+// Selecting it will silently produce zero sensors with no feedback to the user.
+// This should either be removed from FLOOR_OPTIONS or have a disabled state in the UI until sensors are added.
 const FLOOR_SENSOR_MAP = {
   Basement: [
     "30000_TL57",
@@ -102,6 +108,26 @@ const SENSOR_LABELS = {
 const FLOOR_OPTIONS = ["Basement", "1st Floor", "2nd Floor"];
 const ORIENTATION_OPTIONS = ["North", "South", "East", "West"];
 
+/**
+ * WallTempDashboard
+ *
+ * Dashboard page for visualising wall temperature readings across 24 GBTAC
+ * building sensors. Allows filtering by date range, floor level, and cardinal
+ * orientation, then renders a line chart for the active sensor set.
+ *
+ * Notes:
+ * - State is split into `state` (staged) and `appliedState` (committed).
+ *   Unlike other dashboards, appliedState is never null — it initialises
+ *   directly from saved state or defaults so the chart loads immediately.
+ * - Floor and orientation filters apply immediately on toggle without requiring
+ *   Apply, because they filter the already-fetched sensor list client-side.
+ * - Sensor list is derived in two steps: floor filter → orientation filter.
+ *   An empty selection in either dimension means "all" for that dimension.
+ * - The Save Screen button persists the current state to localStorage and also
+ *   saves a record to the Recent Dashboards list with a summary of the current filters.
+ *
+ * @author Cintya Lara Flores
+ */
 export default function WallTempDashboard() {
   const [state, setState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, {});
@@ -114,6 +140,10 @@ export default function WallTempDashboard() {
   });
 
   //initialize from saved state so chart loads immediately
+  // ****CHECK*** appliedState is never null on first load — Unlike AmbientTempDashboard,
+  // this dashboard initialises appliedState directly from saved state (or defaults),
+  // so it can never be null. The !appliedState guards on floorFiltered and activeSensors
+  // are therefore dead code. Worth aligning with the other dashboards for consistency.
   const [appliedState, setAppliedState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, {});
     return {
@@ -131,24 +161,26 @@ export default function WallTempDashboard() {
 
   const { fromDate, toDate, floors = [], orientations = [] } = state;
 
-
+  // Persist staged state on every change so settings survive a page reload
   useEffect(() => {
     saveDashboardState(STORAGE_KEY, state);
   }, [state]);
 
-  //validate dates on every change to show errors immediately
+  // Re-run validation on every date change to keep error UI current
   useEffect(() => {
     if (state.fromDate && state.toDate) {
       validateAll(state.fromDate, state.toDate);
     }
-  }, [  state.fromDate, state.toDate, validateAll]);
+  }, [state.fromDate, state.toDate, validateAll]);
 
+  // Step 1: resolve sensor codes for the selected floors (empty = all floors)
   const floorFiltered = !appliedState
     ? []
     : appliedState.floors.length === 0
       ? Object.values(FLOOR_SENSOR_MAP).flat()
       : appliedState.floors.flatMap((f) => FLOOR_SENSOR_MAP[f] || []);
 
+  // Step 2: narrow by orientation (empty = all orientations)
   const activeSensors = !appliedState
     ? []
     : appliedState.orientations.length === 0
@@ -157,6 +189,7 @@ export default function WallTempDashboard() {
           appliedState.orientations.includes(SENSOR_ORIENTATION[code]),
         );
 
+  // Toggles a single value in a multi-select filter and immediately applies it
   const handleMultiSelect = (key, value) => {
     setState((prev) => {
       const currentValues = prev[key] || [];
@@ -187,10 +220,12 @@ export default function WallTempDashboard() {
     });
   };
 
+  // Selects all options for a dimension, or clears it if all are already selected
   const handleSelectAll = (key, options) => {
     setState((prev) => {
       const currentValues = prev[key] || [];
 
+      // Toggle: if everything is already selected, deselect all
       const updatedValues =
         currentValues.length === options.length ? [] : [...options];
 
@@ -212,6 +247,7 @@ export default function WallTempDashboard() {
     });
   };
 
+  // Saves the current dashboard state to localStorage and also records a summary in the Recent Dashboards list
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
 
@@ -237,6 +273,7 @@ export default function WallTempDashboard() {
 
   return (
     <DashboardLayout title="Wall Temperature Dashboard">
+      {/* ── Controls row: date range, floor filter, orientation filter ── */}
       <div className="flex flex-wrap gap-6 items-start mb-6">
         <div>
           <DatePicker
@@ -261,6 +298,7 @@ export default function WallTempDashboard() {
                   orientations: nextState.orientations,
                 });
               } else {
+                // Invalid range — clear applied state so the chart is hidden
                 setAppliedState(null);
               }
             }}
@@ -320,6 +358,7 @@ export default function WallTempDashboard() {
         </div>
       </div>
 
+      {/* ── Line chart — keyed on dates + sensor list to force remount on change ── */}
       <div
         id="chart-print-area"
         className="bg-white rounded-lg shadow-md p-4 mt-6"
