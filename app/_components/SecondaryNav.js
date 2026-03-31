@@ -75,11 +75,9 @@ export default function SecondaryNav() {
     };
 
     window.addEventListener("profileUpdated", handleProfileUpdate);
-    window.addEventListener("profileUpdated", handleProfileUpdate);
 
     return () => {
       unsubscribe();
-      window.removeEventListener("profileUpdated", handleProfileUpdate);
       window.removeEventListener("profileUpdated", handleProfileUpdate);
     };
   }, []);

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import InfoCard from "./InfoCard";
 import Image from "next/image";
 
-<<<<<<< HEAD
 /**
  * Carousel component
  *
@@ -25,10 +24,7 @@ import Image from "next/image";
  * @author Cintya Lara Flores
  */
 
-export default function Carousel({ items = [], horizontal }) {
-=======
 export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
->>>>>>> main
   const [index, setIndex] = useState(0);
   const [isLarge, setIsLarge] = useState(
     () =>
@@ -75,20 +71,11 @@ export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
   return (
     <div className="relative w-full">
       <div className="flex justify-center gap-4">
-<<<<<<< HEAD
-        {/* Primary card — always visible */}
-=======
->>>>>>> main
         {items[index] && (
           <div className={cardClass}>
             <InfoCard items={[items[index]]} horizontal={horizontal} />
           </div>
         )}
-<<<<<<< HEAD
-
-        {/* Secondary card — only shown on md+ and when a next item exists */}
-=======
->>>>>>> main
         {items[index + 1] && (
           <div className={`${cardClass} hidden md:block`}>
             <InfoCard items={[items[index + 1]]} horizontal={horizontal} />
@@ -106,26 +93,14 @@ export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
         {Array.from({ length: Math.ceil(items.length / step) }).map((_, i) => (
           <button
             key={i}
-<<<<<<< HEAD
-            onClick={() => setIndex(i)}
-            /* Accessibility: Each dot is a button with an aria-label indicating which item it goes to. The active dot has a distinct color, while inactive dots are gray. */
-            aria-label={`Go to item ${i + 1}`}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              i === index ? "bg-[#4D0B5C]" : "bg-gray-300"
-=======
             onClick={() => setIndex(i * step)}
             className={`w-3 h-3 rounded-full ${
               Math.floor(index / step) === i ? "bg-[#4D0B5C]" : "bg-gray-300"
->>>>>>> main
             }`}
           />
         ))}
       </div>
 
-<<<<<<< HEAD
-      {/* Previous button */}
-=======
->>>>>>> main
       <button
         onClick={prev}
         className="absolute top-1/2 left-0 -translate-y-1/2 px-4"
@@ -137,11 +112,6 @@ export default function Carousel({ items = [], horizontal, maxVisible = 2 }) {
           height={24}
         />
       </button>
-<<<<<<< HEAD
-
-      {/* Next button */}
-=======
->>>>>>> main
       <button
         onClick={next}
         className="absolute top-1/2 right-0 -translate-y-1/2 px-4"
