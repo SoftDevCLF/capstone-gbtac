@@ -5,11 +5,40 @@ const GRID_COLS = {
   4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
 };
 
-export default function InfoCard({
-  items,
-  horizontal = false,
-  colsClass,
-}) {
+/**
+ * InfoCard component
+ *
+ * Renders a collection of stat cards, each showing a label, a value with an
+ * optional unit, and an optional subtitle. Supports two layout modes: a
+ * responsive CSS grid (default) or a horizontal scrollable row of fixed-width
+ * cards.
+ *
+ * @param {Array<{
+ *   label:     string,
+ *   value:     number | string,
+ *   unit?:     string | Function,
+ *   subtitle?: string | null
+ * }>} items - Cards to render. See Notes for subtitle and unit behaviour.
+ *
+ * @param {boolean}  [horizontal=false] - When true, renders cards as a
+ *                                        flex row instead of a grid.
+ * @param {string}   [colsClass]        - Tailwind grid-cols class to override
+ *                                        the automatic column count derived
+ *                                        from items.length.
+ *
+ * Notes:
+ * - unit: if a function, it is called with item.value and its return value is
+ *   used as the unit string. A function unit also enables positive/negative
+ *   green/red colouring on the value.
+ * - subtitle: undefined → shows "As of: <current date/time>"; null or "" →
+ *   shows nothing; any other string → shown as-is.
+ * - colsClass is ignored in horizontal mode.
+ * - GRID_COLS caps at 4 columns; pass colsClass explicitly for wider grids.
+ *
+ * @author Cintya Lara Flores
+ */
+
+export default function InfoCard({ items, horizontal = false, colsClass }) {
   const currentDate = new Date().toLocaleString([], {
     month: "short",
     day: "numeric",
