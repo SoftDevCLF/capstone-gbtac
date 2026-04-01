@@ -20,7 +20,9 @@
  * - Clicking the backdrop calls onConfirm, not onCancel — set disableBackdropClose to true
  *   to prevent any action on backdrop click
  * - Click propagation from the modal box to the backdrop is stopped to prevent accidental confirmation
+ * @author Temi Bankole
  */
+
 export default function ConfirmModal({
   title,
   message,

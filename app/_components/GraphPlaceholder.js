@@ -8,6 +8,7 @@
  *
  * Notes:
  * - height should match the height of the graph it replaces to prevent layout shift
+ * @author Temi Bankole
  */
 export default function GraphPlaceholder({ height = "h-64" }) {
   return (

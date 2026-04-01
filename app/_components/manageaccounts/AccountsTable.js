@@ -5,6 +5,10 @@ import AccountRow from "./AccountRow";
 import ConfirmModal from "../ConfirmModal";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * AccountsTable
  *
  * Fetches all staff accounts from the API and renders them in a paginated table

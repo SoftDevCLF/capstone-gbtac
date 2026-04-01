@@ -1,6 +1,10 @@
 import CustomHandler from "../graphs/handlers/CustomHandler";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * GraphContainer
  *
  * Thin layout wrapper that renders the CustomHandler graph within a styled

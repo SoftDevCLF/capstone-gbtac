@@ -3,6 +3,10 @@
 import { useState } from "react";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * ChartSettings
  *
  * Provides form controls for customizing chart display properties including

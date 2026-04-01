@@ -3,6 +3,10 @@
 import { useState, useMemo } from "react";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * SensorSearch
  *
  * Displays a searchable list of available sensors and allows users to add them

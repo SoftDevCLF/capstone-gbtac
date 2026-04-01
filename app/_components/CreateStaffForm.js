@@ -18,7 +18,8 @@ import Link from "next/link";
  * - On success the form resets to its initial state; navigation back to
  *   /account-manager is left to the user via the Cancel button
  * - Cancel navigates to /account-manager and is typed as a reset button, so it
- *   also clears the form if clicked before any submission attempt
+ *   also clears the form if clicked before any submission 
+ * @author Temi Bankole
  */
 export default function CreateStaffForm() {
   const [formData, setFormData] = useState({

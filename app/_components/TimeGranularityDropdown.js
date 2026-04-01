@@ -21,6 +21,7 @@ import { useState } from "react";
  *   when value is undefined the component falls back to uncontrolled internal state
  * - onChange is always called regardless of controlled or uncontrolled mode, so the parent
  *   can observe changes without needing to own the state
+ * @author Temi Bankole
  */
 export default function TimeGranularityDropdown({
   value,

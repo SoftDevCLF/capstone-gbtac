@@ -22,6 +22,7 @@ import NotificationModal from "./NotificationModal";
  *   devices
  * - On success, NotificationModal is shown and onClose redirects to /login via
  *   the Next.js router rather than a hard navigation
+ * @author Temi Bankole
  */
 export default function ResetPasswordForm() {
   const router = useRouter();

@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
  *   — see the TODOs in handleResend and handleSubmit
  * - On successful verification the user is routed to /auth/reset-password via
  *   the Next.js router
+ * @author Temi Bankole
  */
 export default function VerifyCodeForm() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);

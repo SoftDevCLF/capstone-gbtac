@@ -3,6 +3,10 @@
 import Link from "next/link";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * AddStaffButton
  *
  * Navigation button that routes the user to the create staff form page.

@@ -1,6 +1,10 @@
 "use client";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * SearchInput
  *
  * Reusable controlled text input for filtering a list. Unwraps the change

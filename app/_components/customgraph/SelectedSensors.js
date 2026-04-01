@@ -1,6 +1,10 @@
 "use client";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * SelectedSensors
  *
  * Displays a scrollable list of sensors currently added to the chart and

@@ -24,7 +24,7 @@ import { useState } from "react";
  * - tempTo is not stale in the "from" onChange — only the From field is changing,
  *   so tempTo still reflects the latest committed To value at that point.
  *
- * @author Cintya Lara Flores
+ * @author Cintya Lara Flores and Temi Bankole
  */
 
 export default function DateRangePicker({

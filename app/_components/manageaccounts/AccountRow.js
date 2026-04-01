@@ -3,6 +3,10 @@
 import Link from "next/link";
 
 /**
+ * @author Temi Bankole
+ */
+
+/**
  * AccountRow
  *
  * Renders a single row in the staff accounts table, displaying the account's

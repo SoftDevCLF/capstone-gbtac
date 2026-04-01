@@ -19,6 +19,7 @@ import ConfirmModal from "./ConfirmModal";
  * - Capture is performed by html2canvas and conversion by jsPDF — both must be installed
  * - Image dimensions are scaled to fit the full PDF page width while preserving aspect ratio
  * - If chartRef.current is null at export time, the export is aborted and an error is logged
+ * @author Temi Bankole
  */
 export default function ExportPDFButton({ chartRef, fileName }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);

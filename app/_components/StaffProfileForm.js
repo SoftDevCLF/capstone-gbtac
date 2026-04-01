@@ -43,6 +43,7 @@ import { doc, getDoc } from "firebase/firestore";
  * - The Save button is disabled until at least one field has changed, all required
  *   fields are valid, and any email change has been password-verified
  * - Cancel navigates to /account-manager for admins and /staff-welcome-page for staff
+ * @author Temi Bankole
  */
 export default function StaffProfileForm({ viewerRole = "staff" }) {
   const isAdmin = viewerRole === "admin";
