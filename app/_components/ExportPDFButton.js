@@ -1,8 +1,3 @@
-//This component will export charts as PDFs.
-//It will use the chart's ref to capture the chart as an image and then use jsPDF to create a PDF document.
-// Then it will trigger a download of the PDF file.
-//libaries needed: html2canvas, jsPDF
-
 "use client";
 
 import { useState } from "react";
@@ -10,6 +5,21 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import ConfirmModal from "./ConfirmModal";
 
+/**
+ * ExportPDFButton
+ *
+ * Renders a button that captures a referenced chart element as an image and
+ * downloads it as a landscape A4 PDF. Prompts the user for confirmation before
+ * exporting.
+ *
+ * @param {React.RefObject} chartRef - Ref attached to the chart DOM element to capture
+ * @param {string} [fileName="chart"] - Base name for the downloaded file, without extension
+ *
+ * Notes:
+ * - Capture is performed by html2canvas and conversion by jsPDF — both must be installed
+ * - Image dimensions are scaled to fit the full PDF page width while preserving aspect ratio
+ * - If chartRef.current is null at export time, the export is aborted and an error is logged
+ */
 export default function ExportPDFButton({ chartRef, fileName }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
@@ -20,23 +30,20 @@ export default function ExportPDFButton({ chartRef, fileName }) {
     }
 
     try {
-      // Capture the chart as an image
       const canvas = await html2canvas(chartRef.current);
       const imgData = canvas.toDataURL("image/png");
 
-      // Create a new PDF document
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "mm",
         format: "a4",
       });
 
-      // Calculate the dimensions of the image in the PDF
+      // Scale image to full page width while preserving aspect ratio
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      // Add the image to the PDF
-      const pdfFileName = fileName || "chart"; //default file name if not provided
+      const pdfFileName = fileName || "chart";
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${pdfFileName}.pdf`);
     } catch (error) {
@@ -69,6 +76,3 @@ export default function ExportPDFButton({ chartRef, fileName }) {
     </>
   );
 }
-
-
-

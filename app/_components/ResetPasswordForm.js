@@ -6,6 +6,23 @@ import Image from "next/image";
 import ConfirmModal from "./ConfirmModal";
 import NotificationModal from "./NotificationModal";
 
+/**
+ * ResetPasswordForm
+ *
+ * Form for users to set a new password. Validates the password against strength
+ * requirements, prompts for confirmation, and redirects to /login on success.
+ *
+ * Notes:
+ * - Validation enforces: minimum 8 characters, at least one uppercase letter, one
+ *   number, and one special character (!@#$%^&*) — errors are shown per field inline
+ * - The API call for the actual password reset is not yet implemented — see the
+ *   TODO in handleConfirmReset
+ * - Password visibility is reveal-on-hold rather than toggle — it hides again on
+ *   mouse up, mouse leave, or touch end, handled separately for touch and pointer
+ *   devices
+ * - On success, NotificationModal is shown and onClose redirects to /login via
+ *   the Next.js router rather than a hard navigation
+ */
 export default function ResetPasswordForm() {
   const router = useRouter();
 
@@ -45,7 +62,7 @@ export default function ResetPasswordForm() {
 
   const handleConfirmReset = () => {
     setShowConfirmModal(false);
-    // TODO: call your reset password API here
+    // TODO: call reset password API here — see GitHub issue for tracking
     setShowNotificationModal(true);
   };
 
@@ -77,6 +94,7 @@ export default function ResetPasswordForm() {
               onChange={handleChange}
               className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             />
+            {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
             <button
               type="button"
               className="absolute right-3 top-4"
@@ -115,6 +133,7 @@ export default function ResetPasswordForm() {
               onChange={handleChange}
               className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             />
+            {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
             <button
               type="button"
               className="absolute right-3 top-4"
