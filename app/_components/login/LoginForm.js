@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import Modal from "./Modal";
+import NotificationModal from "@/app/_components/NotificationModal";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
@@ -53,9 +54,23 @@ export default function LoginForm() {
   const [loginCooldownSeconds, setLoginCooldownSeconds] = useState(0);
   const [resetCooldownSeconds, setResetCooldownSeconds] = useState(0);
   const [captchaToken, setCaptchaToken] = useState("");
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
 
   const router = useRouter();
   const { refreshSession } = useAuth();
+
+  const showNotification = (
+    message,
+    variant = "error",
+    title = variant === "error" ? "Error" : "Success",
+  ) => {
+    setNotification({ open: true, title, message, variant });
+  };
 
   // One ref per digit box — used to move focus forward/backward as the user types
   const inputRefs = useRef([]);
@@ -473,7 +488,7 @@ export default function LoginForm() {
   const handleForgotSubmit = async () => {
     try {
       if (!forgotEmail.trim()) {
-        alert("Please enter your email.");
+        showNotification("Please enter your email.");
         return;
       }
 
@@ -483,21 +498,21 @@ export default function LoginForm() {
 
       if (!result.success) {
         setResetCooldownSeconds(result.remainingSeconds || 0);
-        alert(`Please wait ${result.remainingSeconds}s`);
+        showNotification(`Please wait ${result.remainingSeconds}s`);
         return;
       }
 
-      alert("Verification code sent!");
+      showNotification("Verification code sent!", "success", "Success");
       setStep("code");
     } catch (err) {
-      alert("Reset failed: " + err.message);
+      showNotification("Reset failed: " + err.message);
     }
   };
 
   // Opens the user's mail client with a pre-filled access-request email addressed to the admin
   const handleRequestSubmit = () => {
     if (!employeeEmail.trim()) {
-      alert("Please enter your email first.");
+      showNotification("Please enter your email first.");
       return;
     }
 
@@ -522,7 +537,7 @@ export default function LoginForm() {
     if (!validate()) return;
 
     if (!captchaToken) {
-      alert("Please complete the security check.");
+      showNotification("Please complete the security check.");
       return;
     }
 
@@ -533,7 +548,7 @@ export default function LoginForm() {
 
       if (lockoutStatus.locked) {
         setLoginCooldownSeconds(lockoutStatus.remainingSeconds);
-        alert(
+        showNotification(
           `Too many failed login attempts. Please wait ${lockoutStatus.remainingSeconds} seconds before trying again.`,
         );
         return;
@@ -545,7 +560,7 @@ export default function LoginForm() {
         await verifyCaptcha(captchaToken);
       } catch (captchaErr) {
         resetTurnstile();
-        alert(
+        showNotification(
           captchaErr.message ||
             "CAPTCHA verification failed. Please try again.",
         );
@@ -558,7 +573,7 @@ export default function LoginForm() {
       const allowed = await checkAllowedUserWithToken(idToken);
 
       if (!allowed.allowed) {
-        alert("You are not authorized to access this app.");
+        showNotification("You are not authorized to access this app.");
         await signOut(auth);
         setPassword("");
         resetTurnstile();
@@ -572,7 +587,7 @@ export default function LoginForm() {
         await signOut(auth);
         setPassword("");
         resetTurnstile();
-        alert("No access profile was found for this account.");
+        showNotification("No access profile was found for this account.");
         return;
       }
 
@@ -582,7 +597,7 @@ export default function LoginForm() {
         await signOut(auth);
         setPassword("");
         resetTurnstile();
-        alert("This account is not active.");
+        showNotification("This account is not active.");
         return;
       }
 
@@ -602,13 +617,13 @@ export default function LoginForm() {
         router.replace("/staff-welcome-page");
       } else {
         await signOut(auth);
-        alert("This account does not have a valid role assigned.");
+        showNotification("This account does not have a valid role assigned.");
       }
     } catch (err) {
       // auth/too-many-requests is Firebase's own rate-limit, distinct from the backend lockout
       if (err.code === "auth/too-many-requests") {
         resetTurnstile();
-        alert(
+        showNotification(
           "Too many login attempts were detected for this account. Please wait a few minutes before trying again.",
         );
         return;
@@ -633,23 +648,23 @@ export default function LoginForm() {
               : `${secs} second(s)`;
 
           resetTurnstile();
-          alert(
+          showNotification(
             `Too many failed login attempts. Account locked for ${timeText}.`,
           );
         } else if (isInvalidLogin) {
           resetTurnstile();
-          alert(
+          showNotification(
             `Invalid email or password. You have ${result.remainingAttempts} attempt(s) left.`,
           );
         } else {
           resetTurnstile();
           console.error("LOGIN ERROR:", err);
-          alert("Login failed. Please try again.");
+          showNotification("Login failed. Please try again.");
         }
       } catch (backendErr) {
         resetTurnstile();
         console.error("BACKEND LOCKOUT ERROR:", backendErr);
-        alert("Login failed. Please try again.");
+        showNotification("Login failed. Please try again.");
       }
     }
   };
@@ -660,15 +675,15 @@ export default function LoginForm() {
       const code = resetCodeArray.join("");
 
       if (code.length !== 6) {
-        alert("Please enter the full 6-digit code.");
+        showNotification("Please enter the full 6-digit code.");
         return;
       }
 
       const result = await verifyResetCode(forgotEmail, code);
-      alert(result.message || "Code verified!");
+      showNotification(result.message || "Code verified!", "success", "Success");
       setStep("password");
     } catch (err) {
-      alert(
+      showNotification(
         typeof err?.message === "string"
           ? err.message
           : "Failed to verify code",
@@ -680,20 +695,20 @@ export default function LoginForm() {
   const handleResetPassword = async () => {
     try {
       if (newPassword !== confirmPassword) {
-        alert("Passwords do not match");
+        showNotification("Passwords do not match");
         return;
       }
 
       const code = resetCodeArray.join("");
 
       if (code.length !== 6) {
-        alert("Please enter the full 6-digit code.");
+        showNotification("Please enter the full 6-digit code.");
         return;
       }
 
       await confirmPasswordReset(forgotEmail, code, newPassword);
 
-      alert("Password reset successful!");
+      showNotification("Password reset successful!", "success", "Success");
 
       // reset everything
       setShowForgotModal(false);
@@ -703,7 +718,7 @@ export default function LoginForm() {
       setConfirmPassword("");
       setResetCodeArray(["", "", "", "", "", ""]);
     } catch (err) {
-      alert(err.message);
+      showNotification(err.message);
     }
   };
 
@@ -971,6 +986,22 @@ export default function LoginForm() {
             className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
           />
         </Modal>
+      )}
+
+      {notification.open && (
+        <NotificationModal
+          title={notification.title}
+          message={notification.message}
+          variant={notification.variant}
+          onClose={() =>
+            setNotification({
+              open: false,
+              title: "",
+              message: "",
+              variant: "success",
+            })
+          }
+        />
       )}
     </div>
   );

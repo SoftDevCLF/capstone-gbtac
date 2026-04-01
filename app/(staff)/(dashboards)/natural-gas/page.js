@@ -7,6 +7,7 @@ import DashboardLayout from "@/app/_components/DashboardLayout";
 import DateRangePicker from "@/app/_components/DatePicker";
 import InfoCard from "@/app/_components/InfoCard";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
+import NotificationModal from "@/app/_components/NotificationModal";
 
 import NaturalGasHandler from "@/app/_components/graphs/handlers/NaturalGasHandler";
 
@@ -49,6 +50,7 @@ export default function Page() {
 
   const [aggregation, setAggregation] = useState("none");
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [showSaveNotification, setShowSaveNotification] = useState(false);
   
   const { errors, validateAll } = useDateValidation({
     earliestDate: "2023-01-04",
@@ -82,9 +84,7 @@ export default function Page() {
       saved: true,
     });
 
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login.",
-    );
+    setShowSaveNotification(true);
   };
 
   const stats = [
@@ -319,6 +319,14 @@ export default function Page() {
               />
             ) : null}
           </div>
+
+          {showSaveNotification && (
+            <NotificationModal
+              title="Success"
+              message="Dashboard state saved! Your graph settings are restored for next login."
+              onClose={() => setShowSaveNotification(false)}
+            />
+          )}
         </div>
       </div>
     </DashboardLayout>

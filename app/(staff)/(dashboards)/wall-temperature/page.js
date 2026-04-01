@@ -8,6 +8,7 @@ import LineHandler from "../../../_components/graphs/handlers/LineHandler";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import { useDateValidation } from "../../../_components/hooks/useDateValidation";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
+import NotificationModal from "@/app/_components/NotificationModal";
 import { getDataRange } from "@/app/_utils/get-data-range";
 
 // ****BUG****Top-level await is not supported in "use client" components — getDataRange
@@ -161,6 +162,7 @@ export default function WallTempDashboard() {
     earliestDate: "2018-10-13",
     latestDate: dataRange.forecast,
   });
+  const [showSaveNotification, setShowSaveNotification] = useState(false);
 
   const { fromDate, toDate, floors = [], orientations = [] } = state;
 
@@ -267,9 +269,7 @@ export default function WallTempDashboard() {
       saved: true,
     });
 
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login.",
-    );
+    setShowSaveNotification(true);
   };
 
   const [aggregation, setAggregation] = useState("none");
@@ -400,6 +400,14 @@ export default function WallTempDashboard() {
         />
         
       </div>
+
+      {showSaveNotification && (
+        <NotificationModal
+          title="Success"
+          message="Dashboard state saved! Your graph settings are restored for next login."
+          onClose={() => setShowSaveNotification(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }

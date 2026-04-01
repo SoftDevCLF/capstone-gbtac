@@ -8,6 +8,7 @@ import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import Carousel from "../../../_components/Carousel";
 import { useDateValidation } from "../../../_components/hooks/useDateValidation";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
+import NotificationModal from "@/app/_components/NotificationModal";
 
 import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 import PieHandler from "@/app/_components/graphs/handlers/PieHandler";
@@ -111,6 +112,7 @@ export default function EnergyDashboard() {
   const [unit, setUnit] = useState("W");
 
   const [aggregation, setAggregation] = useState("none");
+  const [showSaveNotification, setShowSaveNotification] = useState(false);
 
   // Persist staged state and refresh KPI cards on every state change
   useEffect(() => {
@@ -176,9 +178,7 @@ export default function EnergyDashboard() {
       saved: true,
     });
 
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login.",
-    );
+    setShowSaveNotification(true);
   };
 
   return (
@@ -284,6 +284,14 @@ export default function EnergyDashboard() {
           fileName="energy-solar-panel-generation"
         />
       </div>
+
+      {showSaveNotification && (
+        <NotificationModal
+          title="Success"
+          message="Dashboard state saved! Your graph settings are restored for next login."
+          onClose={() => setShowSaveNotification(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }

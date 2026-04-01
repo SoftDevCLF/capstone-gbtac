@@ -12,6 +12,7 @@ import Carousel from "@/app/_components/Carousel";
 import { useSearchParams } from "next/navigation";
 import { useDateValidation } from "@/app/_components/hooks/useDateValidation";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
+import NotificationModal from "@/app/_components/NotificationModal";
 
 const STORAGE_KEY = "dashboard-ambient-temp";
 const DEFAULT_FROM_DATE = "2024-10-01";
@@ -353,12 +354,11 @@ export default function AmbientTempDashboard() {
       saved: true,
     });
 
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login.",
-    );
+    setShowSaveNotification(true);
   };
 
   const [aggregation, setAggregation] = useState("none");
+  const [showSaveNotification, setShowSaveNotification] = useState(false);
 
   return (
     <DashboardLayout title="Ambient Temperature Dashboard">
@@ -530,6 +530,14 @@ export default function AmbientTempDashboard() {
           Save Screen
         </button>
       </div>
+
+      {showSaveNotification && (
+        <NotificationModal
+          title="Success"
+          message="Dashboard state saved! Your graph settings are restored for next login."
+          onClose={() => setShowSaveNotification(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }
