@@ -1,18 +1,30 @@
-//This component is for the Staff to search through the sensors in database and select any amount to be generated for the report. 
-//It is used in the ReportControls component, and it holds the state for the selected sensor, which is passed down to the ReportControls component as a prop.
-
 "use client";
+
 import { useState } from "react";
 
-
+/**
+ * SensorPanel
+ *
+ * Renders a searchable, scrollable list of sensors as checkboxes, allowing
+ * staff to select any number of sensors to include in a generated report.
+ *
+ * @param {Array} [sensors=[]] - Full list of available sensor objects fetched by the parent
+ * @param {Array} [selectedSensors=[]] - List of currently selected sensor objects
+ * @param {Function} onSelect - Called with the updated selected sensors array on each toggle
+ *
+ * Notes:
+ * - Sensor options are fetched and owned by the parent (ReportControls) — this component
+ *   is fully controlled and holds no fetch logic
+ * - Filtering is case-insensitive and matches against sensor.name only, not sensor.code
+ * - Selection and deselection are by sensor.code to correctly handle sensors with duplicate names
+ */
 export default function SensorPanel({ sensors = [], selectedSensors = [], onSelect }) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  //Filter sensors based on search
   const filteredSensors = sensors.filter(sensor =>
     sensor.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  //Handle checkbox toggle
+
   const handleToggle = (sensor) => {
     const isSelected = selectedSensors.some(s => s.code === sensor.code);
     if (isSelected) {
@@ -21,6 +33,7 @@ export default function SensorPanel({ sensors = [], selectedSensors = [], onSele
       onSelect([...selectedSensors, sensor]);
     }
   };
+
   return (
     <div className="flex flex-col h-62 overflow-y-auto border p-5 rounded shadow-sm">
       <label className="text-[#212529] block text-md mb-1 font-semibold">
