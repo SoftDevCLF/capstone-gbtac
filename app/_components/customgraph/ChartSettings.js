@@ -1,8 +1,26 @@
-//This component contains various settings for customizing the chart display such as titles, axis, and chart type. 
-//This component also has two other dropdowns containing the times (Hourly, Daily, Monthly, Yearly) and the aggregation.
 "use client";
+
 import { useState } from "react";
 
+/**
+ * ChartSettings
+ *
+ * Provides form controls for customizing chart display properties including
+ * title, type, and axis labels. Validates all fields inline and surfaces
+ * errors beneath each input.
+ *
+ * @param {object} settings - Current chart settings state
+ * @param {string} settings.chartTitle - Title displayed on the chart
+ * @param {string} settings.chartType - Chart rendering type, either "line" or "bar"
+ * @param {string} settings.xAxisTitle - Label for the X axis
+ * @param {string} settings.yAxisTitle - Label for the Y axis
+ * @param {Function} setSettings - State setter called with the updated settings object on any change
+ *
+ * Notes:
+ * - Validation runs on every keystroke, not on submit — errors clear as soon as the field is valid
+ * - chartTitle is required; xAxisTitle and yAxisTitle are optional but still validated if non-empty
+ * - chartType is constrained to "line" or "bar"; any other value will produce a validation error
+ */
 export default function ChartSettings({ settings, setSettings }) {
   const [errors, setErrors] = useState({});
 
@@ -94,6 +112,7 @@ export default function ChartSettings({ settings, setSettings }) {
         </div>
       </div>
 
+      {/* Hint text — reflects whether chart settings have been started */}
       <div className="mt-4 text-gray-500">
         {settings.chartTitle
           ? "Chart settings implemented. You can change it anytime."

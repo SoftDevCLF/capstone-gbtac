@@ -1,5 +1,3 @@
-//This component fetches Staff saved charts and allows them to select one to display from the dropdown. 
-// It also has a delete button and loads a chart preview when a chart is selected.
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,6 +5,24 @@ import { auth } from "@/app/_utils/firebase";
 import { fetchUserCharts, fetchChartById, deleteChart } from "@/app/utils/storage";
 import ConfirmModal from "../ConfirmModal";
 
+/**
+ * ChartSelect
+ *
+ * Fetches and displays a dropdown of the current staff user's saved charts.
+ * Selecting a chart loads it into the editor; a delete button removes the
+ * currently loaded chart after confirmation.
+ *
+ * @param {string|null} currentChartId - ID of the currently loaded chart, or null if none selected
+ * @param {Function} onLoadChart - Called with the full chart object when a saved chart is selected
+ * @param {Function} onDeleteChart - Called after the current chart is successfully deleted
+ * @param {Function} onResetChart - Called when the user selects the "new chart" option
+ * @param {any} refreshChart - Changing this value triggers a re-fetch of the user's saved charts
+ *
+ * Notes:
+ * - Requires a Firebase authenticated user — renders but does nothing if auth.currentUser is null
+ * - Chart list is re-fetched whenever refreshChart changes, allowing parents to trigger a refresh
+ *   after a save
+ */
 export default function ChartSelect({
   currentChartId,
   onLoadChart,
@@ -18,7 +34,6 @@ export default function ChartSelect({
   const [charts, setCharts] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  //Fetch previously saved charts from Firestore
   useEffect(() => {
     const loadCharts = async () => {
       const user = auth.currentUser;
@@ -33,7 +48,6 @@ export default function ChartSelect({
     loadCharts();
   }, [refreshChart]);
 
-  //Handle chart selection from dropdown
   const handleSelect = async (e) => {
     const id = e.target.value;
     if (id === "new") {
@@ -44,14 +58,13 @@ export default function ChartSelect({
     const user = auth.currentUser;
     if (!user) return;
     try {
-      const chart = await fetchChartById(user.email, id); //fetches the selected chart's data from Firestore
+      const chart = await fetchChartById(user.email, id);
       if (chart) onLoadChart(chart);
     } catch (err) {
       console.error("Failed to fetch chart:", err);
     }
   };
 
-  //Handle chart deletion
   const handleDelete = async () => {
     setShowDeleteModal(false);
 
@@ -107,7 +120,7 @@ export default function ChartSelect({
         </div>
       </div>
 
-      {/* Info text */}
+      {/* Hint text — reflects whether a chart is currently loaded */}
       <div className="mt-4 text-gray-500">
         {currentChartId
           ? "Loaded chart is editable below."

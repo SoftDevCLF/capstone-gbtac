@@ -1,11 +1,20 @@
-//The component shows a list of sensors currently added to a graph
-// It allows users to see their selected sensors and remove them if needed. 
-// It will eventually be connected to the graph component to update the graph based on the selected sensors.
-
 "use client";
 
+/**
+ * SelectedSensors
+ *
+ * Displays a scrollable list of sensors currently added to the chart and
+ * allows users to remove individual sensors by code.
+ *
+ * @param {Array} [selectedSensors=[]] - List of sensor objects currently selected, each with a code and name field
+ * @param {Function} setSelectedSensors - State setter called with the filtered array when a sensor is removed
+ *
+ * Notes:
+ * - Sensors are keyed by array index rather than code — reordering the list externally may cause React key warnings
+ * - Removal is by sensor.code, not sensor.name, so sensors with duplicate names are handled correctly
+ */
 export default function SelectedSensors({ selectedSensors = [], setSelectedSensors }) {
-  //remove a sensor by id
+
   const removeSensor = (code) => {
     setSelectedSensors(selectedSensors.filter(sensor => sensor.code !== code));
   };
