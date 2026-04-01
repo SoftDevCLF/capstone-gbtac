@@ -23,6 +23,7 @@ export default function LineHandler({
     aggTime = "none",
     aggType = "mean",
     onStatsReady,
+    unit,
 }){
 
     // Auto-compute the chart x-axis time unit — must match backend aggregation tiers
@@ -60,7 +61,7 @@ export default function LineHandler({
     const [fetched, setFetched] = useState(false); // if data has been fetched or not
     const [loading, setLoading] = useState(true);   // loading state for UI
     const [sensorData, setSensorData] = useState([]); // holds all the sensor data
-    const [unit, setUnit] = useState(xUnit);
+    const [timeUnit, setTimeUnit] = useState(xUnit);
     const [minZoom, setMinZoom] = useState();
     const [xMin, setXMin] = useState();
     const [xMax, setXMax] = useState();
@@ -182,17 +183,21 @@ export default function LineHandler({
             setXMin(labels[0]);
             setXMax(labels[labels.length - 1]);
 
-            const mins = [];
-            const maxes = [];
+            let globalMin = Infinity;
+            let globalMax = -Infinity;
+
             sensorData.forEach((sensor) => {
-                const values = (sensor || []).map((d) => d.data).filter((v) => v != null);
-                if (values.length > 0) {
-                    mins.push(Math.min(...values));
-                    maxes.push(Math.max(...values));
-                }
+                (sensor || []).forEach((d) => {
+                    const value = d?.data;
+                    if (value != null && !Number.isNaN(value)) {
+                        if (value < globalMin) globalMin = value;
+                        if (value > globalMax) globalMax = value;
+                    }
+                });
             });
-            if (mins.length > 0) setYMin(Math.min(...mins));
-            if (maxes.length > 0) setYMax(Math.max(...maxes));
+
+            if (globalMin !== Infinity) setYMin(globalMin);
+            if (globalMax !== -Infinity) setYMax(globalMax);
 
             // Compute KPI stats across all active sensors and pass to parent if requested
             if (onStatsReady) {
@@ -238,7 +243,18 @@ export default function LineHandler({
 
                 return {
                     label: finalLabel,
-                    data: (sensorData[sensor.id] || []).map((d) => ({ x: new Date(d.ts), y: d.data })),
+                    data: (sensorData[sensor.id] || []).map((d) => {
+                        let value = d.data;
+
+                        if (unit === "L") {
+                            value = (value / 100) * 32000;
+                        }
+
+                        return {
+                            x: new Date(d.ts + "Z"),
+                            y: value,
+                        };
+                    }),
                     borderColor: colours[sensor.id % colours.length],
                     backgroundColor: colours[sensor.id % colours.length],
                     borderWidth: 2,
@@ -271,19 +287,22 @@ export default function LineHandler({
             // else if (resolvedUnit === "day") setMinZoom(2 * 24 * 60 * 60 * 1000);
             // else if (resolvedUnit === "month") setMinZoom(2 * 30.5 * 24 * 60 * 60 * 1000);
             // else if (resolvedUnit === "year") setMinZoom(2 * 12 * 30.5 * 24 * 60 * 60 * 1000);
-            if(aggTime == "H") setUnit("hour")
-            else if(aggTime == "D") setUnit("day")
-            else if(aggTime == "M") setUnit("month")
-            else if(aggTime == "Y") setUnit("year")
-            
-            
-            if(unit == "hour") setMinZoom(2 * 60 * 60 * 1000)
-            else if(unit == "day") setMinZoom(2 * 24 * 60 * 60 * 1000)
-            else if(unit == "month") setMinZoom(2 * 30.5 * 24 * 60 * 60 * 1000) //may be wrong due to variable days in a month                
-            else if(unit == "year") setMinZoom(2 * 12 * 30.5 * 24 * 60 * 60 * 1000) //may be wrong due to variable days in a month
-            
+            let nextUnit;
+
+            if (aggTime === "none") nextUnit = "hour";   // 👈 FIX
+            else if (aggTime === "H") nextUnit = "hour";
+            else if (aggTime === "D") nextUnit = "day";
+            else if (aggTime === "M") nextUnit = "month";
+            else if (aggTime === "Y") nextUnit = "year";
+
+            setTimeUnit(nextUnit);
+
+            if (timeUnit == "hour") setMinZoom(2 * 60 * 60 * 1000)
+            else if (timeUnit == "day") setMinZoom(2 * 24 * 60 * 60 * 1000)
+            else if (timeUnit == "month") setMinZoom(2 * 30.5 * 24 * 60 * 60 * 1000) //may be wrong due to variable days in a month
+            else if (timeUnit == "year") setMinZoom(2 * 12 * 30.5 * 24 * 60 * 60 * 1000) //may be wrong due to variable days in a month
         }
-    }, [sensorData, sensors, fetched, onStatsReady, aggTime]);
+    }, [sensorData, sensors, fetched, onStatsReady, aggTime, unit, timeUnit]);
 
     const displayUnit = unit || getTimeUnit();
 
@@ -302,7 +321,7 @@ export default function LineHandler({
                     // unit: displayUnit,
                     // displayFormats: getDisplayFormats(),
                     // tooltipFormat: "PPpp",
-                    unit: unit,
+                    unit: timeUnit,
                 }
             },
             y: {

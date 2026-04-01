@@ -6,21 +6,49 @@ import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../_utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import NotificationModal from "./NotificationModal";
+
+/**
+ * SecondaryNav component
+ *
+ * Top navigation bar displaying the SAIT logo and user session controls.
+ * Shows a Login button when unauthenticated, and a Logout button with
+ * a profile avatar/name link when authenticated.
+ *
+ * Auth state is derived from Firebase onAuthStateChanged. User display
+ * name is fetched from Firestore under the `allowedUsers` collection.
+ *
+ * Notes:
+ * - Login is rendered as a styled <Link>; Logout as a <button> (intentional)
+ * - Avatar displays first and last initials; full name shown on md+ screens
+ *
+ * @returns A responsive top navigation bar
+ *
+ * @author Frontend Developer: [Cintya Lara Flores]
+ */
 
 export default function SecondaryNav() {
+  // Router for navigation after logout
   const router = useRouter();
+  // Local state for user info and auth status
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const user = `${firstName} ${lastName}`;
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
+  const displayName = [firstName, lastName].filter(Boolean).join(" ");
 
+  // Initial auth check on component mount; listens for Firebase auth state changes
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        // user is logged in
+        // If user is logged in
         setIsLoggedIn(true);
-
-        // fetch Firestore user info
+        // Fetch display name from Firestore allowedUsers collection
         const userDoc = doc(db, "allowedUsers", user.email);
         const docSnap = await getDoc(userDoc);
         if (docSnap.exists()) {
@@ -28,10 +56,11 @@ export default function SecondaryNav() {
           setFirstName(data.firstName || "");
           setLastName(data.lastName || "");
         } else {
-          console.log("No user document found!");
+          // User is authenticated but has no Firestore record — log for debugging
+          console.warn("No Firestore document found for user:", user.email);
         }
       } else {
-        // user is not logged in
+        // If user is not logged in
         setIsLoggedIn(false);
         setFirstName("");
         setLastName("");
@@ -52,18 +81,17 @@ export default function SecondaryNav() {
       }
     };
 
-    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener("profileUpdated", handleProfileUpdate);
 
     return () => {
       unsubscribe();
-      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
     };
   }, []);
 
-
+  // Handles logout by invalidating server session and signing out of Firebase
   const handleLogout = async (e) => {
     e.preventDefault();
-
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
         method: "POST",
@@ -74,64 +102,91 @@ export default function SecondaryNav() {
       router.push("/");
       router.refresh();
     } catch (err) {
-      alert("Logout failed: " + err.message);
+      setNotification({
+        open: true,
+        title: "Error",
+        message: "Logout failed: " + err.message,
+        variant: "error",
+      });
     }
   };
 
   return (
-    <nav className="flex flex-row items-center-safe justify-between w-full bg-[#fdfdfd] p-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
-      <div className="relative w-[180px] sm:w-[220px] md:w-[253px] h-[46px] me-5 lg:me-1">
-        <Link href="https://www.sait.ca">
-          <Image
-            src="/sait_extended_horizontal_full_colour_rgb.png"
-            alt="Logo"
-            fill
-            className="object-contain"
-          />
-        </Link>
-      </div>
-
-      <ul className="font-heading flex space-x-4 text-white items-center-safe">
-        {!isLoggedIn && (
-          <li>
-            <Link
-              href="/login"
-              className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
-            >
-              Login
-            </Link>
-          </li>
-        )}
-
-        {isLoggedIn && (
-          <>
-            <li className="items-center gap-5 lg:gap-2">
-              <button
-                onClick={handleLogout}
-                className="px-6 py-2 bg-[#005EB8] font-heading lg:text-lg text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
-              >
-                Logout
-              </button>
-            </li>
-
-            <li className="text-gray-800 hover:text-gray-600 transition flex flex-row items-center gap-2">
+    <>
+      <nav className="flex flex-row items-center-safe justify-between w-full bg-[#fdfdfd] p-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
+        <div className="relative w-[60px] sm:w-[75px] md:w-[80px] h-[45px] ms-0 lg:me-1">
+          <Link href="https://www.sait.ca">
+            <Image
+              src="/collegiate_logo_red2.png"
+              alt="Logo"
+              fill
+              className="object-contain"
+            />
+          </Link>
+        </div>
+        {/* User session controls — Login button when not authenticated, Logout + profile link when authenticated */}
+        <ul className="font-heading flex space-x-4 text-white items-center-safe">
+          {!isLoggedIn && (
+            // Login button styled as a primary call-to-action with blue background and hover effect
+            <li>
               <Link
-                href="/profile"
-                className="shrink-0 hover:opacity-80 transition border border-red-800 bg-white rounded-full text-red-800 px-2 py-2"
+                href="/login"
+                className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
               >
-                {firstName?.charAt(0)?.toUpperCase()}{" "}
-                {lastName?.charAt(0)?.toUpperCase()}
-              </Link>
-              <Link
-                href="/profile"
-                className="hidden hover:opacity-80 transition text-xs md:block sm:text-sm lg:text-base font-semibold"
-              >
-                {user}
+                Login
               </Link>
             </li>
-          </>
-        )}
-      </ul>
-    </nav>
+          )}
+
+          {isLoggedIn && (
+            <>
+              <li>
+                {/* Logout button styled as a primary call-to-action with blue background and hover effect */}
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-2 bg-[#005EB8] lg:text-lg text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
+                >
+                  Logout
+                </button>
+              </li>
+              {/* Avatar and name, both link to profile page */}
+              <li className="text-gray-800 hover:text-gray-600 transition flex flex-row items-center gap-2">
+                {/* Initials avatar */}
+                <Link
+                  href="/profile"
+                  className="w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-80 transition border border-red-800 bg-white rounded-full text-red-800 text-sm font-bold"
+                >
+                  {firstName.charAt(0).toUpperCase()}
+                  {lastName.charAt(0).toUpperCase()}
+                </Link>
+                {/* Full name, hidden on small screens */}
+                <Link
+                  href="/profile"
+                  className="hidden hover:opacity-80 transition text-xs md:block sm:text-sm lg:text-base font-semibold"
+                >
+                  {displayName}
+                </Link>
+              </li>
+            </>
+          )}
+        </ul>
+      </nav>
+
+      {notification.open && (
+        <NotificationModal
+          title={notification.title}
+          message={notification.message}
+          variant={notification.variant}
+          onClose={() =>
+            setNotification({
+              open: false,
+              title: "",
+              message: "",
+              variant: "success",
+            })
+          }
+        />
+      )}
+    </>
   );
 }

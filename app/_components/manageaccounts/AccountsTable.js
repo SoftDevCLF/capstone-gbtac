@@ -6,6 +6,7 @@
 import { useState, useEffect } from "react";
 import AccountRow from "./AccountRow";
 import ConfirmModal from "../ConfirmModal";
+import NotificationModal from "../NotificationModal";
 
 export default function AccountsTable({search = ""}) {
   const [accounts, setAccounts] = useState([]);
@@ -13,6 +14,12 @@ export default function AccountsTable({search = ""}) {
   const [error, setError] = useState(null);
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
 
   useEffect(() => {
     const fetchStaff = async () => {
@@ -83,7 +90,12 @@ export default function AccountsTable({search = ""}) {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.detail || "Failed to delete staff");
+        setNotification({
+          open: true,
+          title: "Error",
+          message: data.detail || "Failed to delete staff",
+          variant: "error",
+        });
         return;
       }
 
@@ -93,10 +105,20 @@ export default function AccountsTable({search = ""}) {
 
       setShowDeleteModal(false);
       setSelectedAccount(null);
-      alert("Staff deleted successfully");
+      setNotification({
+        open: true,
+        title: "Success",
+        message: "Staff deleted successfully",
+        variant: "success",
+      });
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      setNotification({
+        open: true,
+        title: "Error",
+        message: "Something went wrong",
+        variant: "error",
+      });
     }
   };
 
@@ -127,15 +149,18 @@ export default function AccountsTable({search = ""}) {
   
   return (
     <>
-      <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-200 max-h-96">
-      <table className="min-w-full divide-y table-fixed divide-gray-200">
+      <div 
+        className="overflow-x-auto shadow-lg rounded-lg border border-gray-200 max-h-96"
+        style={{ scrollbarWidth: "thin", scrollbarGutter: "stable" }}
+      >
+        <table className="w-full divide-y divide-gray-200">
         <thead className="sticky top-0 z-10" style={{ backgroundColor: "#F6F7F9" }}>
           <tr>
             <th className="px-6 py-3 text-left text-lg font-medium text-black">#</th>
             <th className="px-6 py-3 text-left text-lg font-medium text-black">Name</th>
             <th className="px-6 py-3 text-left text-lg font-medium text-black">Email</th>
             <th className="px-6 py-3 text-left text-lg font-medium text-black">Status</th>
-            <th className="px-6 py-3 text-left text-lg font-medium text-black">Action</th>
+            <th className="px-6 py-3 text-lg font-medium text-black whitespace-nowrap">Action</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
@@ -160,6 +185,22 @@ export default function AccountsTable({search = ""}) {
         variant="danger"
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+    )}
+
+    {notification.open && (
+      <NotificationModal
+        title={notification.title}
+        message={notification.message}
+        variant={notification.variant}
+        onClose={() =>
+          setNotification({
+            open: false,
+            title: "",
+            message: "",
+            variant: "success",
+          })
+        }
       />
     )}
     </>

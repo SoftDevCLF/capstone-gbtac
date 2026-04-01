@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import ConfirmModal from "@/app/_components/ConfirmModal";
+import NotificationModal from "@/app/_components/NotificationModal";
 
 export default function CreateStaffForm() {
   const [formData, setFormData] = useState({
@@ -11,14 +13,42 @@ export default function CreateStaffForm() {
     email: "",
     status: "Active",
   });
+  const [errors, setErrors] = useState({});
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
+
+  const showNotification = (
+    message,
+    variant = "error",
+    title = variant === "error" ? "Error" : "Success",
+  ) => {
+    setNotification({ open: true, title, message, variant });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setErrors((prev) => ({ ...prev, [name]: "" }));
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required.";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required.";
+    if (!formData.email.trim()) newErrors.email = "Email is required.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const createStaff = async () => {
+    setShowConfirmModal(false);
 
     try {
       const response = await fetch("http://localhost:8000/auth/create-staff", {
@@ -54,11 +84,11 @@ export default function CreateStaffForm() {
           errorMessage = data.detail.message || JSON.stringify(data.detail);
         }
 
-        alert(errorMessage);
+        showNotification(errorMessage);
         return;
       }
 
-      alert("Staff account created successfully");
+      showNotification("Staff account created successfully", "success", "Success");
 
       setFormData({
         firstName: "",
@@ -68,8 +98,14 @@ export default function CreateStaffForm() {
       });
     } catch (error) {
       console.error("Create staff error:", error);
-      alert("Something went wrong while creating the staff account.");
+      showNotification("Something went wrong while creating the staff account.");
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setShowConfirmModal(true);
   };
 
   return (
@@ -77,7 +113,6 @@ export default function CreateStaffForm() {
     <form
       onSubmit={handleSubmit}
       className="space-y-10 text-[#212529]"
-      style={{ fontFamily: "var(--font-titillium)" }}
     >
       <div className="space-y-6">
         <h2 className="text-lg border-b pb-2 font-semibold text-gray-800">
@@ -92,9 +127,13 @@ export default function CreateStaffForm() {
               value={formData.firstName}
               onChange={handleChange}
               placeholder="John"
+              maxLength={50}
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               required
             />
+            {errors.firstName && (
+              <span className="text-red-500 text-sm mt-1">{errors.firstName}</span>
+            )}
           </div>
           <div className="flex flex-col">
             <label className="font-semibold text-gray-800">Last Name</label>
@@ -103,21 +142,30 @@ export default function CreateStaffForm() {
               value={formData.lastName}
               onChange={handleChange}
               placeholder="Doe"
+              maxLength={50}
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               required
             />
+            {errors.lastName && (
+              <span className="text-red-500 text-sm mt-1">{errors.lastName}</span>
+            )}
           </div>
         </div>
         <div className="flex flex-col">
           <label className="font-semibold text-gray-800">Email</label>
           <input
             name="email"
+            type="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="johndoe@example.com"
+            placeholder="johndoe@edu.sait.ca"
+            maxLength={150}
             className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             required
           />
+          {errors.email && (
+            <span className="text-red-500 text-sm mt-1">{errors.email}</span>
+          )}
         </div>
         <div className="flex flex-col">
           <label className="font-semibold text-gray-800">Status</label>
@@ -149,6 +197,32 @@ export default function CreateStaffForm() {
         </button>
       </div>
     </form>
+
+    {showConfirmModal && (
+      <ConfirmModal
+        title="Confirm Staff Creation"
+        message="Are you sure you want to create this staff member?"
+        confirmText="Create"
+        onConfirm={createStaff}
+        onCancel={() => setShowConfirmModal(false)}
+      />
+    )}
+
+    {notification.open && (
+      <NotificationModal
+        title={notification.title}
+        message={notification.message}
+        variant={notification.variant}
+        onClose={() =>
+          setNotification({
+            open: false,
+            title: "",
+            message: "",
+            variant: "success",
+          })
+        }
+      />
+    )}
   </div>
   );
 }

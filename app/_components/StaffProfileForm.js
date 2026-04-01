@@ -35,7 +35,12 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
   const [showPassword, setShowPassword] = useState({
     current: false,
     new: false,
@@ -50,6 +55,15 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
     email: "",
     status: "Active"
   });
+
+  const showSuccessNotification = (message) => {
+    setNotification({
+      open: true,
+      title: "Success",
+      message,
+      variant: "success",
+    });
+  };
 
   const isEmailChanged = () => {
     return formData.email !== originalEmail;
@@ -239,12 +253,10 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
         try {
           await verifyBeforeUpdateEmail(currentUser, formData.email, actionCodeSettings);
-          
-          setShowNotification(true);
-          setTimeout(() => {
-            setShowNotification(false);
-            alert("A verification email has been sent to your new email address. Please check your inbox and click the verification link to complete the email change.");
-          }, 1000);
+
+          showSuccessNotification(
+            "A verification email has been sent to your new email address. Please check your inbox and click the verification link to complete the email change.",
+          );
           return;
         } catch (emailError) {
           if (emailError.code === 'auth/operation-not-allowed') {
@@ -298,12 +310,8 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
           if (nameChanged || statusChanged) {
             await updateFirestoreProfile();
           }
-          
-          setShowNotification(true);
-          setTimeout(() => {
-            setShowNotification(false);
-            alert("Password changed successfully!");
-          }, 1000);
+
+          showSuccessNotification("Password changed successfully!");
           return;
         } catch (passwordError) {
           setErrors(prev => ({ 
@@ -317,11 +325,8 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
       // Handle name/status changes (update Firestore)
       if (nameChanged || statusChanged) {
         await updateFirestoreProfile();
-        
-        setShowNotification(true);
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
+
+        showSuccessNotification("Profile updated successfully!");
       }
       
     } catch (error) {
@@ -622,11 +627,6 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   placeholder="New Password"
                   className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                 />
-                {errors.newPassword && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.newPassword}
-                  </p>
-                )}
                 <button
                   type="button"
                   className="absolute right-3 top-4"
@@ -658,6 +658,11 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   />
                 </button>
               </div>
+              {errors.newPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.newPassword}
+                </p>
+              )}
             </div>
           )}
 
@@ -723,15 +728,19 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
       )}
 
       <div className="flex flex-col sm:flex-row justify-center gap-4 pt-8 border-t mt-8">
-        {showNotification && (
+        {notification.open && (
           <NotificationModal
-            title="Success"
-            message={
-              formData.email !== originalEmail
-                ? "Verification email sent! Please check your inbox."
-                : "Profile updated successfully!"
+            title={notification.title}
+            message={notification.message}
+            variant={notification.variant}
+            onClose={() =>
+              setNotification({
+                open: false,
+                title: "",
+                message: "",
+                variant: "success",
+              })
             }
-            onClose={() => setShowNotification(false)}
           />
         )}
         {showConfirmModal && (
