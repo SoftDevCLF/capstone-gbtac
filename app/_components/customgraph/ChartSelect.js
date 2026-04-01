@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { auth } from "@/app/_utils/firebase";
 import { fetchUserCharts, fetchChartById, deleteChart } from "@/app/utils/storage";
 import ConfirmModal from "../ConfirmModal";
+import NotificationModal from "../NotificationModal";
 
 /**
  * @author Temi Bankole
@@ -37,6 +38,12 @@ export default function ChartSelect({
 
   const [charts, setCharts] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
 
   useEffect(() => {
     const loadCharts = async () => {
@@ -79,10 +86,20 @@ export default function ChartSelect({
       await deleteChart(user.email, currentChartId);
       onDeleteChart();
       setCharts(prevCharts => prevCharts.filter(chart => chart.id !== currentChartId));
-      alert("Chart deleted successfully!");
+      setNotification({
+        open: true,
+        title: "Success",
+        message: "Chart deleted successfully!",
+        variant: "success",
+      });
     } catch (err) {
       console.error("Failed to delete chart:", err);
-      alert("Failed to delete chart");
+      setNotification({
+        open: true,
+        title: "Error",
+        message: "Failed to delete chart",
+        variant: "error",
+      });
     }
   };
 
@@ -140,6 +157,22 @@ export default function ChartSelect({
           variant="danger"
           onConfirm={handleDelete}
           onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
+
+      {notification.open && (
+        <NotificationModal
+          title={notification.title}
+          message={notification.message}
+          variant={notification.variant}
+          onClose={() =>
+            setNotification({
+              open: false,
+              title: "",
+              message: "",
+              variant: "success",
+            })
+          }
         />
       )}
     </div>

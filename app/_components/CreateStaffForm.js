@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import ConfirModal from "./ConfirmModal";
-import NotificationModal from "./NotificationModal";
+import ConfirmModal from "@/app/_components/ConfirmModal";
+import NotificationModal from "@/app/_components/NotificationModal";
 
 /**
  * CreateStaffForm
@@ -30,17 +30,42 @@ export default function CreateStaffForm() {
     email: "",
     status: "Active",
   });
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
+
+  const showNotification = (
+    message,
+    variant = "error",
+    title = variant === "error" ? "Error" : "Success",
+  ) => {
+    setNotification({ open: true, title, message, variant });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setErrors((prev) => ({ ...prev, [name]: "" }));
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required.";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required.";
+    if (!formData.email.trim()) newErrors.email = "Email is required.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const createStaff = async () => {
+    setShowConfirmModal(false);
 
     try {
       const response = await fetch("http://localhost:8000/auth/create-staff", {
@@ -77,11 +102,11 @@ export default function CreateStaffForm() {
           errorMessage = data.detail.message || JSON.stringify(data.detail);
         }
 
-        alert(errorMessage);
+        showNotification(errorMessage);
         return;
       }
 
-      alert("Staff account created successfully");
+      showNotification("Staff account created successfully", "success", "Success");
 
       //Reset form to defaults after successful account creation.
       setFormData({
@@ -92,8 +117,14 @@ export default function CreateStaffForm() {
       });
     } catch (error) {
       console.error("Create staff error:", error);
-      alert("Something went wrong while creating the staff account.");
+      showNotification("Something went wrong while creating the staff account.");
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setShowConfirmModal(true);
   };
 
   return (
@@ -183,27 +214,34 @@ export default function CreateStaffForm() {
         >
           Create Staff
         </button>
-        {showConfirmModal && (
-          <ConfirmModal
-            title="Confirm Staff Creation"
-            message="Are you sure you want to create this staff member?"
-            onConfirm={() => {
-              // TODO: Implement staff creation functionality
-              setShowConfirmModal(false);
-              setShowNotificationModal(true);
-            }}
-            onCancel={() => setShowConfirmModal(false)}
-          />
-        )}
-        {showNotificationModal && (
-          <NotificationModal
-            title="Staff Created"
-            message="Staff member has been successfully created!"
-            onClose={() => setShowNotificationModal(false)}
-          />
-        )}
       </div>
     </form>
+
+    {showConfirmModal && (
+      <ConfirmModal
+        title="Confirm Staff Creation"
+        message="Are you sure you want to create this staff member?"
+        confirmText="Create"
+        onConfirm={createStaff}
+        onCancel={() => setShowConfirmModal(false)}
+      />
+    )}
+
+    {notification.open && (
+      <NotificationModal
+        title={notification.title}
+        message={notification.message}
+        variant={notification.variant}
+        onClose={() =>
+          setNotification({
+            open: false,
+            title: "",
+            message: "",
+            variant: "success",
+          })
+        }
+      />
+    )}
   </div>
   );
 }

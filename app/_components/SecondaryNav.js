@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../_utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import NotificationModal from "./NotificationModal";
 
 /**
  * SecondaryNav component
@@ -33,6 +34,12 @@ export default function SecondaryNav() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
   const displayName = [firstName, lastName].filter(Boolean).join(" ");
 
   // Initial auth check on component mount; listens for Firebase auth state changes
@@ -95,68 +102,91 @@ export default function SecondaryNav() {
       router.push("/");
       router.refresh();
     } catch (err) {
-      alert("Logout failed: " + err.message);
+      setNotification({
+        open: true,
+        title: "Error",
+        message: "Logout failed: " + err.message,
+        variant: "error",
+      });
     }
   };
 
   return (
-    <nav className="flex flex-row items-center-safe justify-between w-full bg-[#fdfdfd] p-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
-      <div className="relative w-[60px] sm:w-[75px] md:w-[80px] h-[45px] ms-0 lg:me-1">
-        <Link href="https://www.sait.ca">
-          <Image
-            src="/collegiate_logo_red2.png"
-            alt="Logo"
-            fill
-            className="object-contain"
-          />
-        </Link>
-      </div>
-      {/* User session controls — Login button when not authenticated, Logout + profile link when authenticated */}
-      <ul className="font-heading flex space-x-4 text-white items-center-safe">
-        {!isLoggedIn && (
-          // Login button styled as a primary call-to-action with blue background and hover effect
-          <li>
-            <Link
-              href="/login"
-              className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
-            >
-              Login
-            </Link>
-          </li>
-        )}
-
-        {isLoggedIn && (
-          <>
+    <>
+      <nav className="flex flex-row items-center-safe justify-between w-full bg-[#fdfdfd] p-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
+        <div className="relative w-[60px] sm:w-[75px] md:w-[80px] h-[45px] ms-0 lg:me-1">
+          <Link href="https://www.sait.ca">
+            <Image
+              src="/collegiate_logo_red2.png"
+              alt="Logo"
+              fill
+              className="object-contain"
+            />
+          </Link>
+        </div>
+        {/* User session controls — Login button when not authenticated, Logout + profile link when authenticated */}
+        <ul className="font-heading flex space-x-4 text-white items-center-safe">
+          {!isLoggedIn && (
+            // Login button styled as a primary call-to-action with blue background and hover effect
             <li>
-              {/* Logout button styled as a primary call-to-action with blue background and hover effect */}
-              <button
-                onClick={handleLogout}
-                className="px-6 py-2 bg-[#005EB8] lg:text-lg text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
-              >
-                Logout
-              </button>
-            </li>
-            {/* Avatar and name, both link to profile page */}
-            <li className="text-gray-800 hover:text-gray-600 transition flex flex-row items-center gap-2">
-              {/* Initials avatar */}
               <Link
-                href="/profile"
-                className="w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-80 transition border border-red-800 bg-white rounded-full text-red-800 text-sm font-bold"
+                href="/login"
+                className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
               >
-                {firstName.charAt(0).toUpperCase()}
-                {lastName.charAt(0).toUpperCase()}
-              </Link>
-              {/* Full name, hidden on small screens */}
-              <Link
-                href="/profile"
-                className="hidden hover:opacity-80 transition text-xs md:block sm:text-sm lg:text-base font-semibold"
-              >
-                {displayName}
+                Login
               </Link>
             </li>
-          </>
-        )}
-      </ul>
-    </nav>
+          )}
+
+          {isLoggedIn && (
+            <>
+              <li>
+                {/* Logout button styled as a primary call-to-action with blue background and hover effect */}
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-2 bg-[#005EB8] lg:text-lg text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
+                >
+                  Logout
+                </button>
+              </li>
+              {/* Avatar and name, both link to profile page */}
+              <li className="text-gray-800 hover:text-gray-600 transition flex flex-row items-center gap-2">
+                {/* Initials avatar */}
+                <Link
+                  href="/profile"
+                  className="w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-80 transition border border-red-800 bg-white rounded-full text-red-800 text-sm font-bold"
+                >
+                  {firstName.charAt(0).toUpperCase()}
+                  {lastName.charAt(0).toUpperCase()}
+                </Link>
+                {/* Full name, hidden on small screens */}
+                <Link
+                  href="/profile"
+                  className="hidden hover:opacity-80 transition text-xs md:block sm:text-sm lg:text-base font-semibold"
+                >
+                  {displayName}
+                </Link>
+              </li>
+            </>
+          )}
+        </ul>
+      </nav>
+
+      {notification.open && (
+        <NotificationModal
+          title={notification.title}
+          message={notification.message}
+          variant={notification.variant}
+          onClose={() =>
+            setNotification({
+              open: false,
+              title: "",
+              message: "",
+              variant: "success",
+            })
+          }
+        />
+      )}
+    </>
   );
 }
