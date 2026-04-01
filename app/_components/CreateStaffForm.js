@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import ConfirmModal from "./ConfirmModal";
+import NotificationModal from "./NotificationModal";
 
 export default function CreateStaffForm() {
   const [formData, setFormData] = useState({
@@ -11,6 +13,9 @@ export default function CreateStaffForm() {
     email: "",
     status: "Active",
   });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,7 +82,6 @@ export default function CreateStaffForm() {
     <form
       onSubmit={handleSubmit}
       className="space-y-10 text-[#212529]"
-      style={{ fontFamily: "var(--font-titillium)" }}
     >
       <div className="space-y-6">
         <h2 className="text-lg border-b pb-2 font-semibold text-gray-800">
@@ -92,9 +96,13 @@ export default function CreateStaffForm() {
               value={formData.firstName}
               onChange={handleChange}
               placeholder="John"
+              maxLength={50}
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               required
             />
+            {errors.firstName && (
+              <span className="text-red-500 text-sm mt-1">{errors.firstName}</span>
+            )}
           </div>
           <div className="flex flex-col">
             <label className="font-semibold text-gray-800">Last Name</label>
@@ -103,21 +111,30 @@ export default function CreateStaffForm() {
               value={formData.lastName}
               onChange={handleChange}
               placeholder="Doe"
+              maxLength={50}
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               required
             />
+            {errors.lastName && (
+              <span className="text-red-500 text-sm mt-1">{errors.lastName}</span>
+            )}
           </div>
         </div>
         <div className="flex flex-col">
           <label className="font-semibold text-gray-800">Email</label>
           <input
             name="email"
+            type="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="johndoe@example.com"
+            placeholder="johndoe@edu.sait.ca"
+            maxLength={150}
             className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             required
           />
+          {errors.email && (
+            <span className="text-red-500 text-sm mt-1">{errors.email}</span>
+          )}
         </div>
         <div className="flex flex-col">
           <label className="font-semibold text-gray-800">Status</label>
@@ -147,6 +164,25 @@ export default function CreateStaffForm() {
         >
           Create Staff
         </button>
+        {showConfirmModal && (
+          <ConfirmModal
+            title="Confirm Staff Creation"
+            message="Are you sure you want to create this staff member?"
+            onConfirm={() => {
+              // TODO: Implement staff creation functionality
+              setShowConfirmModal(false);
+              setShowNotificationModal(true);
+            }}
+            onCancel={() => setShowConfirmModal(false)}
+          />
+        )}
+        {showNotificationModal && (
+          <NotificationModal
+            title="Staff Created"
+            message="Staff member has been successfully created!"
+            onClose={() => setShowNotificationModal(false)}
+          />
+        )}
       </div>
     </form>
   </div>
