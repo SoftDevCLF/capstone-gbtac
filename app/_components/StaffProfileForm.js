@@ -629,6 +629,11 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   />
                 </button>
               </div>
+              {errors.newPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.newPassword}
+                </p>
+              )}
             </div>
           )}
 

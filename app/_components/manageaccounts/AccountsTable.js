@@ -149,29 +149,32 @@ export default function AccountsTable({ search = "" }) {
 
   return (
     <>
-      <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-200 max-h-96">
-        <table className="min-w-full divide-y table-fixed divide-gray-200">
-          <thead className="sticky top-0 z-10" style={{ backgroundColor: "#F6F7F9" }}>
-            <tr>
-              <th className="px-6 py-3 text-left text-lg font-medium text-black">#</th>
-              <th className="px-6 py-3 text-left text-lg font-medium text-black">Name</th>
-              <th className="px-6 py-3 text-left text-lg font-medium text-black">Email</th>
-              <th className="px-6 py-3 text-left text-lg font-medium text-black">Status</th>
-              <th className="px-6 py-3 text-left text-lg font-medium text-black">Action</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
-            {filteredAccounts.map((account) => (
-              <AccountRow
-                key={account.id}
-                account={account}
-                index={account.id - 1}
-                onDeleteClick={handleDeleteClick}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <div 
+        className="overflow-x-auto shadow-lg rounded-lg border border-gray-200 max-h-96"
+        style={{ scrollbarWidth: "thin", scrollbarGutter: "stable" }}
+      >
+        <table className="w-full divide-y divide-gray-200">
+        <thead className="sticky top-0 z-10" style={{ backgroundColor: "#F6F7F9" }}>
+          <tr>
+            <th className="px-6 py-3 text-left text-lg font-medium text-black">#</th>
+            <th className="px-6 py-3 text-left text-lg font-medium text-black">Name</th>
+            <th className="px-6 py-3 text-left text-lg font-medium text-black">Email</th>
+            <th className="px-6 py-3 text-left text-lg font-medium text-black">Status</th>
+            <th className="px-6 py-3 text-lg font-medium text-black whitespace-nowrap">Action</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
+          {filteredAccounts.map((account) => (
+            <AccountRow 
+              key={account.id} 
+              account={account} 
+              index={account.id - 1}
+              onDeleteClick={handleDeleteClick}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
 
       {/* Delete confirmation modal — only mounted when an account is staged for deletion */}
       {showDeleteModal && selectedAccount && (

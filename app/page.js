@@ -66,10 +66,10 @@ export default function Home() {
               </Link>
             ) : (
               <Link
-                href="/guest-dashboard"
+                href="/energy-trends"
                 className="px-8 py-3 font-heading text-lg bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block"
               >
-                Go to Guest Dashboard
+                Explore Energy Trends
               </Link>
             )}
           </div>

@@ -34,28 +34,30 @@ const dataRange = await getDataRange();
  * @author Temi Bankole
  */
 export default function Page() {
-  const [selectedSensors, setSelectedSensors] = useState([]);
-  const [chartTitle, setChartTitle] = useState("");
-  //Default both dates to the latest available timestamp from the API.
-  const [from, setFrom] = useState(dataRange.newest);
-  const [to, setTo] = useState(dataRange.newest);
-  const [timeInterval, setTimeInterval] = useState("none");
-  const [pdfBlob, setPdfBlob] = useState(null);
 
-  const handleGenerate = async () => {
-    //Block report generation when user-entered title fails content checks.
-    if (!await checkSafety(chartTitle)) {
-      alert("Chart title contains inappropriate content. Please modify and try again.");
-      return;
-    }
-    //Build report request with selected sensors and date/aggregation filters.
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/report/?sensors=${selectedSensors.map(s => s.code).join(",")}&start=${from}&end=${to}&agg=${timeInterval}&agg_type=mean&title=${chartTitle}`,
-      { credentials: "include" }
-    );
-    const pdf = await res.blob();
-    setPdfBlob(pdf);
-  };
+    const [selectedSensors, setSelectedSensors] = useState([]);
+    const [chartTitle, setChartTitle] = useState("");
+    const [from, setFrom] = useState(dataRange.newest);
+    const [to, setTo] = useState(dataRange.newest);
+    const [timeInterval, setTimeInterval] = useState("none");
+    const [pdfBlob, setPdfBlob] = useState(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    //calls backend API returning the blob to display generated report
+    const handleGenerate = async () => {
+      setIsGenerating(true);
+      if(! await checkSafety(chartTitle)){
+        alert("Chart title contains inappropriate content. Please modify and try again.");
+        setIsGenerating(false);
+        return;
+      }
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/report/?sensors=${selectedSensors.map(s => s.code).join(",")}&start=${from}&end=${to}&agg=${timeInterval}&agg_type=mean&title=${chartTitle}`, {credentials: "include",});
+        const pdf = await res.blob();
+        setPdfBlob(pdf);
+      } finally {
+        setIsGenerating(false);
+      }
 
   const handleClear = () => {
     //Clear generated report and reset control values for a fresh request.
@@ -96,10 +98,11 @@ export default function Page() {
               timeInterval={timeInterval}
               onTimeIntervalChange={setTimeInterval}
               onGenerate={handleGenerate}
+              isGenerating={isGenerating}
             />
           </div>
           <div className="col-span-2 flex">
-            <PDFViewer pdfBlob={pdfBlob} onClear={handleClear} />
+            <PDFViewer pdfBlob={pdfBlob} onClear={handleClear} isGenerating={isGenerating} />
           </div>
         </div>
       </main>
