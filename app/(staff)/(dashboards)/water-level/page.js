@@ -11,6 +11,7 @@ import InfoCard from "../../../_components/InfoCard";
 import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 import { getDataRange } from "@/app/_utils/get-data-range";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
+import NotificationModal from "@/app/_components/NotificationModal";
 
 const STORAGE_KEY = "dashboard-water-level";
 
@@ -51,6 +52,7 @@ export default function WaterLevelDashboard() {
   const [unit, setUnit] = useState("%");
   const TANK_CAPACITY = 32000;
   const [aggregation, setAggregation] = useState("none");
+  const [showSaveNotification, setShowSaveNotification] = useState(false);
 
   const [stats, setStats] = useState([
     { label: "Average Level", value: "-" },
@@ -245,9 +247,7 @@ export default function WaterLevelDashboard() {
       saved: true,
     });
 
-    alert(
-      "Dashboard state saved! Your graph settings are restored for next login."
-    );
+    setShowSaveNotification(true);
   };
 
   const xAxisTitle =
@@ -344,6 +344,14 @@ export default function WaterLevelDashboard() {
           Save Screen
         </button>
       </div>
+
+      {showSaveNotification && (
+        <NotificationModal
+          title="Success"
+          message="Dashboard state saved! Your graph settings are restored for next login."
+          onClose={() => setShowSaveNotification(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }
