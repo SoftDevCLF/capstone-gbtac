@@ -31,6 +31,7 @@ import TimeGranularityDropdown from "../TimeGranularityDropdown";
  *   a from date no more than 8 years in the past, and a to date no later than 2025-12-31
  * - onGenerate is only called after all validation passes — the parent can assume inputs are valid
  * - errorMessage is cleared on a successful validation pass and displayed beneath the Generate button
+ * @author Temi Bankole
  */
 export default function ReportControls({
   selectedSensors, onSensorsChange,

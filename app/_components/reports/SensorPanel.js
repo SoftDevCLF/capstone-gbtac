@@ -17,6 +17,7 @@ import { useState } from "react";
  *   is fully controlled and holds no fetch logic
  * - Filtering is case-insensitive and matches against sensor.name only, not sensor.code
  * - Selection and deselection are by sensor.code to correctly handle sensors with duplicate names
+ * @author Temi Bankole 
  */
 export default function SensorPanel({ sensors = [], selectedSensors = [], onSelect }) {
   const [searchTerm, setSearchTerm] = useState("");

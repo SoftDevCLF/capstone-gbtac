@@ -44,11 +44,11 @@ export default function CreateStaffForm() {
           "Content-Type": "application/json",
         },
         credentials: "include",
+        //API expects `active` as boolean, derived from UI status select value.
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          // Convert display status to boolean for the API
           active: formData.status === "Active",
         }),
       });
@@ -58,11 +58,11 @@ export default function CreateStaffForm() {
       if (!response.ok) {
         let errorMessage = "Failed to create staff account";
 
+        //Normalize backend error shapes into one user-facing alert message.
         if (typeof data.detail === "string") {
           errorMessage = data.detail;
         } else if (Array.isArray(data.detail) && data.detail.length > 0) {
           let rawMsg = data.detail[0].msg || errorMessage;
-          // FastAPI's default email validation message is too technical — replace it
           if (rawMsg.toLowerCase().includes("email address")) {
             errorMessage = "Not a valid email address: must contain an @ symbol";
           } else {
@@ -78,6 +78,7 @@ export default function CreateStaffForm() {
 
       alert("Staff account created successfully");
 
+      //Reset form to defaults after successful account creation.
       setFormData({
         firstName: "",
         lastName: "",

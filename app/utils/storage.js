@@ -20,7 +20,7 @@ import {
  * - Returns defaultState on server-side calls (no window) to keep SSR safe.
  * - No schema validation — stale fields may be present if the shape changed.
  *
- * @author Cintya Lara Flores
+ * @author Cintya Lara Flores and Temi Bankole
  */
 export function loadDashboardState(key, defaultState) {
   if (typeof window === "undefined") return defaultState;
