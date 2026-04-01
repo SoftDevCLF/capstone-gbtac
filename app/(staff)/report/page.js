@@ -24,13 +24,18 @@ export default function Page() {
 
     //calls backend API returning the blob to display generated report
     const handleGenerate = async () => {
+      setIsGenerating(true);
       if(! await checkSafety(chartTitle)){
         setShowSafetyNotification(true);
         return;
       }
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/report/?sensors=${selectedSensors.map(s => s.code).join(",")}&start=${from}&end=${to}&agg=${timeInterval}&agg_type=mean&title=${chartTitle}`, {credentials: "include",});
-      const pdf = await res.blob();
-      setPdfBlob(pdf);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/report/?sensors=${selectedSensors.map(s => s.code).join(",")}&start=${from}&end=${to}&agg=${timeInterval}&agg_type=mean&title=${chartTitle}`, {credentials: "include",});
+        const pdf = await res.blob();
+        setPdfBlob(pdf);
+      } finally {
+        setIsGenerating(false);
+      }
 
     }
     const handleClear = () => {
@@ -71,10 +76,11 @@ export default function Page() {
               timeInterval={timeInterval}
               onTimeIntervalChange={setTimeInterval}
               onGenerate={handleGenerate}
+              isGenerating={isGenerating}
             />
           </div>
           <div className="col-span-2 flex">
-            <PDFViewer pdfBlob={pdfBlob} onClear={handleClear} />
+            <PDFViewer pdfBlob={pdfBlob} onClear={handleClear} isGenerating={isGenerating} />
           </div>
         </div>
       </main>

@@ -229,7 +229,7 @@ export default function EditStaffPage() {
                     required
                   />
                   {formData.email !== originalEmail && (
-                    <p className="text-sm text-blue-600 mt-1">⚠️ Changing email will update the user&apos;s login credentials</p>
+                    <p className="text-sm text-blue-600 mt-1">⚠️ Changing email will update the users login credentials</p>
                   )}
                 </div>
 

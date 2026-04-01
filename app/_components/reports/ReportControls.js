@@ -13,6 +13,7 @@ export default function ReportControls({
   to, onToChange,
   timeInterval, onTimeIntervalChange,
   onGenerate,
+  isGenerating = false,
 }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [sensors, setSensors] = useState();
@@ -108,10 +109,11 @@ export default function ReportControls({
 
       <div className="flex flex-col items-center">
         <button
-          className="w-full px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+          className="w-full px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] disabled:bg-[#9FBFE2] disabled:cursor-not-allowed transition"
           onClick={handleGenerateReport}
+          disabled={isGenerating}
         >
-          Generate Report
+          {isGenerating ? "Generating..." : "Generate Report"}
         </button>
         {errorMessage && <p className="mt-5 text-red-600 font-bold">{errorMessage}</p>}
       </div>
