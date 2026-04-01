@@ -31,28 +31,90 @@ export default function StaffHome() {
   const [recent, setRecent] = useState([]);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const user = `${firstName} ${lastName}`;
+  const [isRickRollUser, setIsRickRollUser] = useState(false);
+
+  const user = `${firstName} ${lastName}`.trim();
+
+  // Change this to the exact prank account email
+  const prankEmail = "rick.rolld@sait.ca";
 
   useEffect(() => {
     const savedDashboards = loadRecentDashboards().filter((d) => d.saved);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecent(savedDashboards);
 
+    // Fetch user email, check if prank account, and load name from Firestore
     const fetchUserName = async () => {
-      if (auth.currentUser?.email) {
-        const userDoc = doc(db, "allowedUsers", auth.currentUser.email);
-        const docSnap = await getDoc(userDoc);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setFirstName(data.firstName || "");
-          setLastName(data.lastName || "");
-        } else {
-          console.log("No such document!");
-        }
+      const currentEmail = auth.currentUser?.email?.toLowerCase();
+      if (!currentEmail) return;
+
+      // Check if this is the Rick Roll account
+      if (currentEmail === prankEmail.toLowerCase()) {
+        setIsRickRollUser(true);
+      }
+
+      // Get user info from Firestore
+      const userDoc = doc(db, "allowedUsers", currentEmail);
+      const docSnap = await getDoc(userDoc);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setFirstName(data.firstName || "");
+        setLastName(data.lastName || "");
+      } else {
+        console.log("No such document!");
       }
     };
+
     fetchUserName();
   }, []);
+
+  // If prank account, show Rick Roll page instead of normal dashboard
+  if (isRickRollUser) {
+    return (
+      <div className="flex flex-col min-h-screen bg-black font-sans">
+
+        {/* Navigation (limited access) */}
+        <SecondaryNav
+          displayLogin={false}
+          displayLogout={true}
+          displayProfile={false}
+          employeeName={user || "Staff User"}
+        />
+
+         {/* Hide dashboard navigation */}
+        <Navbar
+          displayDashboards={false}
+          displayReports={false}
+          displayAbout={false}
+          displayHome={false}
+        />
+
+        {/* Rick Roll content */}
+        <main className="flex-1 flex flex-col items-center justify-center px-4 py-10">
+          <h1 className="text-white text-4xl md:text-6xl font-extrabold text-center mb-6">
+            Welcome, {user || "Staff User"}!
+          </h1>
+
+          <div className="w-full max-w-5xl aspect-video rounded-xl overflow-hidden shadow-2xl border border-white/20">
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
+              title="Special Welcome Video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+
+          <p className="text-white/80 mt-4 text-center">
+            Loading your personalized dashboard...
+          </p>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#fdfdfd] font-sans">
@@ -128,7 +190,7 @@ export default function StaffHome() {
           </div>
         </section>
       </main>
-
+      
       {/* Decorative footer image */}
       <div className="relative h-62.5">
         <Image src="/gbtac3.jpg" alt="Staff Welcome" fill priority />
