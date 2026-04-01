@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import NotificationModal from "@/app/_components/NotificationModal";
 
 export default function CreateStaffForm() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,20 @@ export default function CreateStaffForm() {
     email: "",
     status: "Active",
   });
+  const [notification, setNotification] = useState({
+    open: false,
+    title: "",
+    message: "",
+    variant: "success",
+  });
+
+  const showNotification = (
+    message,
+    variant = "error",
+    title = variant === "error" ? "Error" : "Success",
+  ) => {
+    setNotification({ open: true, title, message, variant });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,11 +69,11 @@ export default function CreateStaffForm() {
           errorMessage = data.detail.message || JSON.stringify(data.detail);
         }
 
-        alert(errorMessage);
+        showNotification(errorMessage);
         return;
       }
 
-      alert("Staff account created successfully");
+      showNotification("Staff account created successfully", "success", "Success");
 
       setFormData({
         firstName: "",
@@ -68,7 +83,7 @@ export default function CreateStaffForm() {
       });
     } catch (error) {
       console.error("Create staff error:", error);
-      alert("Something went wrong while creating the staff account.");
+      showNotification("Something went wrong while creating the staff account.");
     }
   };
 
@@ -149,6 +164,22 @@ export default function CreateStaffForm() {
         </button>
       </div>
     </form>
+
+    {notification.open && (
+      <NotificationModal
+        title={notification.title}
+        message={notification.message}
+        variant={notification.variant}
+        onClose={() =>
+          setNotification({
+            open: false,
+            title: "",
+            message: "",
+            variant: "success",
+          })
+        }
+      />
+    )}
   </div>
   );
 }

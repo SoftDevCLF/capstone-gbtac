@@ -5,6 +5,7 @@ import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
 import ReportControls from "@/app/_components/reports/ReportControls";
 import PDFViewer from "../../_components/reports/PdfViewer";
+import NotificationModal from "@/app/_components/NotificationModal";
 import { useState } from "react";
 import { checkSafety } from "@/app/_utils/content-safety";
 import { getDataRange } from "@/app/_utils/get-data-range";
@@ -19,11 +20,12 @@ export default function Page() {
     const [to, setTo] = useState(dataRange.newest);
     const [timeInterval, setTimeInterval] = useState("none");
     const [pdfBlob, setPdfBlob] = useState(null);
+    const [showSafetyNotification, setShowSafetyNotification] = useState(false);
 
     //calls backend API returning the blob to display generated report
     const handleGenerate = async () => {
       if(! await checkSafety(chartTitle)){
-        alert("Chart title contains inappropriate content. Please modify and try again.");
+        setShowSafetyNotification(true);
         return;
       }
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/report/?sensors=${selectedSensors.map(s => s.code).join(",")}&start=${from}&end=${to}&agg=${timeInterval}&agg_type=mean&title=${chartTitle}`, {credentials: "include",});
@@ -76,6 +78,16 @@ export default function Page() {
           </div>
         </div>
       </main>
+
+      {showSafetyNotification && (
+        <NotificationModal
+          title="Error"
+          message="Chart title contains inappropriate content. Please modify and try again."
+          variant="error"
+          onClose={() => setShowSafetyNotification(false)}
+        />
+      )}
+
       <Footer />
     </div>
   );

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import SecondaryNav from "@/app/_components/SecondaryNav";
 import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
+import NotificationModal from "@/app/_components/NotificationModal";
 import Link from "next/link";
 
 export default function EditStaffPage() {
@@ -24,6 +25,9 @@ export default function EditStaffPage() {
   const [saving, setSaving] = useState(false);
   const [originalData, setOriginalData] = useState(null);
   const [originalEmail, setOriginalEmail] = useState("");
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [showErrorNotification, setShowErrorNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
   useEffect(() => {
     const fetchStaffData = async () => {
@@ -114,12 +118,12 @@ export default function EditStaffPage() {
         throw new Error(errorMessage);
       }
 
-      alert("Staff account updated successfully");
-      router.push("/account-manager");
+      setShowSuccessNotification(true);
     } catch (error) {
       console.error("Update staff error:", error);
       setError(error.message);
-      alert(error.message);
+      setNotificationMessage(error.message);
+      setShowErrorNotification(true);
     } finally {
       setSaving(false);
     }
@@ -225,7 +229,7 @@ export default function EditStaffPage() {
                     required
                   />
                   {formData.email !== originalEmail && (
-                    <p className="text-sm text-blue-600 mt-1">⚠️ Changing email will update the user's login credentials</p>
+                    <p className="text-sm text-blue-600 mt-1">⚠️ Changing email will update the user&apos;s login credentials</p>
                   )}
                 </div>
 
@@ -276,6 +280,24 @@ export default function EditStaffPage() {
         </div>
         <Footer />
       </main>
+      {showSuccessNotification && (
+        <NotificationModal
+          title="Success"
+          message="Staff account updated successfully"
+          onClose={() => {
+            setShowSuccessNotification(false);
+            router.push("/account-manager");
+          }}
+        />
+      )}
+      {showErrorNotification && (
+        <NotificationModal
+          title="Error"
+          message={notificationMessage || "Failed to update staff account."}
+          variant="error"
+          onClose={() => setShowErrorNotification(false)}
+        />
+      )}
     </div>
   );
 }
