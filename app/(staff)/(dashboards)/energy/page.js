@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import Carousel from "../../../_components/Carousel";
 import { useDateValidation } from "../../../_components/hooks/useDateValidation";
+import ExportPDFButton from "@/app/_components/ExportPDFButton";
 
 import LineHandler from "@/app/_components/graphs/handlers/LineHandler";
 import PieHandler from "@/app/_components/graphs/handlers/PieHandler";
@@ -43,6 +44,9 @@ const STORAGE_KEY = "dashboard-energy";
  * @author Cintya Lara Flores
  */
 export default function EnergyDashboard() {
+  const lineChartRef = useRef(null);
+  const pieChartRef = useRef(null);
+
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, stateDefaults),
   );
@@ -225,41 +229,60 @@ export default function EnergyDashboard() {
 
       {/* ── Charts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
-        <LineHandler
-          sensorList={[
-            "30000_TL340", // GBT Generation Hourly Wh
-            "30000_TL341", // GBT Consumption Hourly Wh
-            "30000_TL339", // GBT Net Energy Hourly Wh
-          ]}
-          startDate={appliedState?.fromDate}
-          endDate={appliedState?.toDate}
-          graphTitle={`Consumption vs Generation, ${appliedState?.fromDate} to ${appliedState?.toDate}`}
-          yTitle={"Wh"}
-          xTitle={"hours"}
-          xUnit={"hour"}
-          aggTime={aggregation}
-          aggType={"sum"}
-        />
+        <div>
+          <div ref={lineChartRef} className="bg-white rounded-lg shadow-md p-4">
+            <LineHandler
+              sensorList={[
+                "30000_TL340", // GBT Generation Hourly Wh
+                "30000_TL341", // GBT Consumption Hourly Wh
+                "30000_TL339", // GBT Net Energy Hourly Wh
+              ]}
+              startDate={appliedState?.fromDate}
+              endDate={appliedState?.toDate}
+              graphTitle={`Consumption vs Generation, ${appliedState?.fromDate} to ${appliedState?.toDate}`}
+              yTitle={"Wh"}
+              xTitle={"hours"}
+              xUnit={"hour"}
+              aggTime={aggregation}
+              aggType={"sum"}
+            />
+          </div>
+
+          <div className="flex justify-end mt-3">
+            <ExportPDFButton
+              chartRef={lineChartRef}
+              fileName="energy-consumption-vs-generation"
+            />
+          </div>
+        </div>
 
         {/* endDate capped at 2025-12-31 — solar sensor data ends there */}
-        <PieHandler
-          sensorList={[
-            "30000_TL252", // PV-CarportSolar_Total
-            "30000_TL253", // PV-RooftopSolar_Total
-          ]}
-          startDate={appliedState?.fromDate}
-          endDate={appliedState?.toDate}
-          graphTitle={`Solar Panel Generation, ${appliedState?.fromDate} to ${appliedState?.toDate < "2025-12-31" ? appliedState?.toDate : "2025-12-31"}`}
-          label={"Wh"} // **check: unsure if right unit
-        />
+        <div>
+          <div ref={pieChartRef} className="bg-white rounded-lg shadow-md p-4">
+            <PieHandler
+              sensorList={[
+                "30000_TL252", // PV-CarportSolar_Total
+                "30000_TL253", // PV-RooftopSolar_Total
+              ]}
+              startDate={appliedState?.fromDate}
+              endDate={appliedState?.toDate}
+              graphTitle={`Solar Panel Generation, ${appliedState?.fromDate} to ${appliedState?.toDate < "2025-12-31" ? appliedState?.toDate : "2025-12-31"}`}
+              label={"Wh"} // **check: unsure if right unit
+            />
+          </div>
+        </div>
       </div>
-      <div className="flex justify-end mt-6">
+      <div className="flex justify-end gap-3 mt-6">
         <button
           onClick={handleSaveScreen}
           className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
         >
           Save Screen
         </button>
+        <ExportPDFButton
+          chartRef={pieChartRef}
+          fileName="energy-solar-panel-generation"
+        />
       </div>
     </DashboardLayout>
   );
