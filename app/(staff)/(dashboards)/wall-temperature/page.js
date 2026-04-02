@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
 import LineHandler from "../../../_components/graphs/handlers/LineHandler";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import { useDateValidation } from "../../../_components/hooks/useDateValidation";
+import ExportPDFButton from "@/app/_components/ExportPDFButton";
 import NotificationModal from "@/app/_components/NotificationModal";
 import { getDataRange } from "@/app/_utils/get-data-range";
 
@@ -130,6 +131,8 @@ const ORIENTATION_OPTIONS = ["North", "South", "East", "West"];
  * @author Cintya Lara Flores
  */
 export default function WallTempDashboard() {
+  const chartRef = useRef(null);
+
   const [state, setState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, {});
     return {
@@ -360,6 +363,7 @@ export default function WallTempDashboard() {
 
       {/* ── Line chart — keyed on dates + sensor list to force remount on change ── */}
       <div
+        ref={chartRef}
         id="chart-print-area"
         className="bg-white rounded-lg shadow-md p-4 mt-6"
       >
@@ -383,13 +387,18 @@ export default function WallTempDashboard() {
         )}
       </div>
 
-      <div className="flex justify-end mt-6">
+      <div className="flex justify-end gap-3 mt-6">
         <button
           onClick={handleSaveScreen}
           className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
         >
           Save Screen
         </button>
+        <ExportPDFButton
+          chartRef={chartRef}
+          fileName="wall-temperature"
+        />
+        
       </div>
 
       {showSaveNotification && (

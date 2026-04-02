@@ -312,6 +312,12 @@ export default function Page() {
             >
               Save Screen
             </button>
+            {appliedState ? (
+              <ExportPDFButton
+                chartRef={chartRef2}
+                fileName={`natural-gas-dashboard-${appliedState.fromDate}-${appliedState.toDate}`}
+              />
+            ) : null}
           </div>
 
           {showSaveNotification && (
