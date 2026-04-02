@@ -25,6 +25,8 @@ const GRID_COLS = {
  * @param {string}   [colsClass]        - Tailwind grid-cols class to override
  *                                        the automatic column count derived
  *                                        from items.length.
+ * 
+ * @returns A collection of stat cards displayed in a grid or horizontal layout
  *
  * Notes:
  * - unit: if a function, it is called with item.value and its return value is

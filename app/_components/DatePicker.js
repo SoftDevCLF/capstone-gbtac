@@ -17,6 +17,8 @@ import { useState } from "react";
  *                                      before Apply, signature: (field, value, otherValue)
  * @param {string}   aggregation      - Initial aggregation granularity value
  * @param {Function} setAggregation   - Called with the new aggregation value on Apply
+ * 
+ * @returns Controls for selecting and applying a date range and aggregation
  *
  * Notes:
  * - The Apply button is disabled whenever errors.from or errors.to is truthy.

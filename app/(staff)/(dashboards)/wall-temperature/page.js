@@ -127,10 +127,13 @@ const ORIENTATION_OPTIONS = ["North", "South", "East", "West"];
  *   An empty selection in either dimension means "all" for that dimension.
  * - The Save Screen button persists the current state to localStorage and also
  *   saves a record to the Recent Dashboards list with a summary of the current filters.
+ * 
+ * @returns The wall temperature dashboard page with filters and chart
  *
  * @author Cintya Lara Flores
  * @author Dominique Anne Lee
  */
+
 export default function WallTempDashboard() {
   const chartRef = useRef(null);
 
