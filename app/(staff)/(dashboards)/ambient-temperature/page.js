@@ -121,6 +121,7 @@ const FLOOR_IMAGES = {
  *   scroll on small screens and a 3-column grid on large screens.
  *
  * @author Cintya Lara Flores
+ * @author Dominique Anne Lee
  */
 export default function AmbientTempDashboard() {
   const [state, setState] = useState(() => {

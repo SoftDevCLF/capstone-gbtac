@@ -128,6 +128,7 @@ const ORIENTATION_OPTIONS = ["North", "South", "East", "West"];
  *   saves a record to the Recent Dashboards list with a summary of the current filters.
  *
  * @author Cintya Lara Flores
+ * @author Dominique Anne Lee
  */
 export default function WallTempDashboard() {
   const [state, setState] = useState(() => {
