@@ -7,7 +7,9 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 
+
 /**
+ * 
  * loadDashboardState
  *
  * Retrieves and parses a dashboard's persisted state from localStorage.
@@ -48,15 +50,26 @@ export function saveDashboardState(key, state) {
   localStorage.setItem(key, JSON.stringify(state));
 }
 
-//Custom Chart specific functions ******BUG******
-return loadDashboardState("customChart", {
-  id: null,
-  title: "",
-  sensors: [],
-  dateFrom: null,
-  dateTo: null,
-});
-
+/**
+ * loadCustomChartState
+ *
+ * Retrieves the custom chart builder state from localStorage.
+ *
+ * @returns {object} Custom chart state object, or the default state if
+ *          nothing is stored or on server-side calls.
+ *
+ * Notes:
+ * - No schema validation — stale fields may be present if the shape changed.
+ */
+export function loadCustomChartState() {
+  return loadDashboardState("customChart", {
+    id: null,
+    title: "",
+    sensors: [],
+    dateFrom: null,
+    dateTo: null
+  });
+}
 /**
  * saveCustomChartState
  *

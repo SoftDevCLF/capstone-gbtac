@@ -310,7 +310,6 @@ export default function Page() {
 
         {/* Graph renders below with key to force re-render on chart load */}
         <div className="w-full overflow-hidden shadow-sm rounded-lg" ref={chartRef}>
-          <div style={{ height: "700px" }} className="w-full">
           <GraphContainer 
             key={currentChartId ?? "new"}
             selectedSensors={selectedSensors} 
@@ -318,7 +317,6 @@ export default function Page() {
             settings={chartSettings}
             aggSettings={aggregationSettings}
           />
-          </div>
         </div>
 
         {/* Save and Export PDF buttons */}
