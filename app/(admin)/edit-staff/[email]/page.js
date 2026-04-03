@@ -23,11 +23,49 @@ export default function EditStaffPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [originalData, setOriginalData] = useState(null);
   const [originalEmail, setOriginalEmail] = useState("");
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [showErrorNotification, setShowErrorNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+
+  const getValidationErrors = (data) => {
+    const newErrors = {};
+
+    if (!data.firstName.trim()) {
+      newErrors.firstName = "First name is required.";
+    } else if (data.firstName.trim().length < 2) {
+      newErrors.firstName = "Must be at least 2 characters.";
+    } else if (!/^[a-zA-Z\s'-]+$/.test(data.firstName)) {
+      newErrors.firstName = "No numbers or special characters.";
+    }
+
+    if (!data.lastName.trim()) {
+      newErrors.lastName = "Last name is required.";
+    } else if (data.lastName.trim().length < 2) {
+      newErrors.lastName = "Must be at least 2 characters.";
+    } else if (!/^[a-zA-Z\s'-]+$/.test(data.lastName)) {
+      newErrors.lastName = "No numbers or special characters.";
+    }
+
+    if (!data.email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!data.email.includes("@")) {
+      newErrors.email = "Enter a valid email.";
+    } else {
+      const emailLower = data.email.toLowerCase();
+      if (
+        !emailLower.endsWith("@sait.ca") &&
+        !emailLower.endsWith("@edu.sait.ca") &&
+        !emailLower.endsWith("@gmail.com")
+      ) {
+        newErrors.email = "Must be a SAIT or Gmail email.";
+      }
+    }
+
+    return newErrors;
+  };
 
   useEffect(() => {
     const fetchStaffData = async () => {
@@ -78,11 +116,20 @@ export default function EditStaffPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const updated = { ...formData, [name]: value };
+    setFormData(updated);
+    setFieldErrors(getValidationErrors(updated));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const validationErrors = getValidationErrors(formData);
+    setFieldErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
@@ -139,6 +186,8 @@ export default function EditStaffPage() {
     );
   };
 
+  const hasValidationErrors = Object.keys(getValidationErrors(formData)).length > 0;
+
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FdFdFd] font-sans">
@@ -185,7 +234,6 @@ export default function EditStaffPage() {
             <form
               onSubmit={handleSubmit}
               className="space-y-10 text-[#212529]"
-              style={{ fontFamily: "var(--font-titillium)" }}
             >
               <div className="space-y-6">
                 <h2 className="text-lg border-b pb-2 font-semibold text-gray-800">
@@ -200,9 +248,13 @@ export default function EditStaffPage() {
                       value={formData.firstName}
                       onChange={handleChange}
                       placeholder="John"
+                      maxLength={50}
                       className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                       required
                     />
+                    {fieldErrors.firstName && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.firstName}</p>
+                    )}
                   </div>
                   <div className="flex flex-col">
                     <label className="font-semibold text-gray-800">Last Name</label>
@@ -211,9 +263,13 @@ export default function EditStaffPage() {
                       value={formData.lastName}
                       onChange={handleChange}
                       placeholder="Doe"
+                      maxLength={50}
                       className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                       required
                     />
+                    {fieldErrors.lastName && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.lastName}</p>
+                    )}
                   </div>
                 </div>
 
@@ -226,10 +282,14 @@ export default function EditStaffPage() {
                     onChange={handleChange}
                     placeholder="staff@example.com"
                     className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
+                    maxLength={254}
                     required
                   />
                   {formData.email !== originalEmail && (
                     <p className="text-sm text-blue-600 mt-1">⚠️ Changing email will update the users login credentials</p>
+                  )}
+                  {fieldErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
                   )}
                 </div>
 
@@ -265,9 +325,9 @@ export default function EditStaffPage() {
                 </Link>
                 <button
                   type="submit"
-                  disabled={!hasChanges() || saving}
+                  disabled={!hasChanges() || saving || hasValidationErrors}
                   className={`px-5 py-3 text-white font-semibold rounded transition ${
-                    hasChanges() && !saving
+                    hasChanges() && !saving && !hasValidationErrors
                       ? "bg-[#005EB8] hover:bg-[#004080]"
                       : "bg-gray-400 cursor-not-allowed"
                   }`}
