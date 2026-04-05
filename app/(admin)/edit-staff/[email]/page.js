@@ -1,3 +1,23 @@
+/**
+ * EditStaffPage
+ *
+ * Admin page for editing a specific staff member's account, identified by the
+ * email URL parameter. Fetches the staff record from the backend on mount and
+ * presents an inline form for updating name, email, and active status.
+ *
+ * Notes:
+ * - The email param is URL-decoded from the dynamic [email] route segment.
+ * - Email changes update both Firebase Auth and Firestore via the
+ *   /auth/admin/update-staff endpoint.
+ * - Admins cannot change staff passwords; a notice is shown in the form.
+ * - The Save button is disabled until at least one field differs from the
+ *   original fetched data.
+ *
+ * @returns The admin edit-staff-by-email page
+ *
+ * @author Dominique Anne Lee
+ */
+
 "use client";
 
 import { useState, useEffect } from "react";

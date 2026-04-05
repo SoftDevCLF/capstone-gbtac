@@ -120,9 +120,13 @@ const FLOOR_IMAGES = {
  *   An empty selection in either dimension means "all" for that dimension.
  * - The Carousel / InfoCard split renders the stat cards as a horizontal
  *   scroll on small screens and a 3-column grid on large screens.
+ * 
+ * @returns The ambient temperature dashboard page with filters, KPIs, and chart
  *
  * @author Cintya Lara Flores
+ * @author Dominique Anne Lee
  */
+
 export default function AmbientTempDashboard() {
   const chartRef = useRef(null);
 
