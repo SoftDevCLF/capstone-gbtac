@@ -30,18 +30,54 @@ export default function CreateStaffForm() {
     setNotification({ open: true, title, message, variant });
   };
 
+  const validateField = (name, value) => {
+    const trimmed = value.trim();
+
+    if (name === "firstName") {
+      if (!trimmed) return "First name is required.";
+      if (trimmed.length < 2) return "Must be at least 2 characters.";
+      if (!/^[a-zA-Z\s'-]+$/.test(value)) return "No numbers or special characters.";
+    }
+
+    if (name === "lastName") {
+      if (!trimmed) return "Last name is required.";
+      if (trimmed.length < 2) return "Must be at least 2 characters.";
+      if (!/^[a-zA-Z\s'-]+$/.test(value)) return "No numbers or special characters.";
+    }
+
+    if (name === "email") {
+      if (!trimmed) return "Email is required.";
+      if (!trimmed.includes("@")) return "Enter a valid email.";
+
+      const emailLower = trimmed.toLowerCase();
+      if (
+        !emailLower.endsWith("@sait.ca") &&
+        !emailLower.endsWith("@edu.sait.ca") &&
+        !emailLower.endsWith("@gmail.com")
+      ) {
+        return "Must be a SAIT or Gmail email.";
+      }
+    }
+
+    return "";
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = {
+      firstName: validateField("firstName", formData.firstName),
+      lastName: validateField("lastName", formData.lastName),
+      email: validateField("email", formData.email),
+    };
 
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required.";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required.";
-    if (!formData.email.trim()) newErrors.email = "Email is required.";
+    Object.keys(newErrors).forEach((key) => {
+      if (!newErrors[key]) delete newErrors[key];
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

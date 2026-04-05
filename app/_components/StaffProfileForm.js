@@ -184,6 +184,64 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
     setHasChanges(changed);
   }, [formData, originalData]);
 
+  const getValidationErrors = (data) => {
+    const newErrors = {};
+
+    if (!data.firstName.trim())
+      newErrors.firstName = "First name is required.";
+    else if (data.firstName.trim().length < 2)
+      newErrors.firstName = "Must be at least 2 characters.";
+    else if (!/^[a-zA-Z\s'-]+$/.test(data.firstName))
+      newErrors.firstName = "No numbers or special characters.";
+
+    if (!data.lastName.trim())
+      newErrors.lastName = "Last name is required.";
+    else if (data.lastName.trim().length < 2)
+      newErrors.lastName = "Must be at least 2 characters.";
+    else if (!/^[a-zA-Z\s'-]+$/.test(data.lastName))
+      newErrors.lastName = "No numbers or special characters.";
+
+    if (!data.email.trim()) newErrors.email = "Email is required.";
+    else if (!data.email.includes("@"))
+      newErrors.email = "Enter a valid email.";
+    else {
+      const emailLower = data.email.toLowerCase();
+      if (
+        !emailLower.endsWith("@sait.ca") &&
+        !emailLower.endsWith("@edu.sait.ca") &&
+        !emailLower.endsWith("@gmail.com")
+      )
+        newErrors.email = "Must be a SAIT or Gmail email.";
+    }
+
+    if (!isAdmin && data.email !== originalEmail && !currentPasswordVerified) {
+      newErrors.currentPassword = "Please verify your password before changing email.";
+    }
+
+    if (!isAdmin) {
+      if (data.newPassword && !data.currentPassword)
+        newErrors.currentPassword = "Current password is required.";
+
+      if (data.newPassword) {
+        if (data.newPassword.length < 8)
+          newErrors.newPassword = "Must be at least 8 characters.";
+        else if (!/[A-Z]/.test(data.newPassword))
+          newErrors.newPassword = "Must include an uppercase letter.";
+        else if (!/[0-9]/.test(data.newPassword))
+          newErrors.newPassword = "Must include a number.";
+        else if (!/[^a-zA-Z0-9]/.test(data.newPassword))
+          newErrors.newPassword = "Must include a special character.";
+        else if (data.newPassword === data.currentPassword)
+          newErrors.newPassword = "New password can't be the same as current.";
+      }
+
+      if (data.newPassword && data.newPassword !== data.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    return newErrors;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => {
@@ -197,6 +255,13 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
       if (name === "email" && value !== originalEmail) {
         setCurrentPasswordVerified(false);
       }
+
+      const newErrors = getValidationErrors(updated);
+      setErrors((prevErrors) => ({
+        ...(prevErrors.general ? { general: prevErrors.general } : {}),
+        ...newErrors,
+      }));
+
       return updated;
     });
   };
@@ -410,62 +475,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
   };
 
   const validate = () => {
-    const newErrors = {};
-
-    if (!formData.firstName.trim())
-      newErrors.firstName = "First name is required.";
-    else if (formData.firstName.trim().length < 2)
-      newErrors.firstName = "Must be at least 2 characters.";
-    else if (!/^[a-zA-Z\s'-]+$/.test(formData.firstName))
-      newErrors.firstName = "No numbers or special characters.";
-
-    if (!formData.lastName.trim())
-      newErrors.lastName = "Last name is required.";
-    else if (formData.lastName.trim().length < 2)
-      newErrors.lastName = "Must be at least 2 characters.";
-    else if (!/^[a-zA-Z\s'-]+$/.test(formData.lastName))
-      newErrors.lastName = "No numbers or special characters.";
-
-    if (!formData.email.trim()) newErrors.email = "Email is required.";
-    else if (!formData.email.includes("@"))
-      newErrors.email = "Enter a valid email.";
-    else {
-      const emailLower = formData.email.toLowerCase();
-      if (
-        !emailLower.endsWith("@sait.ca") &&
-        !emailLower.endsWith("@edu.sait.ca") &&
-        !emailLower.endsWith("@gmail.com")
-      )
-        newErrors.email = "Must be a SAIT or Gmail email.";
-    }
-
-    if (!isAdmin && formData.email !== originalEmail && !currentPasswordVerified) {
-      newErrors.currentPassword = "Please verify your password before changing email.";
-    }
-
-    if (!isAdmin) {
-      if (formData.newPassword && !formData.currentPassword)
-        newErrors.currentPassword = "Current password is required.";
-
-      if (formData.newPassword) {
-        if (formData.newPassword.length < 8)
-          newErrors.newPassword = "Must be at least 8 characters.";
-        else if (!/[A-Z]/.test(formData.newPassword))
-          newErrors.newPassword = "Must include an uppercase letter.";
-        else if (!/[0-9]/.test(formData.newPassword))
-          newErrors.newPassword = "Must include a number.";
-        else if (!/[^a-zA-Z0-9]/.test(formData.newPassword))
-          newErrors.newPassword = "Must include a special character.";
-        else if (formData.newPassword === formData.currentPassword)
-          newErrors.newPassword = "New password can't be the same as current.";
-      }
-      if (
-        formData.newPassword &&
-        formData.newPassword !== formData.confirmPassword
-      )
-        newErrors.confirmPassword = "Passwords do not match.";
-    }
-
+    const newErrors = getValidationErrors(formData);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
