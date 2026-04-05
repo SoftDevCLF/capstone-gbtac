@@ -1,10 +1,27 @@
-//This component is for the Admin to create a new staff account. They can input the staff's first name, last name, email, and status (active/inactive).
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import ConfirmModal from "@/app/_components/ConfirmModal";
 import NotificationModal from "@/app/_components/NotificationModal";
+
+/**
+ * CreateStaffForm
+ *
+ * Form used by admins to create a new staff account. Collects staff details,
+ * validates required fields, confirms submission, and sends a request to the backend.
+ * Displays success or error feedback through notification modals.
+ *
+ * Notes:
+ * - Email validation is primarily handled by the backend; frontend only checks for presence.
+ * - Confirmation modal is used to prevent accidental staff creation.
+ * - Backend response formats may vary, so error handling normalizes different structures.
+ *
+ * @returns The staff creation form with validation, confirmation, and notification feedback
+ *
+ * @author Anna Isabelle Yabut
+ * @author Temi Bankole
+ */
 
 export default function CreateStaffForm() {
   const [formData, setFormData] = useState({
@@ -22,6 +39,15 @@ export default function CreateStaffForm() {
     variant: "success",
   });
 
+  /**
+   * showNotification
+   *
+   * Displays a notification modal with the given message and variant.
+   *
+   * @param {string} message - Message shown in the notification
+   * @param {string} [variant="error"] - Notification type ("error" or "success")
+   * @param {string} [title] - Title of the notification modal
+   */
   const showNotification = (
     message,
     variant = "error",
@@ -32,10 +58,22 @@ export default function CreateStaffForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Clear field-specific error as the user edits the input
     setErrors((prev) => ({ ...prev, [name]: "" }));
     setFormData({ ...formData, [name]: value });
   };
 
+  /**
+   * validateForm
+   *
+   * Validates required form fields before submission.
+   *
+   * @returns {boolean} True if the form is valid, otherwise false
+   *
+   * Notes:
+   * - Only checks for required fields; deeper validation is handled by the backend.
+   */
   const validateForm = () => {
     const newErrors = {};
 
@@ -47,6 +85,17 @@ export default function CreateStaffForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * createStaff
+   *
+   * Sends a request to the backend to create a new staff account using the form data.
+   *
+   * @returns Resolves after the request completes and UI state is updated
+   *
+   * Notes:
+   * - Handles multiple backend error formats (string, array, object).
+   * - Resets the form on successful creation.
+   */
   const createStaff = async () => {
     setShowConfirmModal(false);
 
@@ -70,6 +119,7 @@ export default function CreateStaffForm() {
       if (!response.ok) {
         let errorMessage = "Failed to create staff account";
 
+        // Normalize different backend error shapes into a readable message
         if (typeof data.detail === "string") {
           errorMessage = data.detail;
         } else if (Array.isArray(data.detail) && data.detail.length > 0) {

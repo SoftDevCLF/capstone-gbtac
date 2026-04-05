@@ -5,6 +5,31 @@ import BarChart from "../BarChart";
 import LineChart from "../LineChart";
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
 
+/**
+ * NaturalGasHandler
+ *
+ * Fetches, prepares, and renders the natural gas dashboard charts for the
+ * selected date range. It supports monthly and yearly aggregation, unit
+ * conversion, summary-stat calculation, and PDF export for both chart views.
+ *
+ * @param {string} startDate - Start date in YYYY-MM-DD format
+ * @param {string} endDate - End date in YYYY-MM-DD format
+ * @param {string} [unit="kWh"] - Display unit for chart values ("kWh" or "W")
+ * @param {string} [aggregation="none"] - Aggregation mode for the dataset
+ * @param {Function} onStatsReady - Called with calculated summary stats or null when unavailable
+ * @param {object} chartRef - Ref attached to the stacked bar chart container for PDF export
+ * @param {object} chartRef2 - Ref attached to the line chart container for PDF export
+ *
+ * Notes:
+ * - The backend endpoint returns monthly data; yearly aggregation is calculated client-side.
+ * - Stats are recalculated from the same transformed dataset used by the charts so the cards stay in sync with the visualized data.
+ * - Only "kWh" and "W" are currently supported for display conversion.
+ *
+ * @returns The natural gas dashboard chart section with loading, empty, and error states
+ *
+ * @author Anna Isabelle Yabut
+ */
+
 export default function NaturalGasHandler({
   startDate,
   endDate,
@@ -63,6 +88,7 @@ export default function NaturalGasHandler({
     const groupedRows = useMemo(() => {
         if (aggregation !== "Y") return rows;
 
+        // Yearly mode is derived locally because the API response is monthly
         return Object.values(
         rows.reduce((acc, row) => {
             const year = row.month.slice(0, 4);
@@ -138,6 +164,7 @@ export default function NaturalGasHandler({
         [groupedRows, unit]
     );
 
+    // Uses coarse step sizes to keep both charts readable across very different value ranges
     const getNiceStep = (maxValue) => {
         if (maxValue <= 1000) return 100;
         if (maxValue <= 10000) return 1000;
@@ -154,7 +181,7 @@ export default function NaturalGasHandler({
     const barStep = getNiceStep(rawBarMax);
     const barMax = Math.ceil(rawBarMax / barStep) * barStep || barStep;
 
-    // Line chart scale
+     // Adds padding so the line chart peak does not sit directly on the chart boundary
     const rawLineMax = Math.max(...convertedRows.map((row) => row.total), 0);
     const paddedLineMax = rawLineMax * 1.1;
     const lineStep = getNiceStep(paddedLineMax);
@@ -329,6 +356,18 @@ export default function NaturalGasHandler({
     },
   };
 
+  /**
+   * LoadingOverlay
+   *
+   * Displays a centered loading state over a chart container while data is being fetched.
+   *
+   * @param {string} text - Loading message shown below the spinner
+   *
+   * Notes:
+   * - Rendered as an overlay so the chart card keeps its layout while loading.
+   *
+   * @returns The chart loading overlay
+   */
   const LoadingOverlay = ({ text }) => (
     <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10 rounded">
       <div className="flex flex-col items-center gap-2 text-gray-600">
@@ -357,6 +396,18 @@ export default function NaturalGasHandler({
     </div>
   );
 
+  /**
+   * EmptyState
+   *
+   * Displays a neutral placeholder when no chart data is available for the selected range.
+   *
+   * @param {string} text - Message shown in the empty state
+   *
+   * Notes:
+   * - Used instead of rendering an empty chart to make no-data cases explicit to the user.
+   *
+   * @returns The empty chart state
+   */
   const EmptyState = ({ text }) => (
     <div className="h-full flex items-center justify-center text-gray-400 text-sm">
       {text}

@@ -21,25 +21,39 @@ import { FiInfo } from "react-icons/fi";
 
 
 const dataRange = await getDataRange();
-// defaults
+
+// Default state uses latest available data
 const stateDefaults = {
   fromDate: dataRange.newest, 
   toDate: dataRange.newest,
 }
 
+/**
+ * NaturalGasDashboardPage
+ *
+ * Main dashboard page for visualizing natural gas and electricity consumption.
+ * Handles date selection, aggregation, unit conversion, state persistence, and
+ * displays charts and summary statistics.
+ *
+ * @returns The natural gas dashboard page with filters, charts, and stat cards
+ *
+ * @author Anna Isabelle Yabut
+ * @author Temi Bankole
+ */
 export default function Page() {
   const chartRef = useRef(null);
   const chartRef2 = useRef(null);
 
   const STORAGE_KEY = "dashboard-natural-gas";
   
-  //Unit state: kWh or W
+  // Unit toggle state (kWh or W)
   const [unit, setUnit] = useState("kWh");
 
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, stateDefaults),
   );
-   //initialize from saved state so it loads immediately
+
+  // Initialize applied state from storage so charts load immediately
   const [appliedState, setAppliedState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, { fromDate: stateDefaults.fromDate, toDate: stateDefaults.toDate });
     if (saved.fromDate && saved.toDate) {
@@ -61,13 +75,18 @@ export default function Page() {
     saveDashboardState(STORAGE_KEY, state);
   }, [state]);
 
-  //Validate dates on every change to show errors immediately
+  // Validate dates on change so errors show immediately
   useEffect(() => {
     if (state.fromDate && state.toDate) {
       validateAll(state.fromDate, state.toDate);
     }
   }, [  state.fromDate, state.toDate, validateAll]);
 
+  /**
+   * handleSaveScreen
+   *
+   * Saves the current dashboard configuration and adds it to recent dashboards.
+   */
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
 
@@ -150,7 +169,7 @@ export default function Page() {
   const displayStats = stats.map((item) => {
     const subtitle = formatDateRange(appliedState?.fromDate, appliedState?.toDate);
 
-    // Keep Peak Energy Month as text
+    // Keep peak period values as text instead of numbers
     if (
       item.label === "Peak Energy Month" ||
       item.label === "Peak Energy Year"
@@ -180,7 +199,7 @@ export default function Page() {
       };
     }
 
-    // Numeric cards: show dash until loaded
+    // Show placeholder until stats are loaded
     if (typeof item.value === "number") {
       const hasLoadedStats = dashboardStats !== null;
 
@@ -221,6 +240,8 @@ export default function Page() {
           aria-label="Natural gas conversion info"
         >
           <FiInfo className="h-6 w-6" />
+
+          {/* Tooltip explains unit conversions and data sources */}
           <div className="pointer-events-none absolute right-0 top-8 w-80 p-3 bg-white text-black text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="text-sm text-gray-700 leading-relaxed space-y-1">
               <p>
