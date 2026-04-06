@@ -25,6 +25,7 @@ import NotificationModal from "./NotificationModal";
  * @returns A responsive top navigation bar
  *
  * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Dominique Anne Lee
  */
 
 export default function SecondaryNav() {

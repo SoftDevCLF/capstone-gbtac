@@ -1,9 +1,15 @@
-// Page: Energy Overview (Guest)
-// Read-only public-facing version of the Energy Dashboard.
-// Same layout as EnergyDashboard — just DatePicker + chart placeholder.
-// No KPI cards, no unit toggle, no aggregation, no save button.
-//
-// @author Temi Bankole
+/**
+ * EnergyTrendsPage
+ * 
+ * Read-only public-facing version of the Energy Dashboard.
+ * Same layout as EnergyDashboard — just DatePicker + chart placeholder.
+ * No KPI cards, no unit toggle, no aggregation, no save button.
+ * 
+ * @returns The guest energy overview page
+ * 
+ * @author Temi Bankole
+ * @author Dominique Anne Lee
+ */
 
 "use client";
 
