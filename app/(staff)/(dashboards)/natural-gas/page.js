@@ -15,10 +15,6 @@ import { getDataRange } from "@/app/_utils/get-data-range";
 
 import { FiInfo } from "react-icons/fi";
 
-/**
- * @author Temi Bankole
- */
-
 const dataRange = await getDataRange();
 // Defaults for dashboard state (date range)
 const stateDefaults = {
@@ -49,7 +45,7 @@ const stateDefaults = {
  *   cards show "-" as a loading placeholder.
  * - The X factor conversion (GJ to kWh) is documented in the info tooltip
  *   but the actual conversion happens in NaturalGasHandler.
- *
+ * @author Temi Bankole
  * @returns The natural gas dashboard with charts and summary stats
  */
 export default function Page() {

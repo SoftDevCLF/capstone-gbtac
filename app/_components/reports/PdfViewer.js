@@ -13,6 +13,8 @@
  * Notes:
  * - A new object URL is created from pdfBlob on every render via URL.createObjectURL —
  *   the parent is responsible for revoking it to avoid memory leaks
+ * 
+ * @author Temi Bankole
  */
 export default function PDFViewer({ pdfBlob, onClear, isGenerating = false }) {
   return (

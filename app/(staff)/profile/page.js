@@ -7,6 +7,7 @@
  *
  * @returns The staff profile page
  *
+ * @author Temi Bankole
  * @author Dominique Anne Lee
  */
 
@@ -16,10 +17,6 @@ import SecondaryNav from "../../_components/SecondaryNav";
 import Navbar from "../../_components/Navbar";
 import Footer from "../../_components/Footer";
 import StaffProfileForm from "../../_components/StaffProfileForm";
-
-/**
- * @author Temi Bankole
- */
 
 /**
  * ProfilePage (Staff Profile)

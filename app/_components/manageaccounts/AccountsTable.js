@@ -24,31 +24,7 @@ import { useState, useEffect } from "react";
 import AccountRow from "./AccountRow";
 import ConfirmModal from "../ConfirmModal";
 import NotificationModal from "../NotificationModal";
-/**
- * @author Temi Bankole
- */
 
-/**
- * AccountsTable
- *
- * Fetches all staff accounts from the API and renders them in a paginated table
- * with columns for index, name, email, status, and edit/delete actions. Supports
- * live filtering by name or email via the search prop.
- *
- * @param {string} [search=""] - Filters displayed rows to those whose name or email
- *   contains the search term (case-insensitive)
- *
- * Notes:
- * - Staff are fetched once on mount from /auth/staff — the list is not refreshed automatically
- * - The fetch uses credentials: "include" for session-based auth; the request will fail if the
- *   user is unauthenticated
- * - Accounts are assigned a 1-based id from their array index at fetch time; id is used as the
- *   React key and passed to AccountRow as index - 1
- * - firstName and lastName are joined and trimmed; if both are absent the name falls back to "N/A"
- * - Deletion is optimistic — the account is removed from local state immediately on API success
- *   without re-fetching the full list
- * - Loading and error states render within the same container to avoid layout shift
- */
 export default function AccountsTable({ search = "" }) {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);

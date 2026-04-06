@@ -16,6 +16,8 @@
  * Notes:
  * - Clicking the backdrop calls onClose, consistent with the button behaviour
  * - Click propagation from the modal box to the backdrop is stopped to prevent accidental dismissal
+ * 
+ * @author Temi Bankole
  */
 export default function NotificationModal({
   title,

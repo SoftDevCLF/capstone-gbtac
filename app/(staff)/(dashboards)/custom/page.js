@@ -16,10 +16,6 @@ import { useRef, useState, useEffect } from "react";
 import { checkSafety } from "@/app/_utils/content-safety";
 import { getDataRange } from "@/app/_utils/get-data-range";
 
-/**
- * @author Temi Bankole
- */
-
 const dataRange = await getDataRange();
 
 // Set defaults for chart and aggregation settings
@@ -63,7 +59,7 @@ const dateRangeDefaults = {
  *   testing; remove or keep as reference.
  * - dataRange is fetched at module level (server-side); if client-side
  *   re-fetch is needed, move to useEffect.
- *
+ * @author Temi Bankole
  * @returns The custom chart builder page
  */
 export default function Page() {
