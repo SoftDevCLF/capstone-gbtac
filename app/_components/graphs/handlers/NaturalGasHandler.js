@@ -460,13 +460,6 @@ export default function NaturalGasHandler({
                     )}
                 </div>
             </div>
-
-            <div className="flex justify-end mt-2 pr-1">
-                <ExportPDFButton
-                    chartRef={chartRef2}
-                    fileName="natural-gas-chart-2"
-                />
-            </div>
         </>
     );
 }

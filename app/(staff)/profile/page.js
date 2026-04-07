@@ -1,3 +1,15 @@
+/**
+ * ProfilePage
+ *
+ * Staff-facing profile page that renders the StaffProfileForm in "staff" mode.
+ * Allows the logged-in staff member to view and edit their own name, email,
+ * and password.
+ *
+ * @returns The staff profile page
+ *
+ * @author Dominique Anne Lee
+ */
+
 "use client";
 
 import SecondaryNav from "../../_components/SecondaryNav";

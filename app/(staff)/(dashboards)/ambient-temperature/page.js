@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 import DashboardLayout from "../../../_components/DashboardLayout";
@@ -11,6 +11,7 @@ import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import Carousel from "@/app/_components/Carousel";
 import { useSearchParams } from "next/navigation";
 import { useDateValidation } from "@/app/_components/hooks/useDateValidation";
+import ExportPDFButton from "@/app/_components/ExportPDFButton";
 import NotificationModal from "@/app/_components/NotificationModal";
 
 const STORAGE_KEY = "dashboard-ambient-temp";
@@ -119,10 +120,16 @@ const FLOOR_IMAGES = {
  *   An empty selection in either dimension means "all" for that dimension.
  * - The Carousel / InfoCard split renders the stat cards as a horizontal
  *   scroll on small screens and a 3-column grid on large screens.
+ * 
+ * @returns The ambient temperature dashboard page with filters, KPIs, and chart
  *
  * @author Cintya Lara Flores
+ * @author Dominique Anne Lee
  */
+
 export default function AmbientTempDashboard() {
+  const chartRef = useRef(null);
+
   const [state, setState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, {});
     return {
@@ -458,6 +465,7 @@ export default function AmbientTempDashboard() {
 
       {/* ── Line chart — keyed on dates + sensor list to force remount on change ── */}
       <div
+        ref={chartRef}
         id="chart-print-area"
         className="bg-white rounded-lg shadow-md p-4 mt-6"
       >
@@ -481,6 +489,12 @@ export default function AmbientTempDashboard() {
             Graph Placeholder
           </div>
         )}
+      </div>
+      <div className="flex justify-end gap-3 mt-6">
+        <ExportPDFButton
+          chartRef={chartRef}
+          fileName="ambient-temperature"
+        />
       </div>
 
       {/* ── Floor layout images — only rendered for floors with a known image ── */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
@@ -28,6 +28,7 @@ const STORAGE_KEY = "dashboard-water-level";
  * @author Cintya Lara Flores
  */
 export default function WaterLevelDashboard() {
+  const chartRef = useRef(null);
   const [dataRange, setDataRange] = useState({
     oldest: "",
     newest: "",
@@ -313,7 +314,7 @@ export default function WaterLevelDashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 mt-6">
-          <div className="bg-white rounded-lg shadow-md p-4 mt-6">
+          <div ref={chartRef} className="bg-white rounded-lg shadow-md p-4 mt-6">
             <LineHandler
               sensorList={["20000_TL93"]}
               startDate={appliedState?.fromDate}
@@ -332,17 +333,16 @@ export default function WaterLevelDashboard() {
       </div>
 
       <div className="flex justify-end gap-4 mt-6">
-        <ExportPDFButton
-          targetId="water-level-dashboard-export"
-          fileName="cistern-water-level-dashboard.pdf"
-        />
-
         <button
           onClick={handleSaveScreen}
           className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
         >
           Save Screen
         </button>
+        <ExportPDFButton
+          chartRef={chartRef}
+          fileName="cistern-water-level-dashboard"
+        />
       </div>
 
       {showSaveNotification && (
