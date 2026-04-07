@@ -24,8 +24,16 @@ const STORAGE_KEY = "dashboard-water-level";
  * The date range is selectable via a DatePicker control, and the
  * dashboard state can be saved to localStorage and appears in the
  * Recent Dashboards list for quick access.
+ * 
+ * Notes:
+ * - Dashboard state is persisted in localStorage and restored on reload.
+ * - Stats are derived from LineHandler through the onStatsReady callback.
+ * - Unit toggle converts between percentage and litres based on tank capacity.
+ *
+ * @returns The cistern water level dashboard with filters, stat cards, chart, and save/export actions
  *
  * @author Cintya Lara Flores
+ * @author Anna Isabelle Yabut 
  */
 export default function WaterLevelDashboard() {
   const chartRef = useRef(null);
@@ -39,6 +47,7 @@ export default function WaterLevelDashboard() {
     loadDashboardState(STORAGE_KEY, { fromDate: "", toDate: "" })
   );
 
+  // Uses saved state so the dashboard can render the last valid selection immediately  
   const [appliedState, setAppliedState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, { fromDate: "", toDate: "" });
     if (saved.fromDate && saved.toDate) {
@@ -107,6 +116,7 @@ export default function WaterLevelDashboard() {
     }
   }, [state]);
 
+  // Runs validation on change so date errors appear before Apply is pressed
   useEffect(() => {
     if (state.fromDate && state.toDate) {
       validateAll(state.fromDate, state.toDate);
@@ -157,6 +167,14 @@ export default function WaterLevelDashboard() {
     return `As of: ${fromFormatted} - ${toFormatted}`;
   };
 
+  /**
+   * formatSingleDate
+   *
+   * Formats a single timestamp for display under the max and min stat cards.
+   *
+   * @param {string | number | Date | null} timestamp - Timestamp associated with an extreme reading
+   * @returns {string | null} Formatted single-date subtitle, or null if timestamp is falsy
+   */
   const formatSingleDate = (timestamp) => {
     if (!timestamp) return null;
 
@@ -169,6 +187,18 @@ export default function WaterLevelDashboard() {
     })}`;
   };
 
+  /**
+   * convertValue
+   *
+   * Converts a stat value for display based on the selected unit.
+   *
+   * @param {string | number} value - Raw stat value as a percentage
+   * @returns {string} Converted and formatted value, or "-" when unavailable
+   *
+   * Notes:
+   * - Litres are derived from the configured tank capacity.
+   * - Placeholder values are preserved so unloaded cards do not show misleading numbers.
+   */
   const convertValue = (value) => {
     if (value == null || value === "-") return "-";
 
@@ -184,6 +214,7 @@ export default function WaterLevelDashboard() {
   const displayStats = stats.map((item) => {
     let subtitle = formatDateRange(appliedState?.fromDate, appliedState?.toDate);
 
+    // Max and min cards use the timestamp of the actual extreme reading instead of the full selected range
     if (item.label === "Maximum Level") {
       subtitle = formatSingleDate(extremeDates.maxTs);
     } else if (item.label === "Minimum Level") {
