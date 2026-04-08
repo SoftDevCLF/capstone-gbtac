@@ -19,29 +19,31 @@ import { getDataRange } from "@/app/_utils/get-data-range";
 
 import { FiInfo } from "react-icons/fi";
 
-
 const dataRange = await getDataRange();
 // defaults
 const stateDefaults = {
-  fromDate: dataRange.newest, 
+  fromDate: dataRange.newest,
   toDate: dataRange.newest,
-}
+};
 
 export default function Page() {
   const chartRef = useRef(null);
   const chartRef2 = useRef(null);
 
   const STORAGE_KEY = "dashboard-natural-gas";
-  
+
   //Unit state: kWh or W
   const [unit, setUnit] = useState("kWh");
 
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, stateDefaults),
   );
-   //initialize from saved state so it loads immediately
+  //initialize from saved state so it loads immediately
   const [appliedState, setAppliedState] = useState(() => {
-    const saved = loadDashboardState(STORAGE_KEY, { fromDate: stateDefaults.fromDate, toDate: stateDefaults.toDate });
+    const saved = loadDashboardState(STORAGE_KEY, {
+      fromDate: stateDefaults.fromDate,
+      toDate: stateDefaults.toDate,
+    });
     if (saved.fromDate && saved.toDate) {
       return { fromDate: saved.fromDate, toDate: saved.toDate };
     }
@@ -51,7 +53,7 @@ export default function Page() {
   const [aggregation, setAggregation] = useState("none");
   const [dashboardStats, setDashboardStats] = useState(null);
   const [showSaveNotification, setShowSaveNotification] = useState(false);
-  
+
   const { errors, validateAll } = useDateValidation({
     earliestDate: "2023-01-04",
     latestDate: dataRange.newest,
@@ -66,7 +68,7 @@ export default function Page() {
     if (state.fromDate && state.toDate) {
       validateAll(state.fromDate, state.toDate);
     }
-  }, [  state.fromDate, state.toDate, validateAll]);
+  }, [state.fromDate, state.toDate, validateAll]);
 
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
@@ -80,6 +82,7 @@ export default function Page() {
         toDate: state.toDate,
         aggregation,
         unit,
+        graphs: ["Natural Gas"],
       },
       saved: true,
     });
@@ -144,11 +147,14 @@ export default function Page() {
     num.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-  });
+    });
 
   // Compute displayed values based on unit
   const displayStats = stats.map((item) => {
-    const subtitle = formatDateRange(appliedState?.fromDate, appliedState?.toDate);
+    const subtitle = formatDateRange(
+      appliedState?.fromDate,
+      appliedState?.toDate,
+    );
 
     // Keep Peak Energy Month as text
     if (
@@ -164,8 +170,18 @@ export default function Page() {
           const [year, month] = item.value.split("-");
 
           const monthNames = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
           ];
 
           formatted = `${monthNames[Number(month) - 1]} ${year}`;
@@ -224,12 +240,12 @@ export default function Page() {
           <div className="pointer-events-none absolute right-0 top-8 w-80 p-3 bg-white text-black text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="text-sm text-gray-700 leading-relaxed space-y-1">
               <p>
-                Natural gas values are converted from GJ to kWh
-                (1 GJ = 277.78 kWh).
+                Natural gas values are converted from GJ to kWh (1 GJ = 277.78
+                kWh).
               </p>
               <p>
-                Values can be toggled between kWh and W
-                (1&nbsp;kWh = 1000&nbsp;W).
+                Values can be toggled between kWh and W (1&nbsp;kWh =
+                1000&nbsp;W).
               </p>
               <p>
                 Total energy combines natural gas with electricity sensor
@@ -297,7 +313,6 @@ export default function Page() {
                 chartRef={chartRef}
                 chartRef2={chartRef2}
               />
-
             </>
           ) : (
             <div className="h-87.5 flex items-center justify-center text-gray-400 text-sm">
