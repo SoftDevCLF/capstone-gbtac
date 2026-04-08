@@ -2,7 +2,7 @@
   {
     "name": "Cintya Lara Flores",
     "role": "Frontend Developer",
-    "bio": "Cintya has experience as a Data Analysis Assistant and QA Tester, where she developed strong analytical and problem-solving skills. During the project, she discovered a passion for frontend development and UI/UX design, contributing to the creation of user-friendly interfaces and ensuring a seamless user experience. Outside of work, she enjoys playing video games, collecting and playing Magic: The Gathering and exploring the work of J.R.R. Tolkien through books, films, and collectibles.",
+    "bio": "Cintya is a Software Development student at SAIT with experience as a Data Analysis Assistant and QA Tester, where she developed strong analytical and problem-solving skills. During the project, she discovered a passion for frontend development and UI/UX design, contributing to the creation of user-friendly interfaces and ensuring a seamless user experience. Outside of work, she enjoys playing video games, collecting and playing Magic: The Gathering and exploring the work of J.R.R. Tolkien through books, films, and collectibles.",
     "image": "/developers-pics/001.jpg",
     "linkedin": "https://www.linkedin.com/in/cintya-l-a570622a3/",
     "github": "https://github.com/SoftDevCLF",
@@ -62,14 +62,17 @@
   {
     "name": "Kiera Johnson",
     "role": "Database and Backend Developer",
-    "bio": "Kiera focuses on database design and backend development. She ensures our data is organized and accessible.",
-    "image": "/team/kiera.jpg",
+    "bio": "Kiera Johnson a Software Development student in her fourth and final semester at SAIT. She has a strong passion for learning and has an interest in backend, full stack and database development. She brings a background of teamwork, problem solving and communication skills from previous employment as a Tutor in French and mathematics and as an Outdoor Host. Outside of school she enjoys playing video games, listening to and playing music, and working on personal projects.",
+    "image": "/developers-pics/005.JPG",
     "linkedin": "https://www.linkedin.com/in/kiera-johnson-9a1405336/",
     "github": "https://github.com/kj7639",
     "contributions": [
-      "Designed and implemented the database schema for our application",
-      "Developed backend APIs for data retrieval and manipulation",
-      "Optimized database queries for performance and scalability"
+      "Designed and implemented the database schema for our application.",
+      "Developed backend APIs for data retrieval, manipulation and forecasting.",
+      "Implemented content safety features and input sanitization.",
+      "Built generic handlers to handle and display data using the Chart.js library.",
+      "Configured and implemented database structure and connection.",
+      "Optimized database queries for performance and scalability."
     ]
   }
 ]
