@@ -7,6 +7,7 @@
  *
  * @returns The staff profile page
  *
+ * @author Temi Bankole
  * @author Dominique Anne Lee
  */
 
@@ -17,6 +18,18 @@ import Navbar from "../../_components/Navbar";
 import Footer from "../../_components/Footer";
 import StaffProfileForm from "../../_components/StaffProfileForm";
 
+/**
+ * ProfilePage (Staff Profile)
+ *
+ * Displays the staff member's profile page with an editable profile form.
+ * Renders the secondary navigation with logout and profile options enabled,
+ * and the main navbar with limited menu items appropriate for staff users.
+ *
+ * @param {object} props - Component props
+ * @param {string} [props.viewerRole="staff"] - Role of the viewing user; passed to StaffProfileForm for permission context
+ *
+ * @returns The staff profile page
+ */
 export default function ProfilePage() {
 
   return (
@@ -34,6 +47,7 @@ export default function ProfilePage() {
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
           </div>
+          {/* Staff profile form with staff-level permissions */}
           <div className="bg-white shadow-md rounded-2xl p-8">
             <StaffProfileForm viewerRole="staff" />
           </div>

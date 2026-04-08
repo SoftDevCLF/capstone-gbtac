@@ -14,6 +14,7 @@
  * - Uses AccountRow to render each row.
  * - Delete calls /auth/delete-staff and removes the row from local state.
  *
+ * @author Temi Bankole
  * @author Dominique Anne Lee
  */
 
@@ -24,7 +25,7 @@ import AccountRow from "./AccountRow";
 import ConfirmModal from "../ConfirmModal";
 import NotificationModal from "../NotificationModal";
 
-export default function AccountsTable({search = ""}) {
+export default function AccountsTable({ search = "" }) {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,7 +54,7 @@ export default function AccountsTable({search = ""}) {
         }
 
         const data = await response.json();
-        
+
         if (data.success && data.staff) {
           const formattedAccounts = data.staff.map((staff, index) => ({
             id: index + 1,
@@ -162,7 +163,7 @@ export default function AccountsTable({search = ""}) {
       </div>
     );
   }
-  
+
   return (
     <>
       <div 
@@ -192,17 +193,18 @@ export default function AccountsTable({search = ""}) {
       </table>
     </div>
 
-    {showDeleteModal && selectedAccount && (
-      <ConfirmModal
-        title="Delete Staff"
-        message={`Are you sure you want to delete ${selectedAccount.email}?`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
-    )}
+      {/* Delete confirmation modal — only mounted when an account is staged for deletion */}
+      {showDeleteModal && selectedAccount && (
+        <ConfirmModal
+          title="Delete Staff"
+          message={`Are you sure you want to delete ${selectedAccount.email}?`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
 
     {notification.open && (
       <NotificationModal

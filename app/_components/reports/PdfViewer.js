@@ -1,11 +1,23 @@
-//This component displays the generated PDF report in an iframe.
-//The PDF is passesed as a Blob object through the pdfBlob prop. If no PDF is available, it shows a placeholder message.
-
 "use client";
 
+/**
+ * PDFViewer
+ *
+ * Displays a generated PDF report inside an iframe, or a placeholder message
+ * if no report has been generated yet. Includes a button to clear the current
+ * report and start a new one.
+ *
+ * @param {Blob|null} pdfBlob - PDF content to display, or null to show the empty state
+ * @param {Function} onClear - Called when the user clicks "Create Another Report"
+ *
+ * Notes:
+ * - A new object URL is created from pdfBlob on every render via URL.createObjectURL —
+ *   the parent is responsible for revoking it to avoid memory leaks
+ * 
+ * @author Temi Bankole
+ */
 export default function PDFViewer({ pdfBlob, onClear, isGenerating = false }) {
   return (
- 
     <div className="w-full max-w-4xl mx-auto bg-white shadow-lg border border-gray-200 rounded-xl p-6 h-full flex flex-col gap-6">
       <p className="text-center my-2 italic textfont-semibold">
         Preview
@@ -30,7 +42,7 @@ export default function PDFViewer({ pdfBlob, onClear, isGenerating = false }) {
         )}
         {pdfBlob && (
           <iframe
-            src={URL.createObjectURL(pdfBlob)} //create a temporary URL for the PDF blob to display in the iframe
+            src={URL.createObjectURL(pdfBlob)}
             width="100%"
             height="500px"
             style={{ border: "none" }}

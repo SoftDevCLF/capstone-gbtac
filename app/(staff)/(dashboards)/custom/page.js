@@ -1,6 +1,5 @@
 "use client";
 
-//Page for Customizable Graph Section
 import ChartSettings from "../../../_components/customgraph/ChartSettings";
 import SensorSearch from "../../../_components/customgraph/SensorSearch";
 import SelectedSensors from "../../../_components/customgraph/SelectedSensors";
@@ -19,7 +18,7 @@ import { getDataRange } from "@/app/_utils/get-data-range";
 
 const dataRange = await getDataRange();
 
-// set defaults for state variables
+// Set defaults for chart and aggregation settings
 const chartSettingDefaults = {
   chartTitle: "",
   chartType: "line",
@@ -37,36 +36,59 @@ const dateRangeDefaults = {
   aggregation: aggregationSettingsDefaults.type 
 }
 
+/**
+ * Page (Create Custom Chart)
+ *
+ * Allows users to build custom charts by selecting sensors, configuring chart
+ * settings (title, type, axis labels), choosing a date range and aggregation
+ * method, and previewing the result. Charts can be saved to Firestore and
+ * exported as PDF.
+ *
+ * Non-obvious behavior:
+ * - Maintains both "temp" state (user edits) and "main" state (applied values)
+ *   to allow canceling edits without affecting the displayed chart.
+ * - Content safety checks combined all titles into a single string to reduce
+ *   API calls.
+ * - Chart key uses currentChartId or "new" to force re-render of GraphContainer
+ *   when loading a different saved chart.
+ *
+ * Notes:
+ * - Commented out safety checks (lines ~160–170) can be re-enabled per-field
+ *   if stricter validation is desired.
+ * - Commented out example selectedSensors (lines ~55–58) used for development
+ *   testing; remove or keep as reference.
+ * - dataRange is fetched at module level (server-side); if client-side
+ *   re-fetch is needed, move to useEffect.
+ * @author Temi Bankole
+ * @returns The custom chart builder page
+ */
 export default function Page() {
   const chartRef = useRef(null);
 
-  //State variables
+  // Applied state — reflects what is currently displayed in the graph
   const [currentChartId, setCurrentChartId] = useState(null);
   const [chartSettings, setChartSettings] = useState(chartSettingDefaults)
   const [aggregationSettings, setAggregationSettings] = useState(aggregationSettingsDefaults)
   const [dateRange, setDateRange] = useState(dateRangeDefaults);
   const [selectedSensors, setSelectedSensors] = useState([]);
-  // const [selectedSensors, setSelectedSensors] = useState([
-  //   {code: "30000_TL252", name: "Carport"},
-  //   {code: "30000_TL253", name: "Rooftop"}
-  // ]);
 
-  // Temp state (user edits these before clicking Apply)
+  // Temp state — user edits these before clicking Apply
   const [tempChartSettings, setTempChartSettings] = useState(chartSettings);
   const [tempDateRange, setTempDateRange] = useState(dateRange);
   const [tempAggregationSettings, setTempAggregationSettings] = useState(aggregationSettings)
   const [tempSelectedSensors, setTempSelectedSensors] = useState(selectedSensors);
   
-  const [refreshChart, setRefreshChart] = useState(0); // Used to trigger re-render of graph when loading/saving charts
+  const [refreshChart, setRefreshChart] = useState(0);
   const [error, setError] = useState("");
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [showErrorNotification, setShowErrorNotification] = useState(false);
   
-  // full list of sensors and codes
+  // Full list of available sensors fetched on mount
   const [sensorList, setSensorList] = useState([])
   const fetchSensors = async () => {
     try {
+      // Pull sensor codes/names once and feed both search + selected lists.
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/graphs/codesnames`, {credentials: "include",})
       const data = await res.json()
       setSensorList(data)
@@ -78,7 +100,10 @@ export default function Page() {
     fetchSensors()
   }, [])
 
-  //Reset chart to default
+  /**
+   * Resets the chart and all state to defaults. Used when the user clicks
+   * "Reset Chart" or deletes the currently loaded chart.
+   */
   const resetChart = () => {
     setCurrentChartId(null);
     setTempChartSettings(chartSettingDefaults);
@@ -87,20 +112,25 @@ export default function Page() {
     setSelectedSensors([]);
     setDateRange(dateRangeDefaults);
     setAggregationSettings(aggregationSettingsDefaults)
-
-    // Also reset temp state
     setTempChartSettings(chartSettingDefaults)
     setTempSelectedSensors([]);
     setTempDateRange(dateRangeDefaults);
     setTempAggregationSettings(aggregationSettingsDefaults)
   }
 
-  //Load a chart into state
+  /**
+   * Loads a saved chart into state. Handles multiple schema versions
+   * (selectedSensors vs sensors, dateRange vs dateFrom/dateTo, etc.) to
+   * support backwards compatibility with older saved charts.
+   *
+   * @param {object} chart - Saved chart object from Firestore
+   */
   const loadChart = (chart) => {
     setError("");
     const chartSensors = Array.isArray(chart?.selectedSensors)
       ? chart.selectedSensors
       : (Array.isArray(chart?.sensors) ? chart.sensors : []);
+    // Support legacy payload shapes from previously saved charts.
     const chartFrom = chart?.dateRange?.from ?? chart?.dateFrom ?? dateRangeDefaults.from;
     const chartTo = chart?.dateRange?.to ?? chart?.dateTo ?? dateRangeDefaults.to;
     const chartAggTime = chart?.aggSettings?.time ?? chart?.time ?? dateRangeDefaults.time;
@@ -112,14 +142,24 @@ export default function Page() {
     setDateRange({ from: chartFrom, to: chartTo });
     setAggregationSettings({time: chartAggTime, type: chartAggType})
 
-    // Also update temp state so the inputs match loaded chart
+    // Update temp state so form inputs match loaded chart
     setTempChartSettings(chart.settings ?? chartSettingDefaults);
     setTempSelectedSensors(chartSensors);
     setTempDateRange({ from: chartFrom, to: chartTo });
     setTempAggregationSettings({time: chartAggTime, type: chartAggType})
   }
 
-  //Apply button handler
+  /**
+   * Validates temp state and applies it to main state if all checks pass.
+   * Validates chart title/axis titles (alphanumeric + spaces/hyphens, max 50 chars),
+   * aggregation settings, sensor selection, date range, and date order.
+   * Runs content safety check on all titles combined.
+   *
+   * Notes:
+   * - Per-field safety checks are commented out (lines ~160–170); can be
+   *   re-enabled for stricter validation if needed.
+   * - All titles are combined into one string for a single API call.
+   */
   const handleApply = async () => {
     if (
       !tempChartSettings.chartTitle ||
@@ -150,25 +190,13 @@ export default function Page() {
       return;
     }
     
-    // if(! await checkSafety(tempChartSettings.chartTitle)){
-    //   setError("Title must be appropriate");
-    //   return;
-    // }
-    // if(! await checkSafety(tempChartSettings.xAxisTitle)){
-    //   setError("X Axis Title must be appropriate");
-    //   return;
-    // }
-    // if(! await checkSafety(tempChartSettings.yAxisTitle)){
-    //   setError("Y Axis Title must be appropriate");
-    //   return;
-    // }
     let titles = tempChartSettings.chartTitle + " " + tempChartSettings.xAxisTitle + " " + tempChartSettings.yAxisTitle
     if(! await checkSafety(titles)){
       setError("Chart title or axis titles contain inappropriate content. Please modify and try again.");
       return;
     }
 
-    // If all validations pass, update the main state with temp values
+    // If all validations pass, update main state with temp values
     setChartSettings(tempChartSettings);
     setSelectedSensors(tempSelectedSensors);
     setDateRange(tempDateRange);
@@ -176,7 +204,15 @@ export default function Page() {
     setError("")
   };
 
-   //Function to save chart to Firestore
+  /**
+   * Saves the current chart configuration to Firestore. Updates currentChartId
+   * and refreshes the GraphContainer. Shows success or error notification.
+   *
+   * Notes:
+   * - If currentChartId is null, a new chart document is created.
+   * - If currentChartId exists, that chart is updated.
+   * - Notifications auto-dismiss after 3 seconds.
+   */
   const handleSave = async () => {
     const user = auth.currentUser;
     try {
@@ -192,11 +228,12 @@ export default function Page() {
       setShowSaveModal(false);
       setShowSuccessNotification(true);
       setTimeout(() => setShowSuccessNotification(false), 3000);
+      //Trigger ChartSelect reload so newly saved/updated chart appears immediately.
       setRefreshChart(prev => prev + 1);
     } catch (err) {
       console.error("Failed to save chart:", err);
       setShowErrorNotification(true);
-      setTimeout(() => setShowErrorNotification(false), 3000); //3 second timeout for error notification
+      setTimeout(() => setShowErrorNotification(false), 3000);
     }
   };
 
@@ -267,7 +304,7 @@ export default function Page() {
           </button>
         </div>
 
-        {/* Graph below */}
+        {/* Graph renders below with key to force re-render on chart load */}
         <div className="w-full overflow-hidden shadow-sm rounded-lg" ref={chartRef}>
           <GraphContainer 
             key={currentChartId ?? "new"}
@@ -278,7 +315,7 @@ export default function Page() {
           />
         </div>
 
-        {/* Save and Export PDF button */}
+        {/* Save and Export PDF buttons */}
         <div className="flex flex-col sm:flex-row justify-end gap-4 mt-5">
           <button
             onClick={() => setShowSaveModal(true)}

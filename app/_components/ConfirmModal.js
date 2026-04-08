@@ -1,6 +1,27 @@
-//This component is a reusable confirm modal that is for confirmation for the user when about to perform an action.
-
 "use client";
+
+/**
+ * ConfirmModal
+ *
+ * Reusable confirmation dialog that prompts the user before performing a
+ * destructive or significant action. Renders a blurred backdrop with a
+ * centred modal box containing a title, message, and confirm/cancel buttons.
+ *
+ * @param {string} title - Heading displayed at the top of the modal
+ * @param {string} message - Body text describing the action to confirm
+ * @param {string} [confirmText="Confirm"] - Label for the confirm button
+ * @param {string} [cancelText="Cancel"] - Label for the cancel button
+ * @param {string} [variant="primary"] - Button colour scheme: "danger" for red, "primary" for blue
+ * @param {Function} onConfirm - Called when the user clicks the confirm button or the backdrop
+ * @param {Function} onCancel - Called when the user clicks the cancel button
+ * @param {boolean} [disableBackdropClose=false] - When true, clicking the backdrop does not trigger onConfirm
+ *
+ * Notes:
+ * - Clicking the backdrop calls onConfirm, not onCancel — set disableBackdropClose to true
+ *   to prevent any action on backdrop click
+ * - Click propagation from the modal box to the backdrop is stopped to prevent accidental confirmation
+ * @author Temi Bankole
+ */
 
 export default function ConfirmModal({
   title,
@@ -13,16 +34,15 @@ export default function ConfirmModal({
   disableBackdropClose = false
 }) {
   return (
-    // Backdrop - click outside to close
     <div
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40"
       onClick={() => {
         if (!disableBackdropClose) {
-          onConfirm?.(); 
+          onConfirm?.();
         }
       }}
     >
-      {/* Modal box - stop click from bubbling to backdrop */}
+      {/* Modal box — stopPropagation prevents backdrop click from firing on inner clicks */}
       <div
         className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4"
         onClick={(e) => e.stopPropagation()}

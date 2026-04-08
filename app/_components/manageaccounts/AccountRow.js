@@ -15,6 +15,7 @@
  * - Edit navigates to /edit-staff/[email] via a Link component.
  * - Delete shows a ConfirmModal before invoking onDeleteClick.
  *
+ * @author Temi Bankole
  * @author Dominique Anne Lee
  */
 
@@ -25,6 +26,27 @@ import ConfirmModal from "../ConfirmModal";
 import NotificationModal from "../NotificationModal";
 import { useState } from "react";
 
+/**
+ * @author Temi Bankole
+ */
+
+/**
+ * AccountRow
+ *
+ * Renders a single row in the staff accounts table, displaying the account's
+ * index, name, email, and status, with edit and delete action buttons.
+ *
+ * @param {object} account - Account data to display
+ * @param {string} account.email - Used as the row identifier and edit route parameter
+ * @param {string} account.name - Displayed in the name column, falls back to "No name" if absent
+ * @param {string} account.status - Renders as a colour-coded indicator: green for "Active", red otherwise
+ * @param {number} index - Zero-based row index, displayed as a 1-based position number
+ * @param {Function} onDeleteClick - Called with the full account object when the Delete button is clicked
+ *
+ * Notes:
+ * - Edit navigates to /edit-staff/[email] with the email URI-encoded to handle special characters
+ * - Delete does not prompt for confirmation here — the parent is expected to handle the confirm modal
+ */
 export default function AccountRow({ account, index, onDeleteClick }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -45,7 +67,8 @@ export default function AccountRow({ account, index, onDeleteClick }) {
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2">
-          <span
+          {/* Status dot — green for Active, red for all other statuses */}
+        <span
             className="h-3 w-3 rounded-full"
             style={{
               backgroundColor:

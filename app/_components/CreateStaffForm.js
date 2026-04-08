@@ -1,4 +1,3 @@
-//This component is for the Admin to create a new staff account. They can input the staff's first name, last name, email, and status (active/inactive).
 "use client";
 
 import { useState } from "react";
@@ -6,6 +5,24 @@ import Link from "next/link";
 import ConfirmModal from "@/app/_components/ConfirmModal";
 import NotificationModal from "@/app/_components/NotificationModal";
 
+/**
+ * CreateStaffForm
+ *
+ * Form for admins to create a new staff account by providing a first name,
+ * last name, email, and active status. Submits to the API and resets on success.
+ *
+ * Notes:
+ * - status is stored as "Active" / "Inactive" in local state but converted to a
+ *   boolean active field before being sent to the API
+ * - API error responses are normalised from three possible detail shapes: a plain
+ *   string, a validation array, or an object — only the array case has special
+ *   email message handling
+ * - On success the form resets to its initial state; navigation back to
+ *   /account-manager is left to the user via the Cancel button
+ * - Cancel navigates to /account-manager and is typed as a reset button, so it
+ *   also clears the form if clicked before any submission 
+ * @author Temi Bankole
+ */
 export default function CreateStaffForm() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -93,6 +110,7 @@ export default function CreateStaffForm() {
           "Content-Type": "application/json",
         },
         credentials: "include",
+        //API expects `active` as boolean, derived from UI status select value.
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -106,11 +124,11 @@ export default function CreateStaffForm() {
       if (!response.ok) {
         let errorMessage = "Failed to create staff account";
 
+        //Normalize backend error shapes into one user-facing alert message.
         if (typeof data.detail === "string") {
           errorMessage = data.detail;
         } else if (Array.isArray(data.detail) && data.detail.length > 0) {
           let rawMsg = data.detail[0].msg || errorMessage;
-
           if (rawMsg.toLowerCase().includes("email address")) {
             errorMessage = "Not a valid email address: must contain an @ symbol";
           } else {
@@ -126,6 +144,7 @@ export default function CreateStaffForm() {
 
       showNotification("Staff account created successfully", "success", "Success");
 
+      //Reset form to defaults after successful account creation.
       setFormData({
         firstName: "",
         lastName: "",

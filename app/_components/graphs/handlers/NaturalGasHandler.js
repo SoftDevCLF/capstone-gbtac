@@ -11,6 +11,7 @@ export default function NaturalGasHandler({
   unit = "kWh",
   aggregation = "none",
   onStatsReady,
+  onSaveScreen,
   chartRef,
   chartRef2,
 }) {
@@ -408,6 +409,21 @@ export default function NaturalGasHandler({
                     <LineChart data={lineChartData} options={lineChartOptions} />
                     )}
                 </div>
+            </div>
+
+            <div className="flex justify-end items-center gap-3 mt-2 pr-1">
+                {onSaveScreen && (
+                  <button
+                    onClick={onSaveScreen}
+                    className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+                  >
+                    Save Screen
+                  </button>
+                )}
+                <ExportPDFButton
+                    chartRef={chartRef2}
+                    fileName="natural-gas-chart-2"
+                />
             </div>
         </>
     );

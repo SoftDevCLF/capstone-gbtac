@@ -1,4 +1,18 @@
-// This is the profile page for staff members to edit their information.
+/**
+ * CreateStaffPage
+ *
+ * Admin page for creating a new staff account. Renders the shared admin
+ * navigation and the CreateStaffForm used to capture new staff member details
+ * and submit account creation requests.
+ *
+ * Notes:
+ * - Provides a quick navigation link back to the account manager page.
+ * - Uses the centralized CreateStaffForm component for validation and submit flow.
+ * - This page is layout-focused and delegates account creation logic to the form.
+ *
+ * @returns The admin create-staff page
+ * @author Temi Bankole
+ */
 import SecondaryNav from "../../_components/SecondaryNav";
 import Navbar from "../../_components/Navbar";
 import Footer from "../../_components/Footer";

@@ -8,6 +8,26 @@ import SearchInput from "@/app/_components/manageaccounts/SearchInput";
 import AddStaffButton from "@/app/_components/manageaccounts/AddStaffButton";
 import { useState } from "react";
 
+/**
+ * @author Temi Bankole
+ */
+
+/**
+ * Page (Manage Accounts)
+ *
+ * Displays an admin dashboard for managing staff accounts. Provides search
+ * functionality to filter accounts and a button to add new staff members.
+ * Renders the full account management interface with navigation headers
+ * and footer.
+ *
+ * Notes:
+ * - Navigation is configured for admin users only (account and dashboard
+ *   management options displayed).
+ * - SearchInput and AccountsTable are synced via searchTerm state; changes
+ *   to the search field immediately filter the table.
+ *
+ * @returns The manage accounts page
+ */
 export default function Page() {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -22,7 +42,9 @@ export default function Page() {
           Manage Accounts
         </h1>
         <div className="mb-6 flex items-center justify-between gap-4">
+          {/* Search bar for filtering accounts by name, email, or role */}
           <SearchInput value={searchTerm} onChange={setSearchTerm} />
+          {/* Button to launch add staff modal/form */}
           <AddStaffButton />
           </div>
         <AccountsTable search={searchTerm} />
