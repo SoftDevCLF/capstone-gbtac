@@ -1,3 +1,15 @@
+/**
+ * GraphPlaceholder
+ *
+ * Displays a spinning loading indicator while a graph is being fetched or
+ * rendered. Intended to occupy the same space as the graph it precedes.
+ *
+ * @param {string} [height="h-64"] - Tailwind height class applied to the container
+ *
+ * Notes:
+ * - height should match the height of the graph it replaces to prevent layout shift
+ * @author Temi Bankole
+ */
 export default function GraphPlaceholder({ height = "h-64" }) {
   return (
     <div

@@ -140,6 +140,7 @@ export default function CreateStaffForm() {
           "Content-Type": "application/json",
         },
         credentials: "include",
+        //API expects `active` as boolean, derived from UI status select value.
         body: JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -158,7 +159,6 @@ export default function CreateStaffForm() {
           errorMessage = data.detail;
         } else if (Array.isArray(data.detail) && data.detail.length > 0) {
           let rawMsg = data.detail[0].msg || errorMessage;
-
           if (rawMsg.toLowerCase().includes("email address")) {
             errorMessage = "Not a valid email address: must contain an @ symbol";
           } else {
@@ -174,6 +174,7 @@ export default function CreateStaffForm() {
 
       showNotification("Staff account created successfully", "success", "Success");
 
+      //Reset form to defaults after successful account creation.
       setFormData({
         firstName: "",
         lastName: "",

@@ -1,8 +1,6 @@
-//add whatever X factor is used to convert natural gas units to kWh in the info tooltip
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-
 import DashboardLayout from "@/app/_components/DashboardLayout";
 import DateRangePicker from "@/app/_components/DatePicker";
 import InfoCard from "@/app/_components/InfoCard";
@@ -10,15 +8,12 @@ import ExportPDFButton from "@/app/_components/ExportPDFButton";
 import NotificationModal from "@/app/_components/NotificationModal";
 
 import NaturalGasHandler from "@/app/_components/graphs/handlers/NaturalGasHandler";
-
 import { useDateValidation } from "@/app/_components/hooks/useDateValidation";
-
 import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
 import { getDataRange } from "@/app/_utils/get-data-range";
 
 import { FiInfo } from "react-icons/fi";
-
 
 const dataRange = await getDataRange();
 
@@ -32,10 +27,21 @@ const stateDefaults = {
  * NaturalGasDashboardPage
  *
  * Main dashboard page for visualizing natural gas and electricity consumption.
- * Handles date selection, aggregation, unit conversion, state persistence, and
- * displays charts and summary statistics.
+ * Displays data over a selected date range with unit conversion (GJ → kWh)
+ * and optional aggregation (None or Yearly). Shows charts and summary statistics.
  *
- * @returns The natural gas dashboard page with filters, charts, and stat cards
+ * Handles date selection, aggregation, unit conversion, and state persistence.
+ * Dashboard state is stored locally and can be reused across sessions.
+ *
+ * Notes:
+ * - Maintains both 'state' (user edits) and 'appliedState' (used for charts)
+ *   to prevent unnecessary re-renders from invalid ranges.
+ * - Unit toggle (kWh ↔ W) is client-side only and does not affect stored data.
+ * - Natural gas values are converted from GJ to kWh (1 GJ = 277.78 kWh)
+ *   in the NaturalGasHandler component.
+ * - Backend data loading may cause temporary null values; UI shows placeholders.
+ *
+ * @returns The natural gas dashboard page with filters, charts, and summary stats
  *
  * @author Anna Isabelle Yabut
  * @author Temi Bankole
@@ -44,16 +50,18 @@ export default function Page() {
   const chartRef = useRef(null);
   const chartRef2 = useRef(null);
 
+  // Namespaced key to keep this dashboard's persisted values isolated.
   const STORAGE_KEY = "dashboard-natural-gas";
   
-  // Unit toggle state (kWh or W)
+  //Unit toggle: kWh or W (display only, does not affect data or storage)
   const [unit, setUnit] = useState("kWh");
 
+  //User edits made via DateRangePicker
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, stateDefaults),
   );
-
-  // Initialize applied state from storage so charts load immediately
+   // Initialize applied state from storage so charts load immediately.
+// Synced with charts only after validation passes to prevent invalid updates.
   const [appliedState, setAppliedState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, { fromDate: stateDefaults.fromDate, toDate: stateDefaults.toDate });
     if (saved.fromDate && saved.toDate) {
@@ -71,22 +79,24 @@ export default function Page() {
     latestDate: dataRange.newest,
   });
 
+  //Persist state to localStorage whenever it changes
   useEffect(() => {
     saveDashboardState(STORAGE_KEY, state);
   }, [state]);
 
-  // Validate dates on change so errors show immediately
+  // Validate dates on every change to show errors immediately
   useEffect(() => {
     if (state.fromDate && state.toDate) {
       validateAll(state.fromDate, state.toDate);
     }
-  }, [  state.fromDate, state.toDate, validateAll]);
+  }, [state.fromDate, state.toDate, validateAll]);
 
   /**
-   * handleSaveScreen
-   *
-   * Saves the current dashboard configuration and adds it to recent dashboards.
-   */
+ * handleSaveScreen
+ *
+ * Saves the current dashboard state (dates, aggregation, unit) to localStorage
+ * and adds it to the recent dashboards list. Shows confirmation feedback.
+ */
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
 
@@ -131,6 +141,13 @@ export default function Page() {
     },
   ];
 
+  /**
+   * Parses a YYYY-MM-DD date string into a local Date object.
+   * Returns null if the input is falsy.
+   *
+   * @param {string} dateStr - Date string in YYYY-MM-DD format
+   * @returns {Date|null} Parsed Date object in local timezone
+   */
   const parseLocalDate = (dateStr) => {
     if (!dateStr) return null;
 
@@ -138,6 +155,14 @@ export default function Page() {
     return new Date(year, month - 1, day);
   };
 
+  /**
+   * Formats a date range into a readable string: "As of: MMM D, YYYY - MMM D, YYYY".
+   * Returns null if either date is missing.
+   *
+   * @param {string} from - Start date in YYYY-MM-DD format
+   * @param {string} to - End date in YYYY-MM-DD format
+   * @returns {string|null} Formatted date range string
+   */
   const formatDateRange = (from, to) => {
     if (!from || !to) return null;
 
@@ -159,17 +184,23 @@ export default function Page() {
     return `As of: ${fromFormatted} - ${toFormatted}`;
   };
 
+  /**
+   * Formats a number with thousands separator and exactly 2 decimal places.
+   *
+   * @param {number} num - Number to format
+   * @returns {string} Formatted number string
+   */
   const formatNumber = (num) =>
     num.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
   });
 
-  // Compute displayed values based on unit
+  // Transform stats for display: format numbers based on unit, format dates, handle loading state
   const displayStats = stats.map((item) => {
     const subtitle = formatDateRange(appliedState?.fromDate, appliedState?.toDate);
 
-    // Keep peak period values as text instead of numbers
+    // Peak period (month/year) is text, not numeric — depends on aggregation level
     if (
       item.label === "Peak Energy Month" ||
       item.label === "Peak Energy Year"
@@ -178,8 +209,10 @@ export default function Page() {
 
       if (item.value && item.value !== "N/A") {
         if (aggregation === "Y") {
+          // Yearly aggregation: just show the year
           formatted = item.value;
         } else {
+          // Monthly aggregation: convert YYYY-MM to "MMM YYYY"
           const [year, month] = item.value.split("-");
 
           const monthNames = [
@@ -199,7 +232,7 @@ export default function Page() {
       };
     }
 
-    // Show placeholder until stats are loaded
+    // Numeric cards: show "-" while loading, then convert unit and format
     if (typeof item.value === "number") {
       const hasLoadedStats = dashboardStats !== null;
 
@@ -277,9 +310,11 @@ export default function Page() {
               const nextState = { ...state, fromDate, toDate };
               setState(nextState);
 
+              //Only push dates to charts when the full range passes validation.
               if (fromDate && toDate && validateAll(fromDate, toDate)) {
                 setAppliedState({ fromDate, toDate });
               } else {
+                //Hide charts for incomplete/invalid ranges to prevent bad queries.
                 setAppliedState(null);
               }
             }}
@@ -299,6 +334,7 @@ export default function Page() {
 
         <div className="flex justify-center mb-6 lg:justify-start">
           <button
+            //Display-unit toggle only; source data remains unchanged.
             onClick={() => setUnit(unit === "kWh" ? "W" : "kWh")}
             className="px-4 py-2 bg-[#005EB8] text-white rounded hover:bg-[#004080] transition"
           >
@@ -315,6 +351,7 @@ export default function Page() {
                 unit={unit}
                 aggregation={aggregation}
                 onStatsReady={setDashboardStats}
+                onSaveScreen={handleSaveScreen}
                 chartRef={chartRef}
                 chartRef2={chartRef2}
               />
