@@ -36,7 +36,7 @@ export default function WaterLevelDashboard() {
   });
 
   const [state, setState] = useState(() =>
-    loadDashboardState(STORAGE_KEY, { fromDate: "", toDate: "" })
+    loadDashboardState(STORAGE_KEY, { fromDate: "", toDate: "" }),
   );
 
   const [appliedState, setAppliedState] = useState(() => {
@@ -87,8 +87,7 @@ export default function WaterLevelDashboard() {
 
       const saved = loadDashboardState(STORAGE_KEY, defaults);
 
-      const nextState =
-        saved.fromDate && saved.toDate ? saved : defaults;
+      const nextState = saved.fromDate && saved.toDate ? saved : defaults;
 
       setState(nextState);
       setAppliedState(nextState);
@@ -182,7 +181,10 @@ export default function WaterLevelDashboard() {
   };
 
   const displayStats = stats.map((item) => {
-    let subtitle = formatDateRange(appliedState?.fromDate, appliedState?.toDate);
+    let subtitle = formatDateRange(
+      appliedState?.fromDate,
+      appliedState?.toDate,
+    );
 
     if (item.label === "Maximum Level") {
       subtitle = formatSingleDate(extremeDates.maxTs);
@@ -244,6 +246,7 @@ export default function WaterLevelDashboard() {
       summary: {
         fromDate: state.fromDate,
         toDate: state.toDate,
+        graphs: ["Cistern Water Level"],
       },
       saved: true,
     });
@@ -255,12 +258,12 @@ export default function WaterLevelDashboard() {
     aggregation === "none" || aggregation === "H"
       ? "Hours"
       : aggregation === "D"
-      ? "Days"
-      : aggregation === "M"
-      ? "Months"
-      : aggregation === "Y"
-      ? "Years"
-      : "Time";
+        ? "Days"
+        : aggregation === "M"
+          ? "Months"
+          : aggregation === "Y"
+            ? "Years"
+            : "Time";
 
   return (
     <DashboardLayout title="Cistern Level Dashboard">
@@ -314,7 +317,10 @@ export default function WaterLevelDashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 mt-6">
-          <div ref={chartRef} className="bg-white rounded-lg shadow-md p-4 mt-6">
+          <div
+            ref={chartRef}
+            className="bg-white rounded-lg shadow-md p-4 mt-6"
+          >
             <LineHandler
               sensorList={["20000_TL93"]}
               startDate={appliedState?.fromDate}
