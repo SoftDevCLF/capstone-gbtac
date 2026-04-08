@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth, db } from "../../_utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { Suspense } from "react";
 
 /**
  * StaffHome page
@@ -34,6 +35,12 @@ export default function StaffHome() {
   const [isRickRollUser, setIsRickRollUser] = useState(false);
 
   const user = `${firstName} ${lastName}`.trim();
+
+  /* Handler to delete a recent dashboard by ID. Removes it from localStorage and updates state to re-render the list. */
+  const handleDelete = (id) => {
+    deleteRecentDashboard(id);
+    setRecent((prev) => prev.filter((d) => d.id !== id));
+  };
 
   // Change this to the exact prank account email
   const prankEmail = "rick.rolld@sait.ca";
@@ -126,6 +133,7 @@ export default function StaffHome() {
         displayReports={true}
         displayAbout={false}
         displayHome={false}
+        displayOurDevTeam={true}
       />
 
       {/* Hero banner with welcome message */}
@@ -147,7 +155,9 @@ export default function StaffHome() {
         </div>
       </div>
       <div>
-        <Breadcrumbs />
+        <Suspense fallback={null}>
+          <Breadcrumbs />
+        </Suspense>
       </div>
       <main className="flex-1 pb-12 px-4 pt-2 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
         <section className="relative mx-auto pb-10">
@@ -181,16 +191,20 @@ export default function StaffHome() {
             {recent.length === 0 ? (
               <p className="text-gray-500">No dashboards saved yet.</p>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 {recent.map((dash) => (
-                  <RecentDashboardCard key={dash.id} data={dash} />
+                  <RecentDashboardCard
+                    key={dash.id}
+                    data={dash}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </div>
             )}
           </div>
         </section>
       </main>
-      
+
       {/* Decorative footer image */}
       <div className="relative h-62.5">
         <Image src="/gbtac3.jpg" alt="Staff Welcome" fill priority />
