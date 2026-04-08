@@ -1,14 +1,31 @@
-//Search Bar for adding sensors to a graph
-//Displays a list of available sensors and add buttons
 "use client";
 
 import { useState, useMemo } from "react";
-//useMemo hook helps optimize performance by memorizing the filtered sensor list.
 
+/**
+ * @author Temi Bankole
+ */
+
+/**
+ * SensorSearch
+ *
+ * Displays a searchable list of available sensors and allows users to add them
+ * to the current chart. Sensors already selected are shown as disabled to
+ * prevent duplicates.
+ *
+ * @param {Array} [selectedSensors=[]] - List of sensor objects currently added to the chart
+ * @param {Function} setSelectedSensors - State setter called with the updated array when a sensor is added
+ * @param {Array} [availableSensors=[]] - Full list of sensor objects to search and select from
+ *
+ * Notes:
+ * - Filtering is case-insensitive and matches against sensor.name only, not sensor.code
+ * - Duplicate prevention is by sensor.code, so sensors with identical names are handled correctly
+ * - setSelectedSensors is optional — addSensor silently no-ops if it is not provided
+ * - filteredSensors is memoized to avoid recomputing on unrelated re-renders
+ */
 export default function SensorSearch({ selectedSensors = [], setSelectedSensors, availableSensors = [] }) {
 
   const [searchTerm, setSearchTerm] = useState("");
-  //useMemo hook helps optimize performance by memorizing the filtered sensor list.
 
   const filteredSensors = useMemo(() => {
     if (!searchTerm) return availableSensors;
@@ -17,7 +34,6 @@ export default function SensorSearch({ selectedSensors = [], setSelectedSensors,
     );
   }, [searchTerm, availableSensors]);
 
-  //Function to add a sensor to the selectedSensors list if it's not already added
   const addSensor = (sensor) => {
     if (!setSelectedSensors) return;
     if (!selectedSensors.some(s => s.code === sensor.code)) {
@@ -40,7 +56,7 @@ export default function SensorSearch({ selectedSensors = [], setSelectedSensors,
 
       <p className="font-semibold text-black mb-2">Available Sensors</p>
       <div className="flex-1 overflow-y-auto border rounded-sm bg-gray-100 text-gray-500 min-h-0 max-h-80 xl:max-h-104">
-        {(filteredSensors.length) === 0 ? (
+        {filteredSensors.length === 0 ? (
           <p className="text-gray-500 p-2">No sensors found</p>
         ) : (
           filteredSensors.map(sensor => {

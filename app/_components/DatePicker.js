@@ -28,6 +28,7 @@ import { useState } from "react";
  *
  * @author Cintya Lara Flores
  * @author Dominique Anne Lee
+ * @author Temi Bankole
  */
 
 export default function DateRangePicker({

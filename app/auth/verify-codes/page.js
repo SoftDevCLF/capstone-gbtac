@@ -5,9 +5,20 @@ import Navbar from "@/app/_components/Navbar";
 import Footer from "@/app/_components/Footer";
 import VerifyCodeForm from "@/app/_components/VerifyCodeForm";
 
-
+/**
+ * ProfilePage
+ *
+ * Page layout for the verification code entry step in the password reset flow.
+ * Renders the VerifyCodeForm within the standard page shell.
+ *
+ * Notes:
+ * - The login button is shown and logout/profile are hidden — this page is
+ *   accessed before the user is authenticated
+ * - Home and About nav links are hidden as this page sits outside the main
+ *   navigation flow
+ * @author Temi Bankole
+ */
 export default function ProfilePage() {
-
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col">
       <SecondaryNav displayLogin={true} displayLogout={false} displayProfile={false} />
