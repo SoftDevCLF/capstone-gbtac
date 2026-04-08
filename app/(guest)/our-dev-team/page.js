@@ -42,7 +42,7 @@ export default function DevelopersPage() {
           <div className="text-xl text-gray-700 mb-5">
             <p>Passionate Developers Building Tools That Make a Difference</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {devs.map((member) => (
               <DevCard key={member.name} {...member} />
             ))}
