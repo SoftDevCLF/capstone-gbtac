@@ -43,6 +43,7 @@ export default function Page() {
     const [timeInterval, setTimeInterval] = useState("none");
     const [pdfBlob, setPdfBlob] = useState(null);
     const [showSafetyNotification, setShowSafetyNotification] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false)
 
     //calls backend API returning the blob to display generated report
     const handleGenerate = async () => {

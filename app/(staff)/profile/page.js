@@ -15,6 +15,7 @@
 
 import SecondaryNav from "../../_components/SecondaryNav";
 import Navbar from "../../_components/Navbar";
+import Breadcrumbs from "../../_components/Breadcrumbs";
 import Footer from "../../_components/Footer";
 import StaffProfileForm from "../../_components/StaffProfileForm";
 
@@ -41,6 +42,8 @@ export default function ProfilePage() {
         displayAccountMngmt={false} 
         displayDashboardMngmt={false} 
       />
+
+      <Breadcrumbs />
 
       <div className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
