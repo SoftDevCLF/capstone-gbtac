@@ -25,6 +25,7 @@ import { doc, getDoc } from "firebase/firestore";
  * @returns The staff welcome page
  *
  * @author Cintya Lara Flores
+ * @author Anna Isabelle Yabut
  */
 
 export default function StaffHome() {

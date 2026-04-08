@@ -8,21 +8,26 @@ import NotificationModal from "@/app/_components/NotificationModal";
 /**
  * CreateStaffForm
  *
- * Form for admins to create a new staff account by providing a first name,
- * last name, email, and active status. Submits to the API and resets on success.
+ * Form used by admins to create a new staff account. Collects first name,
+ * last name, email, and active status, validates required fields, confirms
+ * submission, and sends a request to the backend.
+ *
+ * Displays success or error feedback through notification modals and resets
+ * the form on successful submission.
  *
  * Notes:
- * - status is stored as "Active" / "Inactive" in local state but converted to a
- *   boolean active field before being sent to the API
- * - API error responses are normalised from three possible detail shapes: a plain
- *   string, a validation array, or an object — only the array case has special
- *   email message handling
- * - On success the form resets to its initial state; navigation back to
- *   /account-manager is left to the user via the Cancel button
- * - Cancel navigates to /account-manager and is typed as a reset button, so it
- *   also clears the form if clicked before any submission 
+ * - Email validation is primarily handled by the backend; frontend checks for presence.
+ * - Status is stored as "Active" / "Inactive" locally and converted to boolean before API submission.
+ * - Confirmation modal helps prevent accidental staff creation.
+ * - Backend response formats may vary, so error handling normalizes different structures.
+ * - Cancel button resets the form and navigates back to /account-manager.
+ *
+ * @returns The staff creation form with validation, confirmation, and notification feedback
+ *
+ * @author Anna Isabelle Yabut
  * @author Temi Bankole
  */
+
 export default function CreateStaffForm() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -39,6 +44,15 @@ export default function CreateStaffForm() {
     variant: "success",
   });
 
+  /**
+   * showNotification
+   *
+   * Displays a notification modal with the given message and variant.
+   *
+   * @param {string} message - Message shown in the notification
+   * @param {string} [variant="error"] - Notification type ("error" or "success")
+   * @param {string} [title] - Title of the notification modal
+   */
   const showNotification = (
     message,
     variant = "error",
@@ -85,6 +99,16 @@ export default function CreateStaffForm() {
     setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
   };
 
+  /**
+   * validateForm
+   *
+   * Validates required form fields before submission.
+   *
+   * @returns {boolean} True if the form is valid, otherwise false
+   *
+   * Notes:
+   * - Only checks for required fields; deeper validation is handled by the backend.
+   */
   const validateForm = () => {
     const newErrors = {
       firstName: validateField("firstName", formData.firstName),
@@ -100,6 +124,17 @@ export default function CreateStaffForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * createStaff
+   *
+   * Sends a request to the backend to create a new staff account using the form data.
+   *
+   * @returns Resolves after the request completes and UI state is updated
+   *
+   * Notes:
+   * - Handles multiple backend error formats (string, array, object).
+   * - Resets the form on successful creation.
+   */
   const createStaff = async () => {
     setShowConfirmModal(false);
 
@@ -124,7 +159,7 @@ export default function CreateStaffForm() {
       if (!response.ok) {
         let errorMessage = "Failed to create staff account";
 
-        //Normalize backend error shapes into one user-facing alert message.
+        // Normalize different backend error shapes into a readable message
         if (typeof data.detail === "string") {
           errorMessage = data.detail;
         } else if (Array.isArray(data.detail) && data.detail.length > 0) {
