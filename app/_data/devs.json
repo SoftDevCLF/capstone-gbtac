@@ -45,14 +45,18 @@
   {
     "name": "Anna Yabut",
     "role": "Backend Developer",
-    "bio": "Anna focuses on backend development and cloud infrastructure. She ensures our systems are reliable and efficient.",
-    "image": "/team/anna.jpg",
+    "bio": "Anna is a Software Development student at SAIT, currently in her final semester, with a strong focus on backend development and application security. She has hands-on experience building secure systems using tools like Firebase, including authentication, session management, and API protection. Outside of tech, she enjoys going to the gym, playing basketball, camping, and has recently started learning how to develop her own Roblox game.",
+    "image": "/developers-pics/04.jpg",
     "linkedin": "https://www.linkedin.com/in/anna-yabut-817b91341/",
     "github": "https://github.com/isayabs",
     "contributions": [
-      "Managed cloud infrastructure",
-      "Set up CI/CD pipelines",
-      "Implemented monitoring solutions"
+      "Implemented authentication system (login/logout, OTP-based password reset).",
+      "Set up and configured Firebase project.",
+      "Developed session and idle session management.",
+      "Applied security features (SQL injection prevention, rate limiting, CAPTCHA, account lockout).",
+      "Built backend functionality for staff management (create/delete staff).",
+      "Developed Cistern Water Level and Natural Gas dashboards.",
+      "Wrote technical documentation for backend features."
     ]
   },
   {
@@ -63,8 +67,9 @@
     "linkedin": "https://www.linkedin.com/in/kiera-johnson-9a1405336/",
     "github": "https://github.com/kj7639",
     "contributions": [
-      "Responsible for testing and quality assurance",
-      "Ensures our product meets the highest standards"
+      "Designed and implemented the database schema for our application",
+      "Developed backend APIs for data retrieval and manipulation",
+      "Optimized database queries for performance and scalability"
     ]
   }
 ]
