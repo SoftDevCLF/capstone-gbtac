@@ -60,8 +60,8 @@ export default function Page() {
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, stateDefaults),
   );
-   // Initialize applied state from storage so charts load immediately.
-// Synced with charts only after validation passes to prevent invalid updates.
+  // Initialize applied state from storage so charts load immediately.
+  // Synced with charts only after validation passes to prevent invalid updates.
   const [appliedState, setAppliedState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, { fromDate: stateDefaults.fromDate, toDate: stateDefaults.toDate });
     if (saved.fromDate && saved.toDate) {
@@ -92,11 +92,11 @@ export default function Page() {
   }, [state.fromDate, state.toDate, validateAll]);
 
   /**
- * handleSaveScreen
- *
- * Saves the current dashboard state (dates, aggregation, unit) to localStorage
- * and adds it to the recent dashboards list. Shows confirmation feedback.
- */
+   * handleSaveScreen
+   *
+   * Saves the current dashboard state (dates, aggregation, unit) to localStorage
+   * and adds it to the recent dashboards list. Shows confirmation feedback.
+   */
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
 

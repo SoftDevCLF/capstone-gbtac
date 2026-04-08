@@ -8,14 +8,19 @@ import NotificationModal from "@/app/_components/NotificationModal";
 /**
  * CreateStaffForm
  *
- * Form used by admins to create a new staff account. Collects staff details,
- * validates required fields, confirms submission, and sends a request to the backend.
- * Displays success or error feedback through notification modals.
+ * Form used by admins to create a new staff account. Collects first name,
+ * last name, email, and active status, validates required fields, confirms
+ * submission, and sends a request to the backend.
+ *
+ * Displays success or error feedback through notification modals and resets
+ * the form on successful submission.
  *
  * Notes:
- * - Email validation is primarily handled by the backend; frontend only checks for presence.
- * - Confirmation modal is used to prevent accidental staff creation.
+ * - Email validation is primarily handled by the backend; frontend checks for presence.
+ * - Status is stored as "Active" / "Inactive" locally and converted to boolean before API submission.
+ * - Confirmation modal helps prevent accidental staff creation.
  * - Backend response formats may vary, so error handling normalizes different structures.
+ * - Cancel button resets the form and navigates back to /account-manager.
  *
  * @returns The staff creation form with validation, confirmation, and notification feedback
  *
