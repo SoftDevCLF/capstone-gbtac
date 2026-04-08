@@ -171,9 +171,7 @@ export default function EnergyDashboard() {
       summary: {
         fromDate: state.fromDate,
         toDate: state.toDate,
-        graphs: Object.keys(state.visibleGraphs || {}).filter(
-          (g) => state.visibleGraphs[g],
-        ),
+        graphs: ["Consumption vs Generation", "Solar Panel Generation"],
       },
       saved: true,
     });
