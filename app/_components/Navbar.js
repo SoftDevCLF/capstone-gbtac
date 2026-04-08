@@ -34,6 +34,8 @@ export default function Navbar({
   displayReports = false,
   displayAccountMngmt = false,
   displayDashboardMngmt = false,
+  showWhenEmpty = false,
+  emptyHeightClass = "py-6",
 }) {
   // Get the current pathname for constructing ?from= query params in dropdown links
   const pathname = usePathname();
@@ -52,10 +54,25 @@ export default function Navbar({
     { href: "/natural-gas", label: "Natural Gas" },
     { href: "/custom", label: "Custom Charts" },
   ];
+
+  const hasVisibleLinks =
+    displayHome ||
+    displayAbout ||
+    displayDashboards ||
+    displayReports ||
+    displayAccountMngmt ||
+    displayDashboardMngmt;
+
+  // By default, avoid rendering an empty bar when all links are hidden.
+  if (!hasVisibleLinks && !showWhenEmpty) return null;
+
+  const navHeightClass = hasVisibleLinks ? "py-4" : emptyHeightClass;
+
   return (
-    <nav className="w-full bg-[#A6192E] text-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-4 flex items-center justify-between">
+    <nav className={`w-full bg-[#A6192E] text-white px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 ${navHeightClass} flex items-center justify-between`}>
       {/* Conditionally render links based on props*/}
-      <ul className="font-heading flex space-x-8 text-white text-lg">
+      {hasVisibleLinks && (
+        <ul className="font-heading flex space-x-8 text-white text-lg">
         {/*Display Home link*/}
         {displayHome && (
           <li>
@@ -125,7 +142,8 @@ export default function Navbar({
             </Link>
           </li>
         )}
-      </ul>
+        </ul>
+      )}
     </nav>
   );
 }
