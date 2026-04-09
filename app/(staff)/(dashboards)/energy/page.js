@@ -108,8 +108,8 @@ export default function EnergyDashboard() {
 
     return `As of: ${fromFormatted} - ${toFormatted}`;
   };
-  // Unit state: kWh or W
-  const [unit, setUnit] = useState("W");
+  // Unit state: kWh or Wh
+  const [unit, setUnit] = useState("Wh");
 
   const [aggregation, setAggregation] = useState("none");
   const [showSaveNotification, setShowSaveNotification] = useState(false);
@@ -217,7 +217,7 @@ export default function EnergyDashboard() {
 
       <div className="flex justify-center mb-6 lg:justify-start">
         <button
-          onClick={() => setUnit(unit === "kWh" ? "W" : "kWh")}
+          onClick={() => setUnit(unit === "kWh" ? "Wh" : "kWh")}
           className="px-4 py-2 bg-[#005EB8] text-white rounded hover:bg-[#004080] transition"
         >
           Toggle Units: {unit}
