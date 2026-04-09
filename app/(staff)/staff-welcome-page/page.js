@@ -26,6 +26,7 @@ import { Suspense } from "react";
  * @returns The staff welcome page
  *
  * @author Cintya Lara Flores
+ * @author Anna Isabelle Yabut
  */
 
 export default function StaffHome() {

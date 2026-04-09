@@ -16,37 +16,35 @@ import { getDataRange } from "@/app/_utils/get-data-range";
 import { FiInfo } from "react-icons/fi";
 
 const dataRange = await getDataRange();
-// Defaults for dashboard state (date range)
+
+// Default state uses latest available data
 const stateDefaults = {
   fromDate: dataRange.newest, 
   toDate: dataRange.newest,
 }
 
 /**
- * Page (Natural Gas Dashboard)
+ * NaturalGasDashboardPage
  *
- * Displays natural gas and electricity consumption data over a selected date
- * range with unit conversion (GJ → kWh) and optional aggregation (None or
- * Yearly). Shows summary stats (total energy, average usage, peak month) and
- * renders interactive charts via NaturalGasHandler. Dashboard state persists
- * to localStorage and can be saved to recent dashboards.
+ * Main dashboard page for visualizing natural gas and electricity consumption.
+ * Displays data over a selected date range with unit conversion (GJ → kWh)
+ * and optional aggregation (None or Yearly). Shows charts and summary statistics.
  *
- * Non-obvious behavior:
- * - Maintains both `state` (user edits) and `appliedState` (used for charts)
- *   so that invalid date ranges don't trigger chart re-renders.
- * - Unit toggle (kWh ↔ W) is client-side only; does not affect stored state.
- * - Natural gas values are converted from GJ to kWh (1 GJ = 277.78 kWh)
- *   in the NaturalGasHandler component, not here.
- * - Peak month label changes dynamically based on aggregation setting.
+ * Handles date selection, aggregation, unit conversion, and state persistence.
+ * Dashboard state is stored locally and can be reused across sessions.
  *
  * Notes:
- * - Earliest date hardcoded to "2023-01-04"; update if data range changes.
- * - Dashboard stats are null until NaturalGasHandler loads data; numeric
- *   cards show "-" as a loading placeholder.
- * - The X factor conversion (GJ to kWh) is documented in the info tooltip
- *   but the actual conversion happens in NaturalGasHandler.
+ * - Maintains both 'state' (user edits) and 'appliedState' (used for charts)
+ *   to prevent unnecessary re-renders from invalid ranges.
+ * - Unit toggle (kWh ↔ W) is client-side only and does not affect stored data.
+ * - Natural gas values are converted from GJ to kWh (1 GJ = 277.78 kWh)
+ *   in the NaturalGasHandler component.
+ * - Backend data loading may cause temporary null values; UI shows placeholders.
+ *
+ * @returns The natural gas dashboard page with filters, charts, and summary stats
+ *
+ * @author Anna Isabelle Yabut
  * @author Temi Bankole
- * @returns The natural gas dashboard with charts and summary stats
  */
 export default function Page() {
   const chartRef = useRef(null);
@@ -62,8 +60,8 @@ export default function Page() {
   const [state, setState] = useState(() =>
     loadDashboardState(STORAGE_KEY, stateDefaults),
   );
-  
-  //Applied state — synced with charts only after validation passes
+  // Initialize applied state from storage so charts load immediately.
+  // Synced with charts only after validation passes to prevent invalid updates.
   const [appliedState, setAppliedState] = useState(() => {
     const saved = loadDashboardState(STORAGE_KEY, { fromDate: stateDefaults.fromDate, toDate: stateDefaults.toDate });
     if (saved.fromDate && saved.toDate) {
@@ -94,8 +92,10 @@ export default function Page() {
   }, [state.fromDate, state.toDate, validateAll]);
 
   /**
+   * handleSaveScreen
+   *
    * Saves the current dashboard state (dates, aggregation, unit) to localStorage
-   * and also persists it to the recent dashboards list. Shows confirmation alert.
+   * and adds it to the recent dashboards list. Shows confirmation feedback.
    */
   const handleSaveScreen = () => {
     saveDashboardState(STORAGE_KEY, state);
@@ -200,7 +200,7 @@ export default function Page() {
   const displayStats = stats.map((item) => {
     const subtitle = formatDateRange(appliedState?.fromDate, appliedState?.toDate);
 
-    // Peak month/year is text, not numeric — format based on aggregation level
+    // Peak period (month/year) is text, not numeric — depends on aggregation level
     if (
       item.label === "Peak Energy Month" ||
       item.label === "Peak Energy Year"
@@ -273,7 +273,8 @@ export default function Page() {
           aria-label="Natural gas conversion info"
         >
           <FiInfo className="h-6 w-6" />
-          {/* Info tooltip explaining conversion from GJ to kWh and electricity sensor used */}
+
+          {/* Tooltip explains unit conversions and data sources */}
           <div className="pointer-events-none absolute right-0 top-8 w-80 p-3 bg-white text-black text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="text-sm text-gray-700 leading-relaxed space-y-1">
               <p>
