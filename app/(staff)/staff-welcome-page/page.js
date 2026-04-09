@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { loadRecentDashboards } from "../../utils/saveRecentDashboard";
+import {
+  loadRecentDashboards,
+  deleteRecentDashboard,
+} from "../../utils/saveRecentDashboard";
 import RecentDashboardCard from "../../_components/RecentDashboardCard";
 import Breadcrumbs from "@/app/_components/Breadcrumbs";
 import SecondaryNav from "../../_components/SecondaryNav";
@@ -81,7 +84,6 @@ export default function StaffHome() {
   if (isRickRollUser) {
     return (
       <div className="flex flex-col min-h-screen bg-black font-sans">
-
         {/* Navigation (limited access) */}
         <SecondaryNav
           displayLogin={false}
@@ -90,7 +92,7 @@ export default function StaffHome() {
           employeeName={user || "Staff User"}
         />
 
-         {/* Hide dashboard navigation */}
+        {/* Hide dashboard navigation */}
         <Navbar
           displayDashboards={false}
           displayReports={false}

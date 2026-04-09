@@ -33,7 +33,7 @@ export default function Navbar({
   displayDashboards = false,
   displayReports = false,
   displayAccountMngmt = false,
-  displayDashboardMngmt = false,
+  displayOurDevTeam = false,
   showWhenEmpty = false,
   emptyHeightClass = "py-6",
 }) {
@@ -142,7 +142,16 @@ export default function Navbar({
             </Link>
           </li>
         )}
-        </ul>
+  
+        {/*Display Our Dev Team link*/}
+        {displayOurDevTeam && (
+          <li>
+            <Link href="/our-dev-team" className="hover:opacity-70 transition">
+              Our Dev Team
+            </Link>
+          </li>
+        )}
+      </ul>
       )}
     </nav>
   );
