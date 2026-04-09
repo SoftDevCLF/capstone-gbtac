@@ -33,7 +33,7 @@ export default function Navbar({
   displayDashboards = false,
   displayReports = false,
   displayAccountMngmt = false,
-  displayDashboardMngmt = false,
+  displayOurDevTeam = false,
 }) {
   // Get the current pathname for constructing ?from= query params in dropdown links
   const pathname = usePathname();
@@ -122,6 +122,15 @@ export default function Navbar({
               className="hover:opacity-70 transition"
             >
               Manage Accounts
+            </Link>
+          </li>
+        )}
+
+        {/*Display Our Dev Team link*/}
+        {displayOurDevTeam && (
+          <li>
+            <Link href="/our-dev-team" className="hover:opacity-70 transition">
+              Our Dev Team
             </Link>
           </li>
         )}

@@ -24,7 +24,7 @@ import NotificationModal from "./NotificationModal";
  *
  * @returns A responsive top navigation bar
  *
- * @author Frontend Developer: [Cintya Lara Flores]
+ * @author Cintya Lara Flores
  * @author Dominique Anne Lee
  */
 
@@ -132,7 +132,7 @@ export default function SecondaryNav() {
             <li>
               <Link
                 href="/login"
-                className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
+                className="px-6 py-2 bg-[#005EB8] text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center cursor-pointer"
               >
                 Login
               </Link>
@@ -145,7 +145,7 @@ export default function SecondaryNav() {
                 {/* Logout button styled as a primary call-to-action with blue background and hover effect */}
                 <button
                   onClick={handleLogout}
-                  className="px-6 py-2 bg-[#005EB8] lg:text-lg text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center"
+                  className="px-6 py-2 bg-[#005EB8] lg:text-lg text-white rounded-sm hover:bg-[#004080] font-bold transition inline-block text-center cursor-pointer"
                 >
                   Logout
                 </button>
@@ -155,7 +155,7 @@ export default function SecondaryNav() {
                 {/* Initials avatar */}
                 <Link
                   href="/profile"
-                  className="w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-80 transition border border-red-800 bg-white rounded-full text-red-800 text-sm font-bold"
+                  className="w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-80 transition border border-red-800 bg-white rounded-full text-red-800 text-sm font-bold cursor-pointer"
                 >
                   {firstName.charAt(0).toUpperCase()}
                   {lastName.charAt(0).toUpperCase()}
@@ -163,7 +163,7 @@ export default function SecondaryNav() {
                 {/* Full name, hidden on small screens */}
                 <Link
                   href="/profile"
-                  className="hidden hover:opacity-80 transition text-xs md:block sm:text-sm lg:text-base font-semibold"
+                  className="hidden hover:opacity-80 transition text-xs md:block sm:text-sm lg:text-base font-semibold cursor-pointer"
                 >
                   {displayName}
                 </Link>

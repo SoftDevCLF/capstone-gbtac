@@ -63,6 +63,7 @@ export default function LoginForm() {
 
   const router = useRouter();
   const { refreshSession } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const showNotification = (
     message,
@@ -541,6 +542,8 @@ export default function LoginForm() {
       return;
     }
 
+    setIsLoading(true);
+
     const emailLower = employeeEmail.trim().toLowerCase();
 
     try {
@@ -665,6 +668,8 @@ export default function LoginForm() {
         resetTurnstile();
         console.error("BACKEND LOCKOUT ERROR:", backendErr);
         showNotification("Login failed. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -680,7 +685,11 @@ export default function LoginForm() {
       }
 
       const result = await verifyResetCode(forgotEmail, code);
-      showNotification(result.message || "Code verified!", "success", "Success");
+      showNotification(
+        result.message || "Code verified!",
+        "success",
+        "Success",
+      );
       setStep("password");
     } catch (err) {
       showNotification(
@@ -747,7 +756,9 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white/85 rounded-sm shadow-md p-8 relative">
+    <div
+      className={`w-full max-w-md bg-white/85 rounded-sm shadow-md p-8 relative ${isLoading ? "cursor-wait" : "cursor-default"}`}
+    >
       <h2 className="text-3xl font-bold mb-6 text-gray-900 text-center">
         Login
       </h2>
@@ -762,6 +773,7 @@ export default function LoginForm() {
         value={employeeEmail}
         onChange={(e) => setEmployeeEmail(e.target.value)}
         maxLength={320}
+        disabled={isLoading}
         className="w-full border border-gray-300 rounded-lg px-3 py-2 my-4 bg-white focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-500"
       />
 
@@ -775,13 +787,14 @@ export default function LoginForm() {
           placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={isLoading}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 bg-white focus:outline-none focus:border-blue-500 text-gray-900 placeholder-gray-500"
         />
 
         {/* Hold to reveal, release to hide — both mouse and touch events for cross-device support */}
         <button
           type="button"
-          className="absolute right-3 top-1/2 -translate-y-1/2"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
           onMouseDown={() => setShowPassword(true)}
           onMouseUp={() => setShowPassword(false)}
           onMouseLeave={() => setShowPassword(false)}
@@ -798,7 +811,7 @@ export default function LoginForm() {
       </div>
       <button
         type="button"
-        className="text-blue-600/75 hover:underline text-sm mb-4"
+        className="text-blue-600/75 hover:underline text-sm mb-4 cursor-pointer"
         onClick={() => setShowForgotModal(true)}
       >
         Forgot my password
@@ -821,11 +834,15 @@ export default function LoginForm() {
 
       <div className="flex justify-center">
         <button
-          className="group w-1/2 bg-[#005EB8] text-white py-3 mb-6 rounded-full text-lg font-bold justify-center hover:bg-blue-700 transition flex gap-4 items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="group w-1/2 bg-[#005EB8] text-white py-3 mb-6 rounded-full text-lg font-bold justify-center cursor-pointer hover:bg-blue-700 transition flex gap-4 items-center disabled:bg-gray-400 disabled:cursor-not-allowed"
           onClick={handleLogin}
-          disabled={loginCooldownSeconds > 0}
+          disabled={loginCooldownSeconds > 0 || isLoading}
         >
-          {loginCooldownSeconds > 0 ? `Wait ${loginCooldownSeconds}s` : "Login"}
+          {isLoading
+            ? "Logging in..."
+            : loginCooldownSeconds > 0
+              ? `Wait ${loginCooldownSeconds}s`
+              : "Login"}
           <Image
             src="/icons/arrow-right.png"
             alt="chevron"
@@ -840,7 +857,7 @@ export default function LoginForm() {
         <label className="text-gray-600">Do not have an account?</label>
         <button
           type="button"
-          className="text-blue-600 hover:underline"
+          className="text-blue-600 hover:underline cursor-pointer"
           onClick={() => setShowRequestModal(true)}
         >
           Request access

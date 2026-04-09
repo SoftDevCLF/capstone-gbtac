@@ -68,3 +68,17 @@ export function clearRecentDashboards() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(RECENT_KEY);
 }
+
+/**
+ * deleteRecentDashboard
+ *
+ * Removes a single dashboard entry from the recent list by id.
+ *
+ * @param {string} id - The id of the dashboard to remove
+ */
+export function deleteRecentDashboard(id) {
+  if (typeof window === "undefined") return;
+  const existing = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+  const updated = existing.filter((e) => e.id !== id);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+}

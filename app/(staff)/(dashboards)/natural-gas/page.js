@@ -19,9 +19,9 @@ const dataRange = await getDataRange();
 
 // Default state uses latest available data
 const stateDefaults = {
-  fromDate: dataRange.newest, 
+  fromDate: dataRange.newest,
   toDate: dataRange.newest,
-}
+};
 
 /**
  * NaturalGasDashboardPage
@@ -52,7 +52,7 @@ export default function Page() {
 
   // Namespaced key to keep this dashboard's persisted values isolated.
   const STORAGE_KEY = "dashboard-natural-gas";
-  
+
   //Unit toggle: kWh or W (display only, does not affect data or storage)
   const [unit, setUnit] = useState("kWh");
 
@@ -63,7 +63,10 @@ export default function Page() {
   // Initialize applied state from storage so charts load immediately.
   // Synced with charts only after validation passes to prevent invalid updates.
   const [appliedState, setAppliedState] = useState(() => {
-    const saved = loadDashboardState(STORAGE_KEY, { fromDate: stateDefaults.fromDate, toDate: stateDefaults.toDate });
+    const saved = loadDashboardState(STORAGE_KEY, {
+      fromDate: stateDefaults.fromDate,
+      toDate: stateDefaults.toDate,
+    });
     if (saved.fromDate && saved.toDate) {
       return { fromDate: saved.fromDate, toDate: saved.toDate };
     }
@@ -73,7 +76,7 @@ export default function Page() {
   const [aggregation, setAggregation] = useState("none");
   const [dashboardStats, setDashboardStats] = useState(null);
   const [showSaveNotification, setShowSaveNotification] = useState(false);
-  
+
   const { errors, validateAll } = useDateValidation({
     earliestDate: "2023-01-04",
     latestDate: dataRange.newest,
@@ -109,6 +112,7 @@ export default function Page() {
         toDate: state.toDate,
         aggregation,
         unit,
+        graphs: ["Natural Gas"],
       },
       saved: true,
     });
@@ -194,11 +198,14 @@ export default function Page() {
     num.toLocaleString(undefined, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-  });
+    });
 
   // Transform stats for display: format numbers based on unit, format dates, handle loading state
   const displayStats = stats.map((item) => {
-    const subtitle = formatDateRange(appliedState?.fromDate, appliedState?.toDate);
+    const subtitle = formatDateRange(
+      appliedState?.fromDate,
+      appliedState?.toDate,
+    );
 
     // Peak period (month/year) is text, not numeric — depends on aggregation level
     if (
@@ -216,8 +223,18 @@ export default function Page() {
           const [year, month] = item.value.split("-");
 
           const monthNames = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
           ];
 
           formatted = `${monthNames[Number(month) - 1]} ${year}`;
@@ -278,12 +295,12 @@ export default function Page() {
           <div className="pointer-events-none absolute right-0 top-8 w-80 p-3 bg-white text-black text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="text-sm text-gray-700 leading-relaxed space-y-1">
               <p>
-                Natural gas values are converted from GJ to kWh
-                (1 GJ = 277.78 kWh).
+                Natural gas values are converted from GJ to kWh (1 GJ = 277.78
+                kWh).
               </p>
               <p>
-                Values can be toggled between kWh and W
-                (1&nbsp;kWh = 1000&nbsp;W).
+                Values can be toggled between kWh and W (1&nbsp;kWh =
+                1000&nbsp;W).
               </p>
               <p>
                 Total energy combines natural gas with electricity sensor
@@ -355,7 +372,6 @@ export default function Page() {
                 chartRef={chartRef}
                 chartRef2={chartRef2}
               />
-
             </>
           ) : (
             <div className="h-87.5 flex items-center justify-center text-gray-400 text-sm">

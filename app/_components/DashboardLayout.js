@@ -2,6 +2,7 @@ import SecondaryNav from "./SecondaryNav";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import Breadcrumbs from "./Breadcrumbs";
+import { Suspense } from "react";
 
 /**
  * DashboardLayout component
@@ -38,7 +39,9 @@ export default function DashboardLayout({
         displayAbout={false}
         displayReports={true}
       />
-      <Breadcrumbs />
+      <Suspense fallback={null}>
+        <Breadcrumbs />
+      </Suspense>
       <main
         className="
         flex-1
