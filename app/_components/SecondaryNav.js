@@ -154,7 +154,7 @@ export default function SecondaryNav() {
               <li className="text-gray-800 hover:text-gray-600 transition flex flex-row items-center gap-2">
                 {/* Initials avatar */}
                 <Link
-                  href="/profile"
+                  href="/profile?from=staff-welcome-page"
                   className="w-8 h-8 flex items-center justify-center shrink-0 hover:opacity-80 transition border border-red-800 bg-white rounded-full text-red-800 text-sm font-bold cursor-pointer"
                 >
                   {firstName.charAt(0).toUpperCase()}
@@ -162,7 +162,7 @@ export default function SecondaryNav() {
                 </Link>
                 {/* Full name, hidden on small screens */}
                 <Link
-                  href="/profile"
+                  href="/profile?from=staff-welcome-page"
                   className="hidden hover:opacity-80 transition text-xs md:block sm:text-sm lg:text-base font-semibold cursor-pointer"
                 >
                   {displayName}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ConfirmModal from "@/app/_components/ConfirmModal";
 import NotificationModal from "@/app/_components/NotificationModal";
 
@@ -29,6 +30,7 @@ import NotificationModal from "@/app/_components/NotificationModal";
  */
 
 export default function CreateStaffForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -43,6 +45,7 @@ export default function CreateStaffForm() {
     message: "",
     variant: "success",
   });
+  const [redirectOnNotificationClose, setRedirectOnNotificationClose] = useState(false);
 
   /**
    * showNotification
@@ -178,8 +181,9 @@ export default function CreateStaffForm() {
       }
 
       showNotification("Staff account created successfully", "success", "Success");
+      setRedirectOnNotificationClose(true);
 
-      //Reset form to defaults after successful account creation.
+      // Reset form values after successful account creation.
       setFormData({
         firstName: "",
         lastName: "",
@@ -303,14 +307,20 @@ export default function CreateStaffForm() {
         title={notification.title}
         message={notification.message}
         variant={notification.variant}
-        onClose={() =>
+        onClose={() => {
           setNotification({
             open: false,
             title: "",
             message: "",
             variant: "success",
-          })
-        }
+          });
+
+          if (redirectOnNotificationClose && notification.variant === "success") {
+            setRedirectOnNotificationClose(false);
+            router.push("/account-manager");
+            router.refresh();
+          }
+        }}
       />
     )}
   </div>

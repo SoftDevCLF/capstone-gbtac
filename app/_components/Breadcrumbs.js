@@ -38,13 +38,21 @@ export default function Breadcrumbs() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
 
+  // Default breadcrumb origin for key staff pages when no explicit context is provided.
+  const effectiveFrom =
+    from || (pathname === "/report" || pathname === "/profile"
+      ? "staff-welcome-page"
+      : null);
+
   // Split the current path into segments (e.g., "/a/b/c" → ["a","b","c"])
   const pathSegments = pathname.split("/").filter((segment) => segment);
 
   // Inject additional breadcrumb(s) based on ?from= query param
   // This allows preserving navigation context across pages
   const injectedCrumbs =
-    from && FROM_CRUMB_MAP[from] ? [FROM_CRUMB_MAP[from]] : [];
+    effectiveFrom && FROM_CRUMB_MAP[effectiveFrom]
+      ? [FROM_CRUMB_MAP[effectiveFrom]]
+      : [];
 
   return (
     <nav className="px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 pt-5 pb-4">
