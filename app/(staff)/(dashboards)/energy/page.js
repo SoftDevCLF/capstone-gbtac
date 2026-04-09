@@ -144,7 +144,6 @@ export default function EnergyDashboard() {
       { credentials: "include" },
     );
     const data = await res.json();
-    console.log("stats data:", data);
     setStats(data);
   };
 
@@ -238,11 +237,12 @@ export default function EnergyDashboard() {
               startDate={appliedState?.fromDate}
               endDate={appliedState?.toDate}
               graphTitle={`Consumption vs Generation, ${appliedState?.fromDate} to ${appliedState?.toDate}`}
-              yTitle={"Wh"}
+              yTitle={unit}
               xTitle={"hours"}
               xUnit={"hour"}
               aggTime={aggregation}
               aggType={"sum"}
+              multiplier={unit === "kWh" ? 1 / 1000 : 1}
             />
           </div>
 
@@ -265,7 +265,8 @@ export default function EnergyDashboard() {
               startDate={appliedState?.fromDate}
               endDate={appliedState?.toDate}
               graphTitle={`Solar Panel Generation, ${appliedState?.fromDate} to ${appliedState?.toDate < "2025-12-31" ? appliedState?.toDate : "2025-12-31"}`}
-              label={"Wh"} // **check: unsure if right unit
+              label={unit}
+              multiplier={unit === "kWh" ? 1 / 1000 : 1}
             />
           </div>
         </div>

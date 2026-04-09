@@ -20,6 +20,7 @@
  * @param {string}   [unit]               - Display unit for value conversion
  * @param {string}   [apiPrefix="/graphs"] - API route prefix, use "/graphs/guest" for
  *                                           unauthenticated access
+ * @param {number}   [multiplier=1]      - Value multiplier for unit conversion
  *
  * @returns A line or bar chart with loading and empty-state handling
  *
@@ -29,6 +30,7 @@
  * - The apiPrefix prop allows guest pages to hit public endpoints without
  *   session authentication while keeping the default behaviour for staff pages.
  *
+ * @author Kiera Johnson
  * @author Dominique Anne Lee
  */
 
@@ -62,27 +64,6 @@ export default function LineHandler({
     multiplier = 1,
 }){
 
-    // Auto-compute the chart x-axis time unit — must match backend aggregation tiers
-    const getTimeUnit = () => {
-        try {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            const days = (end - start) / 86400000 + 1;
-            if (days <= 1) return "hour";    // hourly averages (0..23)
-            if (days <= 60) return "day";    // daily averages (1..31)
-            if (days <= 730) return "month"; // monthly averages (January..)
-            return "year";                   // yearly averages (2020..)
-        } catch { return "month"; }
-    };
-
-    // X-axis display format per tier — client spec:
-    const getDisplayFormats = () => ({
-        hour:   "H",
-        day:    "d",
-        month:  "MMMM",
-        year:   "yyyy",
-    });
-
     const canFetch =
         Array.isArray(sensorList) &&
         sensorList.length > 0 &&
@@ -103,20 +84,7 @@ export default function LineHandler({
     const [xMax, setXMax] = useState();
     const [yMin, setYMin] = useState();
     const [yMax, setYMax] = useState();
-
-    const getAuthHeaders = async () => {
-        const user = auth.currentUser;
-
-        if (!user) {
-            throw new Error("No authenticated user found");
-        }
-
-        const token = await user.getIdToken();
-
-        return {
-            Authorization: `Bearer ${token}`,
-        };
-    };
+    const [correctXTitle, setCorrectXTitle] = useState(xTitle);
 
     const fetchData = async (list = sensorList, from = startDate, to = endDate) => {
         try {
@@ -211,12 +179,6 @@ export default function LineHandler({
     ];
     const [graphData, setGraphData] = useState({labels, datasets: [{}]}); // data to be passed on to LineChart component
 
-    useEffect(() => {
-        if(fetched){
-
-        }
-    }, [multiplier, fetched])
-
     // runs when sensorData or sensor names change
     useEffect(() => {
         if(fetched && sensorData.length > 0 && Array.isArray(sensorData[0]) && sensorData[0].length > 0 && sensors.every(s => s.name !== null)){
@@ -288,13 +250,14 @@ export default function LineHandler({
                     data: (sensorData[sensor.id] || []).map((d) => {
                         let value = d.data;
 
+                        // redundant with multiplier prop
                         if (unit === "L") {
                             value = (value / 100) * 32000;
                         }
 
                         return {
                             x: new Date(d.ts),
-                            y: value,
+                            y: value * multiplier,
                         };
                     }),
                     borderColor: colours[sensor.id % colours.length],
@@ -333,8 +296,13 @@ export default function LineHandler({
             else if (timeUnit == "day") setMinZoom(2 * 24 * 60 * 60 * 1000)
             else if (timeUnit == "month") setMinZoom(2 * 30.5 * 24 * 60 * 60 * 1000) //may be wrong due to variable days in a month
             else if (timeUnit == "year") setMinZoom(2 * 12 * 30.5 * 24 * 60 * 60 * 1000) //may be wrong due to variable days in a month
+
+            if (aggTime == "H") setCorrectXTitle("hours")
+            else if (aggTime == "D") setCorrectXTitle("days")
+            else if (aggTime == "M") setCorrectXTitle("months")
+            else if (aggTime == "Y") setCorrectXTitle("years")
         }
-    }, [sensorData, sensors, fetched, onStatsReady, aggTime, unit, timeUnit]);
+    }, [sensorData, sensors, fetched, onStatsReady, aggTime, unit, timeUnit, multiplier]);
 
 
     // options for graph display to be passed on to LineChart component
@@ -345,7 +313,7 @@ export default function LineHandler({
             x: {
                 title: {
                     display: true,
-                    text: xTitle
+                    text: correctXTitle
                 },
                 type: "time",
                 time: {

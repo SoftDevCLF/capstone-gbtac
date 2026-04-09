@@ -1,5 +1,3 @@
-"use client"
-
 import Chart from "chart.js/auto";
 import { CategoryScale} from "chart.js";
 import { useState, useEffect } from "react";
@@ -7,7 +5,25 @@ import PieChart from "../PieChart"
 
 Chart.register(CategoryScale);
 
-export default function PieHandler({sensorList, startDate, endDate, graphTitle, label}){
+/**
+ * Pie Chart handler component
+ * 
+ * Handles data fetching and processing for pie charts 
+ * Configures display options for pie charts
+ * Handles loading and error states for pie charts
+ * 
+ * @param {Array} semspecList - List of sensor codes to fetch and display
+ * @param {string} startDate - Start date for data fetching in YYYY-MM-DD format
+ * @param {string} endDate - End date for data fetching in YYYY-MM-DD format
+ * @param {string} graphTitle - Title to display on the graph
+ * @param {string} label - units for data being displayed
+ * @param {number} [multiplier=1] - value to multiply data by for unit conversions
+ * @returns Pie chart component from PieChart.js or loading/error state
+ * 
+ * @author Kiera Johnson
+ */
+
+export default function PieHandler({sensorList, startDate, endDate, graphTitle, label, multiplier = 1}){
     const canFetch =
         Array.isArray(sensorList) &&
         sensorList.length > 0 &&
@@ -16,7 +32,6 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
 
     const sensorKey = sensorList.join(",");
     
-    // sensor id (array position) and sensor code (part after SaitSolarLab_)
     const [sensors, setSensors] = useState(() =>
         sensorList.map((code, i) => ({
             id: i, 
@@ -26,11 +41,11 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
         }))
     );
     
-    const [fetched, setFetched] = useState(false); // if data has been fetched or not
+    const [fetched, setFetched] = useState(false);
     const [loading, setLoading] = useState(true); // loading state for UI
     
-    // takes sensors array and fetches data based off of codes, puts it in the sensorData array
-    // ** NOTE: add warning if no data is available (no sensor data during time period) 
+    // fetches sensor names and sums 
+    // if no name is found, the name defaults to the code
     const fetchData = async (list = sensorList) => {
         try {
             setLoading(true);
@@ -56,7 +71,6 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
             
         } catch(e){
             console.log("Error fetching data");
-            // ** should probably display an error to user ?
         } finally {
             setLoading(false);
         }
@@ -77,13 +91,33 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
     
     // sets defaults
     const labels = []; 
-    const colours = ["#DA291C", "#005EB8", "#6D2077", "#00A3E0", "#A6192E"]; // colours for lines, will need to add more
-    const [graphData, setGraphData] = useState({labels, datasets: [{}]}); // data to be passed on to LineChart component
+    const colours = [
+        "#E63946", // red
+        "#2196F3", // blue
+        "#2A9D8F", // teal
+        "#F4A261", // orange
+        "#6A0572", // purple
+        "#4CAF50", // green
+        "#FF9800", // amber
+        "#00BCD4", // cyan
+        "#9C27B0", // violet
+        "#F06292", // pink
+        "#795548", // brown
+        "#607D8B", // steel blue
+        "#CDDC39", // lime
+        "#FF5722", // deep orange
+        "#3F51B5", // indigo
+        "#009688", // dark teal
+        "#1D3557", // navy
+        "#FFD54F", // yellow
+        "#C62828", // dark red
+        "#8BC34A", // light green
+        "#FF1493", // hot pink
+    ];
+    const [graphData, setGraphData] = useState({labels, datasets: [{}]}); 
 
-    // runs when sensorData is changed (so just on fetch at the moment)
     useEffect(() => {
         if(fetched){
-            // ** might change so it reflects more than just the one dataset?
             const labels = sensors.map(sensor => sensor.name);
             
             setGraphData({
@@ -91,7 +125,7 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
                 datasets: [
                     {
                         label: label,
-                        data: sensors.map((sensor) => sensor.sum),
+                        data: sensors.map((sensor) => sensor.sum * multiplier),
                         borderColor: colours,
                         backgroundColor: colours,
                         borderWidth: 2,
@@ -100,9 +134,8 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
                 ]
             });
         }
-    }, [sensors]);
+    }, [sensors, multiplier, label]);
 
-    // options for graph display to be passed on to LineChart component
     const graphOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -127,7 +160,6 @@ export default function PieHandler({sensorList, startDate, endDate, graphTitle, 
 
     const hasData = sensors.some((sensor) => sensor.sum != null);
 
-    // passes graph info onto LineChart component and displays it
     return (
         <div className="relative min-h-75">
             {loading && (
