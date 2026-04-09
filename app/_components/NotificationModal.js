@@ -1,7 +1,24 @@
-//This component is used as a notification for various actions throughout the web application
-//It displays a message and an okay button used for success and error notifications.
 "use client";
 
+/**
+ * NotificationModal
+ *
+ * Displays a dismissible notification dialog for success and error feedback.
+ * Renders a blurred backdrop with a centred modal containing a title, message,
+ * and a single close button.
+ *
+ * @param {string} title - Heading displayed at the top of the modal
+ * @param {string} message - Body text describing the outcome or error
+ * @param {string} [buttonText="OK"] - Label for the close button
+ * @param {string} [variant="success"] - Button colour scheme: "error" for red, "success" for blue
+ * @param {Function} onClose - Called when the user clicks the button or the backdrop
+ *
+ * Notes:
+ * - Clicking the backdrop calls onClose, consistent with the button behaviour
+ * - Click propagation from the modal box to the backdrop is stopped to prevent accidental dismissal
+ * 
+ * @author Temi Bankole
+ */
 export default function NotificationModal({
   title,
   message,
@@ -10,8 +27,15 @@ export default function NotificationModal({
   onClose
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40"
+      onClick={onClose}
+    >
+      {/* Modal box — stopPropagation prevents backdrop click from firing on inner clicks */}
+      <div
+        className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
           {title}
         </h2>

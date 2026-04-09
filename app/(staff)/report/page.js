@@ -12,6 +12,28 @@ import { getDataRange } from "@/app/_utils/get-data-range";
 
 const dataRange = await getDataRange();
 
+/**
+ * Page
+ *
+ * Reports page where staff can configure and generate a PDF report from sensor
+ * data. Renders ReportControls alongside a PDFViewer that displays the result.
+ *
+ * Notes:
+ * - dataRange is fetched at module level with a top-level await; this requires
+ *   the Next.js runtime to support async module evaluation
+ * - From and to dates are initialised to dataRange.newest so the form defaults
+ *   to the most recent available data
+ * - handleGenerate runs a content safety check on the chart title before
+ *   calling the API — generation is blocked and the user is alerted if the
+ *   check fails
+ * - The report API is called with agg_type hardcoded to "mean"; this is not
+ *   currently exposed as a user-configurable option
+ * - handleClear resets timeInterval to "hourly" rather than "none" which is
+ *   the default used elsewhere — this may be unintentional
+ * - Logout and profile are shown and login is hidden — this page requires an
+ *   authenticated session
+ * @author Temi Bankole
+ */
 export default function Page() {
 
     const [selectedSensors, setSelectedSensors] = useState([]);
@@ -38,16 +60,16 @@ export default function Page() {
         setIsGenerating(false);
       }
 
-    }
-    const handleClear = () => {
-        setSelectedSensors([]);
-      setChartTitle("");
-        setFrom("");
-        setTo("");
-        setTimeInterval("hourly");
-        setPdfBlob(null);
-    }
-  
+  const handleClear = () => {
+    //Clear generated report and reset control values for a fresh request.
+    setSelectedSensors([]);
+    setChartTitle("");
+    setFrom("");
+    setTo("");
+    setTimeInterval("hourly");
+    setPdfBlob(null);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 text-[#212529]">
       <SecondaryNav
@@ -98,4 +120,5 @@ export default function Page() {
       <Footer />
     </div>
   );
+}
 }

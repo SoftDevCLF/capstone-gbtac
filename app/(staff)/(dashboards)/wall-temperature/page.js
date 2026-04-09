@@ -128,8 +128,12 @@ const ORIENTATION_OPTIONS = ["North", "South", "East", "West"];
  * - The Save Screen button persists the current state to localStorage and also
  *   saves a record to the Recent Dashboards list with a summary of the current filters.
  *
+ * @returns The wall temperature dashboard page with filters and chart
+ *
  * @author Cintya Lara Flores
+ * @author Dominique Anne Lee
  */
+
 export default function WallTempDashboard() {
   const chartRef = useRef(null);
 
@@ -265,6 +269,7 @@ export default function WallTempDashboard() {
         toDate: state.toDate,
         floors: state.floors,
         orientations: state.orientations,
+        graphs: ["Wall temperature"],
       },
       saved: true,
     });
@@ -394,11 +399,7 @@ export default function WallTempDashboard() {
         >
           Save Screen
         </button>
-        <ExportPDFButton
-          chartRef={chartRef}
-          fileName="wall-temperature"
-        />
-        
+        <ExportPDFButton chartRef={chartRef} fileName="wall-temperature" />
       </div>
 
       {showSaveNotification && (

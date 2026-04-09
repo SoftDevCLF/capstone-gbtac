@@ -1,6 +1,3 @@
-//This component is the main form for staff to view/edit their profile.
-//It is also the admins view of a staff members profile when accessed from the account manager.
-//Form fields actions adjust based on viewer's role (admin vs staff).
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,6 +15,37 @@ import {
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
+/**
+ * StaffProfileForm
+ *
+ * Displays and handles edits to a staff member's profile, including name, email,
+ * status, and password. Behaviour and visible fields adjust based on whether the
+ * viewer is a staff member editing their own profile or an admin editing another
+ * staff member's profile.
+ *
+ * @param {string} [viewerRole="staff"] - Role of the viewing user: "admin" or "staff"
+ *
+ * Notes:
+ * - Profile data is fetched from Firestore on mount via onAuthStateChanged; if no
+ *   Firestore document exists the form falls back to the Firebase Auth email only
+ * - Admins can edit name, email, and status but cannot change passwords — all
+ *   password fields are hidden when viewerRole is "admin"
+ * - Email changes require current password verification via Firebase reauthentication
+ *   before the save button becomes active; a verification email is sent to the new
+ *   address via verifyBeforeUpdateEmail rather than updating directly
+ * - Password changes also require verification first; new password and confirm fields
+ *   are only shown after verification succeeds
+ * - Password visibility uses reveal-on-hold rather than toggle — it hides again on
+ *   mouse up, mouse leave, or touch end
+ * - Name and status changes are persisted to Firestore via /auth/update-profile;
+ *   a profileUpdated custom event is dispatched on success to notify SecondaryNav
+ *   to refresh
+ * - The Save button is disabled until at least one field has changed, all required
+ *   fields are valid, and any email change has been password-verified
+ * - Cancel navigates to /account-manager for admins and /staff-welcome-page for staff
+ * @author Temi Bankole
+ * @author Dominique Anne Lee
+ */
 export default function StaffProfileForm({ viewerRole = "staff" }) {
   const isAdmin = viewerRole === "admin";
   const [currentUser, setCurrentUser] = useState(null);
@@ -68,7 +96,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
   const isEmailChanged = () => {
     return formData.email !== originalEmail;
   };
-  
+
   const isFormValid =
     formData.firstName.trim().length >= 2 &&
     formData.lastName.trim().length >= 2 &&
@@ -81,12 +109,11 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
       if (user) {
         setCurrentUser(user);
         setOriginalEmail(user.email);
-        
-        // Fetch user data from Firestore
+
         try {
           const userRef = doc(db, "allowedUsers", user.email);
           const userSnap = await getDoc(userRef);
-          
+
           if (userSnap.exists()) {
             const userData = userSnap.data();
             const initialData = {
@@ -106,7 +133,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
               status: userData.active ? "Active" : "Inactive"
             });
           } else {
-            // If no Firestore data, just set email
+            // No Firestore document exists — fall back to Firebase Auth email only
             const initialData = {
               firstName: "",
               lastName: "",
@@ -126,7 +153,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
-          // Fallback to just setting email
+          // Firestore fetch failed — fall back to Firebase Auth email only
           const initialData = {
             firstName: "",
             lastName: "",
@@ -150,48 +177,113 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
     return () => unsubscribe();
   }, []);
 
-  // Check if there are changes
   useEffect(() => {
-    const changed = 
+    const changed =
       formData.firstName !== originalData.firstName ||
       formData.lastName !== originalData.lastName ||
       formData.email !== originalData.email ||
       formData.status !== originalData.status ||
       formData.newPassword.trim().length > 0;
-    
+
     setHasChanges(changed);
   }, [formData, originalData]);
+
+  const getValidationErrors = (data) => {
+    const newErrors = {};
+
+    if (!data.firstName.trim())
+      newErrors.firstName = "First name is required.";
+    else if (data.firstName.trim().length < 2)
+      newErrors.firstName = "Must be at least 2 characters.";
+    else if (!/^[a-zA-Z\s'-]+$/.test(data.firstName))
+      newErrors.firstName = "No numbers or special characters.";
+
+    if (!data.lastName.trim())
+      newErrors.lastName = "Last name is required.";
+    else if (data.lastName.trim().length < 2)
+      newErrors.lastName = "Must be at least 2 characters.";
+    else if (!/^[a-zA-Z\s'-]+$/.test(data.lastName))
+      newErrors.lastName = "No numbers or special characters.";
+
+    if (!data.email.trim()) newErrors.email = "Email is required.";
+    else if (!data.email.includes("@"))
+      newErrors.email = "Enter a valid email.";
+    else {
+      const emailLower = data.email.toLowerCase();
+      if (
+        !emailLower.endsWith("@sait.ca") &&
+        !emailLower.endsWith("@edu.sait.ca") &&
+        !emailLower.endsWith("@gmail.com")
+      )
+        newErrors.email = "Must be a SAIT or Gmail email.";
+    }
+
+    if (!isAdmin && data.email !== originalEmail && !currentPasswordVerified) {
+      newErrors.currentPassword = "Please verify your password before changing email.";
+    }
+
+    if (!isAdmin) {
+      if (data.newPassword && !data.currentPassword)
+        newErrors.currentPassword = "Current password is required.";
+
+      if (data.newPassword) {
+        if (data.newPassword.length < 8)
+          newErrors.newPassword = "Must be at least 8 characters.";
+        else if (!/[A-Z]/.test(data.newPassword))
+          newErrors.newPassword = "Must include an uppercase letter.";
+        else if (!/[0-9]/.test(data.newPassword))
+          newErrors.newPassword = "Must include a number.";
+        else if (!/[^a-zA-Z0-9]/.test(data.newPassword))
+          newErrors.newPassword = "Must include a special character.";
+        else if (data.newPassword === data.currentPassword)
+          newErrors.newPassword = "New password can't be the same as current.";
+      }
+
+      if (data.newPassword && data.newPassword !== data.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match.";
+    }
+
+    return newErrors;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
+      // Clear new/confirm password fields if current password is cleared
       if (name === "currentPassword" && value.trim().length === 0) {
         updated.newPassword = "";
         updated.confirmPassword = "";
         setCurrentPasswordVerified(false);
       }
-      // Reset password verification if email changes
+      // Reset password verification if email is changed
       if (name === "email" && value !== originalEmail) {
         setCurrentPasswordVerified(false);
       }
+
+      const newErrors = getValidationErrors(updated);
+      setErrors((prevErrors) => ({
+        ...(prevErrors.general ? { general: prevErrors.general } : {}),
+        ...newErrors,
+      }));
+
       return updated;
     });
   };
 
   const verifyCurrentPassword = async () => {
     if (!formData.currentPassword) {
-      setErrors(prev => ({ 
-        ...prev, 
-        currentPassword: "Please enter your current password" 
+      setErrors(prev => ({
+        ...prev,
+        currentPassword: "Please enter your current password"
       }));
       return false;
     }
 
     if (!currentUser) {
-      setErrors(prev => ({ 
-        ...prev, 
-        currentPassword: "User not authenticated" 
+      setErrors(prev => ({
+        ...prev,
+        currentPassword: "User not authenticated"
       }));
       return false;
     }
@@ -201,7 +293,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
       currentUser.email,
       formData.currentPassword
     );
-    
+
     try {
       await reauthenticateWithCredential(currentUser, credential);
       setCurrentPasswordVerified(true);
@@ -213,11 +305,10 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
       setIsVerifying(false);
       return true;
     } catch (reauthError) {
-      // Handle authentication error silently - no need to log to console
-      // The error is expected when password is incorrect
-      setErrors(prev => ({ 
-        ...prev, 
-        currentPassword: "Incorrect password" 
+      // Incorrect password — error is expected and handled inline, not logged
+      setErrors(prev => ({
+        ...prev,
+        currentPassword: "Incorrect password"
       }));
       setIsVerifying(false);
       return false;
@@ -226,24 +317,24 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
   const handleConfirmSave = async () => {
     setShowConfirmModal(false);
-    
+
     try {
       const emailChanged = formData.email !== originalEmail;
       const passwordChanged = formData.newPassword && formData.confirmPassword;
-      const nameChanged = formData.firstName !== originalData.firstName || 
+      const nameChanged = formData.firstName !== originalData.firstName ||
                           formData.lastName !== originalData.lastName;
       const statusChanged = formData.status !== originalData.status;
-      
-      // Handle email change (requires verification email)
+
       if (emailChanged && !isAdmin) {
         if (!currentPasswordVerified) {
-          setErrors(prev => ({ 
-            ...prev, 
-            currentPassword: "Please verify your password first before changing email" 
+          setErrors(prev => ({
+            ...prev,
+            currentPassword: "Please verify your password first before changing email"
           }));
           return;
         }
 
+        // Store old email so auth-action can clean up the old Firestore record after verification
         localStorage.setItem('emailChangeOldEmail', currentUser.email);
 
         const actionCodeSettings = {
@@ -260,44 +351,36 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
           return;
         } catch (emailError) {
           if (emailError.code === 'auth/operation-not-allowed') {
-            setErrors(prev => ({ 
-              ...prev, 
-              email: "Email verification is not enabled. Please contact support." 
+            setErrors(prev => ({
+              ...prev,
+              email: "Email verification is not enabled. Please contact support."
             }));
           } else if (emailError.code === 'auth/invalid-email') {
-            setErrors(prev => ({ 
-              ...prev, 
-              email: "Invalid email address" 
-            }));
+            setErrors(prev => ({ ...prev, email: "Invalid email address" }));
           } else if (emailError.code === 'auth/email-already-in-use') {
-            setErrors(prev => ({ 
-              ...prev, 
-              email: "This email is already in use" 
-            }));
+            setErrors(prev => ({ ...prev, email: "This email is already in use" }));
           } else {
-            setErrors(prev => ({ 
-              ...prev, 
-              email: `Failed to send verification email: ${emailError.message}` 
+            setErrors(prev => ({
+              ...prev,
+              email: `Failed to send verification email: ${emailError.message}`
             }));
           }
           return;
         }
       }
-      
-      // Handle password change
+
       if (passwordChanged && !isAdmin) {
         if (!currentPasswordVerified) {
-          setErrors(prev => ({ 
-            ...prev, 
-            currentPassword: "Please verify your password first" 
+          setErrors(prev => ({
+            ...prev,
+            currentPassword: "Please verify your password first"
           }));
           return;
         }
-        
+
         try {
           await updatePassword(currentUser, formData.newPassword);
-          
-          // Clear password fields after successful change
+
           setFormData(prev => ({
             ...prev,
             currentPassword: "",
@@ -305,8 +388,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
             confirmPassword: ""
           }));
           setCurrentPasswordVerified(false);
-          
-          // Update original data if name/status also changed
+
           if (nameChanged || statusChanged) {
             await updateFirestoreProfile();
           }
@@ -314,25 +396,24 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
           showSuccessNotification("Password changed successfully!");
           return;
         } catch (passwordError) {
-          setErrors(prev => ({ 
-            ...prev, 
-            newPassword: `Failed to update password: ${passwordError.message}` 
+          setErrors(prev => ({
+            ...prev,
+            newPassword: `Failed to update password: ${passwordError.message}`
           }));
           return;
         }
       }
-      
-      // Handle name/status changes (update Firestore)
+
       if (nameChanged || statusChanged) {
         await updateFirestoreProfile();
 
         showSuccessNotification("Profile updated successfully!");
       }
-      
+
     } catch (error) {
-      setErrors(prev => ({ 
-        ...prev, 
-        general: "An error occurred. Please try again." 
+      setErrors(prev => ({
+        ...prev,
+        general: "An error occurred. Please try again."
       }));
     }
   };
@@ -341,9 +422,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
     try {
       const response = await fetch('http://localhost:8000/auth/update-profile', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           email: currentUser.email,
@@ -360,24 +439,23 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
       const result = await response.json();
       console.log('Profile updated:', result);
-      
-      // Update original data to reflect saved changes
+
       setOriginalData(prev => ({
         ...prev,
         firstName: formData.firstName,
         lastName: formData.lastName,
         status: formData.status
       }));
-      
-      // Trigger a custom event to notify SecondaryNav to refresh
+
+      // Notify SecondaryNav to refresh displayed name
       window.dispatchEvent(new CustomEvent('profileUpdated'));
-      
+
       return true;
     } catch (error) {
       console.error("Profile update error:", error);
-      setErrors(prev => ({ 
-        ...prev, 
-        general: `Failed to update profile: ${error.message}` 
+      setErrors(prev => ({
+        ...prev,
+        general: `Failed to update profile: ${error.message}`
       }));
       return false;
     }
@@ -388,78 +466,18 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
   };
 
   const validate = () => {
-    const newErrors = {};
-
-    if (!formData.firstName.trim())
-      newErrors.firstName = "First name is required.";
-    else if (formData.firstName.trim().length < 2)
-      newErrors.firstName = "Must be at least 2 characters.";
-    else if (!/^[a-zA-Z\s'-]+$/.test(formData.firstName))
-      newErrors.firstName = "No numbers or special characters.";
-
-    if (!formData.lastName.trim())
-      newErrors.lastName = "Last name is required.";
-    else if (formData.lastName.trim().length < 2)
-      newErrors.lastName = "Must be at least 2 characters.";
-    else if (!/^[a-zA-Z\s'-]+$/.test(formData.lastName))
-      newErrors.lastName = "No numbers or special characters.";
-
-    if (!formData.email.trim()) newErrors.email = "Email is required.";
-    else if (!formData.email.includes("@"))
-      newErrors.email = "Enter a valid email.";
-    else {
-      const emailLower = formData.email.toLowerCase();
-      if (
-        !emailLower.endsWith("@sait.ca") &&
-        !emailLower.endsWith("@edu.sait.ca") &&
-        !emailLower.endsWith("@gmail.com")
-      )
-        newErrors.email = "Must be a SAIT or Gmail email.";
-    }
-
-    if (!isAdmin && formData.email !== originalEmail && !currentPasswordVerified) {
-      newErrors.currentPassword = "Please verify your password before changing email.";
-    }
-
-    if (!isAdmin) {
-      if (formData.newPassword && !formData.currentPassword)
-        newErrors.currentPassword = "Current password is required.";
-
-      if (formData.newPassword) {
-        if (formData.newPassword.length < 8)
-          newErrors.newPassword = "Must be at least 8 characters.";
-        else if (!/[A-Z]/.test(formData.newPassword))
-          newErrors.newPassword = "Must include an uppercase letter.";
-        else if (!/[0-9]/.test(formData.newPassword))
-          newErrors.newPassword = "Must include a number.";
-        else if (!/[^a-zA-Z0-9]/.test(formData.newPassword))
-          newErrors.newPassword = "Must include a special character.";
-        else if (formData.newPassword === formData.currentPassword)
-          newErrors.newPassword = "New password can't be the same as current.";
-      }
-      if (
-        formData.newPassword &&
-        formData.newPassword !== formData.confirmPassword
-      )
-        newErrors.confirmPassword = "Passwords do not match.";
-    }
-
+    const newErrors = getValidationErrors(formData);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validate()) {
-      setShowConfirmModal(true);
-    }
+    if (validate()) setShowConfirmModal(true);
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-10 text-[#212529]"
-    >
+    <form onSubmit={handleSubmit} className="space-y-10 text-[#212529]">
       <div className="space-y-6">
         <h2 className="text-lg border-b pb-2 font-semibold text-gray-800">
           {isAdmin ? "Staff Information" : "Personal Information"}
@@ -518,11 +536,10 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
           )}
         </div>
 
+        {/* Status dropdown is admin-only — staff cannot change their own account status */}
         {isAdmin && (
           <div className="flex flex-col">
-            <label className="font-semibold text-gray-800">
-              Account Status
-            </label>
+            <label className="font-semibold text-gray-800">Account Status</label>
             <select
               name="status"
               value={formData.status}
@@ -536,6 +553,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
         )}
       </div>
 
+      {/* Password section is hidden for admins viewing another staff member's profile */}
       {!isAdmin && (
         <div className="space-y-6">
           <h2 className="text-lg border-b pb-2 font-semibold text-gray-800">
@@ -559,32 +577,18 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                 className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                 disabled={currentPasswordVerified}
               />
-
+              {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
               <button
                 type="button"
                 className="absolute right-3 top-4"
-                onMouseDown={() =>
-                  setShowPassword((prev) => ({ ...prev, current: true }))
-                }
-                onMouseUp={() =>
-                  setShowPassword((prev) => ({ ...prev, current: false }))
-                }
-                onMouseLeave={() =>
-                  setShowPassword((prev) => ({ ...prev, current: false }))
-                }
-                onTouchStart={() =>
-                  setShowPassword((prev) => ({ ...prev, current: true }))
-                }
-                onTouchEnd={() =>
-                  setShowPassword((prev) => ({ ...prev, current: false }))
-                }
+                onMouseDown={() => setShowPassword((prev) => ({ ...prev, current: true }))}
+                onMouseUp={() => setShowPassword((prev) => ({ ...prev, current: false }))}
+                onMouseLeave={() => setShowPassword((prev) => ({ ...prev, current: false }))}
+                onTouchStart={() => setShowPassword((prev) => ({ ...prev, current: true }))}
+                onTouchEnd={() => setShowPassword((prev) => ({ ...prev, current: false }))}
               >
                 <Image
-                  src={
-                    showPassword.current
-                      ? "/icons/eye-close.png"
-                      : "/icons/eye-open.png"
-                  }
+                  src={showPassword.current ? "/icons/eye-close.png" : "/icons/eye-open.png"}
                   alt="toggle password"
                   width={20}
                   height={20}
@@ -592,9 +596,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
               </button>
             </div>
             {errors.currentPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.currentPassword}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{errors.currentPassword}</p>
             )}
             {!currentPasswordVerified && (
               <button
@@ -615,9 +617,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
           {currentPasswordVerified && (
             <div className="flex flex-col">
-              <label className="font-semibold text-gray-800">
-                New Password
-              </label>
+              <label className="font-semibold text-gray-800">New Password</label>
               <div className="relative">
                 <input
                   type={showPassword.new ? "text" : "password"}
@@ -627,31 +627,21 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   placeholder="New Password"
                   className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                 />
+                {errors.newPassword && (
+                  <p className="text-red-500 text-sm mt-1">{errors.newPassword}</p>
+                )}
+                {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
                 <button
                   type="button"
                   className="absolute right-3 top-4"
-                  onMouseDown={() =>
-                    setShowPassword((prev) => ({ ...prev, new: true }))
-                  }
-                  onMouseUp={() =>
-                    setShowPassword((prev) => ({ ...prev, new: false }))
-                  }
-                  onMouseLeave={() =>
-                    setShowPassword((prev) => ({ ...prev, new: false }))
-                  }
-                  onTouchStart={() =>
-                    setShowPassword((prev) => ({ ...prev, new: true }))
-                  }
-                  onTouchEnd={() =>
-                    setShowPassword((prev) => ({ ...prev, new: false }))
-                  }
+                  onMouseDown={() => setShowPassword((prev) => ({ ...prev, new: true }))}
+                  onMouseUp={() => setShowPassword((prev) => ({ ...prev, new: false }))}
+                  onMouseLeave={() => setShowPassword((prev) => ({ ...prev, new: false }))}
+                  onTouchStart={() => setShowPassword((prev) => ({ ...prev, new: true }))}
+                  onTouchEnd={() => setShowPassword((prev) => ({ ...prev, new: false }))}
                 >
                   <Image
-                    src={
-                      showPassword.new
-                        ? "/icons/eye-close.png"
-                        : "/icons/eye-open.png"
-                    }
+                    src={showPassword.new ? "/icons/eye-close.png" : "/icons/eye-open.png"}
                     alt="toggle password"
                     width={20}
                     height={20}
@@ -668,9 +658,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
           {currentPasswordVerified && (
             <div className="flex flex-col">
-              <label className="font-semibold text-gray-800">
-                Confirm New Password
-              </label>
+              <label className="font-semibold text-gray-800">Confirm New Password</label>
               <div className="relative">
                 <input
                   type={showPassword.confirm ? "text" : "password"}
@@ -681,35 +669,20 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                 />
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.confirmPassword}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
                 )}
+                {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
                 <button
                   type="button"
                   className="absolute right-3 top-4"
-                  onMouseDown={() =>
-                    setShowPassword((prev) => ({ ...prev, confirm: true }))
-                  }
-                  onMouseUp={() =>
-                    setShowPassword((prev) => ({ ...prev, confirm: false }))
-                  }
-                  onMouseLeave={() =>
-                    setShowPassword((prev) => ({ ...prev, confirm: false }))
-                  }
-                  onTouchStart={() =>
-                    setShowPassword((prev) => ({ ...prev, confirm: true }))
-                  }
-                  onTouchEnd={() =>
-                    setShowPassword((prev) => ({ ...prev, confirm: false }))
-                  }
+                  onMouseDown={() => setShowPassword((prev) => ({ ...prev, confirm: true }))}
+                  onMouseUp={() => setShowPassword((prev) => ({ ...prev, confirm: false }))}
+                  onMouseLeave={() => setShowPassword((prev) => ({ ...prev, confirm: false }))}
+                  onTouchStart={() => setShowPassword((prev) => ({ ...prev, confirm: true }))}
+                  onTouchEnd={() => setShowPassword((prev) => ({ ...prev, confirm: false }))}
                 >
                   <Image
-                    src={
-                      showPassword.confirm
-                        ? "/icons/eye-close.png"
-                        : "/icons/eye-open.png"
-                    }
+                    src={showPassword.confirm ? "/icons/eye-close.png" : "/icons/eye-open.png"}
                     alt="toggle password"
                     width={20}
                     height={20}

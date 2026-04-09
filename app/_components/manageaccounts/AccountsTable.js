@@ -1,5 +1,22 @@
-//This component will display a table of accounts with columns for ID, Name, Email, Status, and Action buttons (Edit/Delete).
-//It uses the AccountRow component to render each row and accepts a `search` prop to filter the displayed accounts based on the search term.
+/**
+ * AccountsTable
+ *
+ * Fetches and displays all staff accounts in a sortable table. Supports
+ * filtering by a search prop and handles account deletion with a
+ * confirmation modal.
+ *
+ * @param {string} [search=""] - Search term to filter accounts by name or email
+ *
+ * @returns A table of staff accounts with edit and delete actions
+ *
+ * Notes:
+ * - Staff data is fetched from /auth/staff on mount.
+ * - Uses AccountRow to render each row.
+ * - Delete calls /auth/delete-staff and removes the row from local state.
+ *
+ * @author Temi Bankole
+ * @author Dominique Anne Lee
+ */
 
 "use client";
 
@@ -8,7 +25,7 @@ import AccountRow from "./AccountRow";
 import ConfirmModal from "../ConfirmModal";
 import NotificationModal from "../NotificationModal";
 
-export default function AccountsTable({search = ""}) {
+export default function AccountsTable({ search = "" }) {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,7 +54,7 @@ export default function AccountsTable({search = ""}) {
         }
 
         const data = await response.json();
-        
+
         if (data.success && data.staff) {
           const formattedAccounts = data.staff.map((staff, index) => ({
             id: index + 1,
@@ -146,7 +163,7 @@ export default function AccountsTable({search = ""}) {
       </div>
     );
   }
-  
+
   return (
     <>
       <div 
@@ -176,17 +193,18 @@ export default function AccountsTable({search = ""}) {
       </table>
     </div>
 
-    {showDeleteModal && selectedAccount && (
-      <ConfirmModal
-        title="Delete Staff"
-        message={`Are you sure you want to delete ${selectedAccount.email}?`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
-    )}
+      {/* Delete confirmation modal — only mounted when an account is staged for deletion */}
+      {showDeleteModal && selectedAccount && (
+        <ConfirmModal
+          title="Delete Staff"
+          message={`Are you sure you want to delete ${selectedAccount.email}?`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
 
     {notification.open && (
       <NotificationModal

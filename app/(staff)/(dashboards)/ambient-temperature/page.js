@@ -121,8 +121,12 @@ const FLOOR_IMAGES = {
  * - The Carousel / InfoCard split renders the stat cards as a horizontal
  *   scroll on small screens and a 3-column grid on large screens.
  *
+ * @returns The ambient temperature dashboard page with filters, KPIs, and chart
+ *
  * @author Cintya Lara Flores
+ * @author Dominique Anne Lee
  */
+
 export default function AmbientTempDashboard() {
   const chartRef = useRef(null);
 
@@ -487,10 +491,7 @@ export default function AmbientTempDashboard() {
         )}
       </div>
       <div className="flex justify-end gap-3 mt-6">
-        <ExportPDFButton
-          chartRef={chartRef}
-          fileName="ambient-temperature"
-        />
+        <ExportPDFButton chartRef={chartRef} fileName="ambient-temperature" />
       </div>
 
       {/* ── Floor layout images — only rendered for floors with a known image ── */}

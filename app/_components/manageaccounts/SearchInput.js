@@ -1,10 +1,24 @@
-//This component is a reusable search input field that can be used to filter the accounts table based on user input. 
-//It accepts `value` and `onChange` props to manage the input state from the parent component.
 "use client";
 
+/**
+ * @author Temi Bankole
+ */
+
+/**
+ * SearchInput
+ *
+ * Reusable controlled text input for filtering a list. Unwraps the change
+ * event and passes the raw string value to onChange.
+ *
+ * @param {string} value - Current input value controlled by the parent
+ * @param {Function} onChange - Called with the raw string value on each keystroke
+ *
+ * Notes:
+ * - onChange receives e.target.value directly, not the synthetic event
+ */
 export default function SearchInput({ value, onChange }) {
   return (
-    <div className = "space-y-6">
+    <div className="space-y-6">
       <input
         type = "text"
         value = { value }

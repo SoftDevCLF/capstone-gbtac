@@ -1,11 +1,38 @@
-//This component holds the state for all Report controls
-//It wraps the SensorPanel, DatePicker,  and TimeGranularityDropdown components, and passes the state down to them as props.
-
 "use client";
+
 import { useState, useEffect } from "react";
 import SensorPanel from "./SensorPanel";
 import TimeGranularityDropdown from "../TimeGranularityDropdown";
 
+/**
+ * ReportControls
+ *
+ * Manages and renders all controls for configuring a PDF report, including
+ * sensor selection, report title, date range, and time interval. Validates
+ * all inputs locally before delegating generation to the parent via onGenerate.
+ *
+ * @param {Array} selectedSensors - List of currently selected sensor objects
+ * @param {Function} onSensorsChange - Called with the updated sensors array when selection changes
+ * @param {string} chartTitle - Current report title value
+ * @param {Function} onChartTitleChange - Called with the raw string value when the title changes
+ * @param {string} from - Start date in YYYY-MM-DD format
+ * @param {Function} onFromChange - Called with the raw string value when the from date changes
+ * @param {string} to - End date in YYYY-MM-DD format
+ * @param {Function} onToChange - Called with the raw string value when the to date changes
+ * @param {string} timeInterval - Currently selected time granularity value
+ * @param {Function} onTimeIntervalChange - Called with the updated value when the time interval changes
+ * @param {Function} onGenerate - Called when all validation passes and the user clicks Generate Report
+ *
+ * Notes:
+ * - All state except sensors and errorMessage is lifted to the parent — this component is
+ *   intentionally controlled for all report configuration fields
+ * - Sensor options are fetched once on mount from /graphs/codesnames
+ * - Validation enforces: non-empty title (max 30 chars), at least one sensor, a valid date range,
+ *   a from date no more than 8 years in the past, and a to date no later than 2025-12-31
+ * - onGenerate is only called after all validation passes — the parent can assume inputs are valid
+ * - errorMessage is cleared on a successful validation pass and displayed beneath the Generate button
+ * @author Temi Bankole
+ */
 export default function ReportControls({
   selectedSensors, onSensorsChange,
   chartTitle, onChartTitleChange,
@@ -17,7 +44,7 @@ export default function ReportControls({
 }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [sensors, setSensors] = useState();
-  
+
   const handleGenerateReport = () => {
     if (!chartTitle || chartTitle.trim().length === 0) {
       setErrorMessage("Please enter a report title.");
@@ -35,16 +62,15 @@ export default function ReportControls({
       setErrorMessage("From date cannot be after To date.");
       return;
     }
-    //From date can't be past 8 years of data
     const today = new Date();
     const fromDate = new Date(from);
-    const diffYears = (today - fromDate) / (1000 * 60 * 60 * 24 * 365); //difference in years from today + from date
+    // Cap from date to 8 years ago — the API only holds 8 years of sensor data
+    const diffYears = (today - fromDate) / (1000 * 60 * 60 * 24 * 365);
     if (diffYears > 8) {
       setErrorMessage("From date cannot be more than 8 years ago.");
       return;
     }
-    
-    //To date can't be past 2025-12-31
+    // Cap to date to the last date covered by the dataset
     const maxToDate = new Date("2025-12-31");
     const toDate = new Date(to);
     if (toDate > maxToDate) {
@@ -52,16 +78,15 @@ export default function ReportControls({
       return;
     }
     setErrorMessage("");
-    onGenerate(); 
+    onGenerate();
   };
-  
-  const loadSensors = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/graphs/codesnames`, {credentials: "include",})
-    const data = await res.json()
-    setSensors(data)
-  }
 
-  //Load sensor options for the SensorPanel when the component mounts
+  const loadSensors = async () => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/graphs/codesnames`, { credentials: "include" });
+    const data = await res.json();
+    setSensors(data);
+  };
+
   useEffect(() => {
     //eslint-disable-next-line react-hooks/set-state-in-effect
     loadSensors();
@@ -86,7 +111,7 @@ export default function ReportControls({
 
         <div className="flex flex-wrap gap-4 items-end">
           <div>
-            <label className="block text-sm mb-1 ">From</label>
+            <label className="block text-sm mb-1">From</label>
             <input type="date" value={from} onChange={(e) => onFromChange(e.target.value)} className="border mb-1 border-gray-500 text-gray-500 rounded px-3 py-2" />
           </div>
           <div>
@@ -95,17 +120,15 @@ export default function ReportControls({
           </div>
         </div>
 
-      
-      <div className="w-full text-[#212529]">
-        <label className="block text-sm mb-1">Time Interval</label>
-        <TimeGranularityDropdown
-          value={timeInterval}
-          onChange={onTimeIntervalChange}
-          className="w-full"
-        />
+        <div className="w-full text-[#212529]">
+          <label className="block text-sm mb-1">Time Interval</label>
+          <TimeGranularityDropdown
+            value={timeInterval}
+            onChange={onTimeIntervalChange}
+            className="w-full"
+          />
+        </div>
       </div>
-    </div>
-
 
       <div className="flex flex-col items-center">
         <button

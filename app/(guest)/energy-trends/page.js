@@ -1,9 +1,15 @@
-// Page: Energy Overview (Guest)
-// Read-only public-facing version of the Energy Dashboard.
-// Same layout as EnergyDashboard — just DatePicker + chart placeholder.
-// No KPI cards, no unit toggle, no aggregation, no save button.
-//
-// @author Temi Bankole
+/**
+ * EnergyTrendsPage
+ *
+ * Read-only public-facing version of the Energy Dashboard.
+ * Same layout as EnergyDashboard — just DatePicker + chart placeholder.
+ * No KPI cards, no unit toggle, no aggregation, no save button.
+ *
+ * @returns The guest energy overview page
+ *
+ * @author Temi Bankole
+ * @author Dominique Anne Lee
+ */
 
 "use client";
 
@@ -36,7 +42,7 @@ export default function EnergyData() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100 font-sans">
       <SecondaryNav displayDashboards={true} />
-      <Navbar />
+      <Navbar displayOurDevTeam={true} />
 
       <div className="bg-gray-100">
         <Breadcrumbs />
@@ -44,7 +50,6 @@ export default function EnergyData() {
 
       <main className="flex-1 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 px-4 py-2">
         <div className="mx-auto bg-white rounded-md shadow-sm px-12 py-10">
-
           <div className="mb-5">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
               Energy Trends
@@ -84,11 +89,7 @@ export default function EnergyData() {
             {appliedState ? (
               <LineHandler
                 key={`${appliedState.fromDate}-${appliedState.toDate}-${aggregation}`}
-                sensorList={[
-                  "30000_TL340",
-                  "30000_TL341",
-                  "30000_TL339",
-                ]}
+                sensorList={["30000_TL340", "30000_TL341", "30000_TL339"]}
                 startDate={appliedState.fromDate}
                 endDate={appliedState.toDate}
                 graphTitle={`Consumption vs Generation, ${appliedState.fromDate} to ${appliedState.toDate}`}

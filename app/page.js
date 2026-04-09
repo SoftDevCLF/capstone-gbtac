@@ -41,7 +41,7 @@ export default function Home() {
       <SecondaryNav />
 
       {/* Home link hidden — this is the home page */}
-      <Navbar displayHome={false} />
+      <Navbar displayHome={false} displayOurDevTeam={true} />
 
       <main className="flex-1 bg-gray-100 w-full px-4 py-8 sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32">
         <section className="mx-auto bg-white shadow-sm px-6 py-8 md:px-12 md:py-16">
@@ -81,7 +81,7 @@ export default function Home() {
               alt="GBTAC building"
               width={2000}
               height={700}
-              className="rounded-md"
+              className="rounded-md w-full h-auto"
               priority
             />
           </div>

@@ -1,8 +1,16 @@
-//This component is a button that allows users to add staff members. It is leads to the create staff form page when clicked.
 "use client";
 
 import Link from "next/link";
 
+/**
+ * @author Temi Bankole
+ */
+
+/**
+ * AddStaffButton
+ *
+ * Navigation button that routes the user to the create staff form page.
+ */
 export default function AddStaffButton() {
   return (
     <Link href="/create-staff">

@@ -1,6 +1,24 @@
-//This component represents a single row within the accounts table.
-//Accepts an `account` prop with id, name, email, status, role, etc.
-//Optionally you could pass callbacks for edit/delete if needed in future.
+/**
+ * AccountRow
+ *
+ * Renders a single row in the staff accounts table. Displays the staff
+ * member's index, name, email, active status, and action buttons for
+ * editing or deleting the account.
+ *
+ * @param {object}   account       - Staff account object with name, email, status, role
+ * @param {number}   index         - Row index for display numbering
+ * @param {Function} onDeleteClick - Callback invoked with the account when delete is confirmed
+ *
+ * @returns A table row with staff details and action buttons
+ *
+ * Notes:
+ * - Edit navigates to /edit-staff/[email] via a Link component.
+ * - Delete shows a ConfirmModal before invoking onDeleteClick.
+ *
+ * @author Temi Bankole
+ * @author Dominique Anne Lee
+ */
+
 "use client";
 
 import Link from "next/link";
@@ -8,6 +26,27 @@ import ConfirmModal from "../ConfirmModal";
 import NotificationModal from "../NotificationModal";
 import { useState } from "react";
 
+/**
+ * @author Temi Bankole
+ */
+
+/**
+ * AccountRow
+ *
+ * Renders a single row in the staff accounts table, displaying the account's
+ * index, name, email, and status, with edit and delete action buttons.
+ *
+ * @param {object} account - Account data to display
+ * @param {string} account.email - Used as the row identifier and edit route parameter
+ * @param {string} account.name - Displayed in the name column, falls back to "No name" if absent
+ * @param {string} account.status - Renders as a colour-coded indicator: green for "Active", red otherwise
+ * @param {number} index - Zero-based row index, displayed as a 1-based position number
+ * @param {Function} onDeleteClick - Called with the full account object when the Delete button is clicked
+ *
+ * Notes:
+ * - Edit navigates to /edit-staff/[email] with the email URI-encoded to handle special characters
+ * - Delete does not prompt for confirmation here — the parent is expected to handle the confirm modal
+ */
 export default function AccountRow({ account, index, onDeleteClick }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -28,7 +67,8 @@ export default function AccountRow({ account, index, onDeleteClick }) {
 
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2">
-          <span
+          {/* Status dot — green for Active, red for all other statuses */}
+        <span
             className="h-3 w-3 rounded-full"
             style={{
               backgroundColor:

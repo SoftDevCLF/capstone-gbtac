@@ -1,13 +1,30 @@
-//This component will have inputs for the 6 digit verification code, and a resend button.
-//Contains a handler to cooldown the resend button for 45 seconds after each click.
 "use client";
 
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+/**
+ * VerifyCodeForm
+ *
+ * Renders a 6-digit verification code entry form with individual inputs per
+ * digit, paste support, and a resend button with a 45-second cooldown.
+ *
+ * Notes:
+ * - Each digit is stored as a separate string in a 6-element array; inputs are
+ *   navigated via arrow keys and backspace in addition to normal typing
+ * - Paste strips non-numeric characters, fills as many digits as were pasted,
+ *   and focuses the last filled input
+ * - The resend cooldown is driven by a setInterval stored in timerRef; the
+ *   interval is cleared on unmount to prevent state updates on an unmounted component
+ * - Both the resend API call and the verification API call are not yet implemented
+ *   — see the TODOs in handleResend and handleSubmit
+ * - On successful verification the user is routed to /auth/reset-password via
+ *   the Next.js router
+ * @author Temi Bankole
+ */
 export default function VerifyCodeForm() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const inputRefs = useRef([]); //Array of refs for the 6 input fields
+  const inputRefs = useRef([]);
   const [cooldown, setCooldown] = useState(0);
   const timerRef = useRef(null);
   const [error, setError] = useState("");
@@ -18,7 +35,7 @@ export default function VerifyCodeForm() {
   }, []);
 
   const handleResend = () => {
-    //TODO: call your resend API here
+    // TODO: call resend API here — see GitHub issue for tracking
     setCooldown(45);
     timerRef.current = setInterval(() => {
       setCooldown((prev) => {
@@ -32,6 +49,8 @@ export default function VerifyCodeForm() {
   };
 
   const handleCodeChange = (index, value) => {
+    // Strip non-numeric characters and take only the last digit to handle
+    // cases where the browser inserts the previous value alongside the new one
     const digit = value.replace(/\D/g, "").slice(-1);
     const nextCode = [...code];
     nextCode[index] = digit;
@@ -73,6 +92,7 @@ export default function VerifyCodeForm() {
     });
     setCode(nextCode);
 
+    // Focus the last filled input, or the 6th if all digits were pasted
     const focusIndex = Math.min(pastedDigits.length, 6) - 1;
     inputRefs.current[focusIndex]?.focus();
   };
@@ -80,8 +100,7 @@ export default function VerifyCodeForm() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const fullCode = code.join("");
-    console.log("Verification code submitted:", fullCode);
-    // TODO: replace with real API call
+    // TODO: replace with real API call — see GitHub issue for tracking
     const isValid = false;
     if (isValid) {
       router.push("/auth/reset-password");
@@ -113,7 +132,7 @@ export default function VerifyCodeForm() {
           >
             Verification Code
           </label>
-  
+
           <div
             className="mt-2 flex flex-wrap sm:justify-start items-center gap-3"
             onPaste={handlePaste}
@@ -121,9 +140,7 @@ export default function VerifyCodeForm() {
             {code.map((digit, index) => (
               <input
                 key={index}
-                ref={(el) => {
-                  inputRefs.current[index] = el;
-                }}
+                ref={(el) => { inputRefs.current[index] = el; }}
                 id={index === 0 ? "verification-code" : undefined}
                 type="text"
                 inputMode="numeric"
@@ -153,7 +170,7 @@ export default function VerifyCodeForm() {
           Verify Code
         </button>
         {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        <hr className="my-4 border-gray-300"></hr>
+        <hr className="my-4 border-gray-300" />
         <div className="text-sm text-center sm:text-left">
           {cooldown > 0 ? (
             <span className="text-gray-400">Resend Code in {cooldown}s</span>
@@ -171,5 +188,3 @@ export default function VerifyCodeForm() {
     </form>
   );
 }
-
-

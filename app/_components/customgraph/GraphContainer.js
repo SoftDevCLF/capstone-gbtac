@@ -1,9 +1,25 @@
-//This component is a placeholder for the graph container that will display the customized graph based on user input from the Chart Settings.
-// It currently contains a title and a placeholder area where the graph will be rendered in the future.
-// The graph has two buttons for saving the current view and exporting the graph as a PDF
-
 import CustomHandler from "../graphs/handlers/CustomHandler";
 
+/**
+ * @author Temi Bankole
+ */
+
+/**
+ * GraphContainer
+ *
+ * Thin layout wrapper that renders the CustomHandler graph within a styled
+ * container. Passes all chart configuration props through to CustomHandler
+ * without modification.
+ *
+ * @param {Array} selectedSensors - List of sensor objects to plot on the chart
+ * @param {object} dateRange - Date range for filtering data, with from and to fields in YYYY-MM-DD format
+ * @param {object} settings - Chart display settings including title, type, and axis labels
+ * @param {object} aggSettings - Aggregation settings including time interval and aggregation type
+ *
+ * Notes:
+ * - This component owns no state and performs no data fetching — all logic lives in CustomHandler
+ * - Save and PDF export controls are rendered inside CustomHandler, not here
+ */
 export default function GraphContainer({ selectedSensors, dateRange, settings, aggSettings }) {
   return (
     <div className="w-full h-full bg-white rounded p-4">
