@@ -179,7 +179,7 @@ export default function StaffHome() {
                 Reports
               </Link>
               <Link
-                href="/profile"
+                href="/profile?from=staff-welcome-page"
                 className="font-heading text-lg px-6 py-3 bg-[#6D2077] text-white rounded-sm hover:bg-[#4C145A] font-bold transition inline-block"
               >
                 Profile

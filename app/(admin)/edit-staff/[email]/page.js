@@ -15,8 +15,8 @@
  *
  * @returns The admin edit-staff-by-email page
  *
- * @author Dominique Anne Lee
  * @author Temi Bankole
+ * @author Dominique Anne Lee
  */
 
 "use client";
@@ -247,11 +247,13 @@ export default function EditStaffPage() {
       
       <main className="bg-gray-50 flex-1 w-full flex flex-col">
         <div className="w-full sm:px-6 md:px-10 lg:px-16 xl:px-24 2xl:px-32 py-8 flex-1">
-          <h1 className="text-3xl font-bold mb-10 text-[#212529]">
-            Edit Staff Account
-          </h1>
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-3xl font-bold mb-8 text-[#212529]">
+              Edit Staff Account
+            </h1>
 
-          <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md">
+            <div className="bg-white p-8 rounded-xl shadow-md">
+
             <form
               onSubmit={handleSubmit}
               className="space-y-10 text-[#212529]"
@@ -357,6 +359,7 @@ export default function EditStaffPage() {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
         <Footer />
