@@ -33,9 +33,10 @@ export default function Navbar({
   displayDashboards = false,
   displayReports = false,
   displayAccountMngmt = false,
-  displayOurDevTeam = false,
+  displayDashboardMngmt = false,
   showWhenEmpty = false,
   emptyHeightClass = "py-6",
+  displayOurDevTeam = false,
 }) {
   // Get the current pathname for constructing ?from= query params in dropdown links
   const pathname = usePathname();
@@ -61,7 +62,8 @@ export default function Navbar({
     displayDashboards ||
     displayReports ||
     displayAccountMngmt ||
-    displayDashboardMngmt;
+    displayDashboardMngmt ||
+    displayOurDevTeam;
 
   // By default, avoid rendering an empty bar when all links are hidden.
   if (!hasVisibleLinks && !showWhenEmpty) return null;
@@ -142,7 +144,7 @@ export default function Navbar({
             </Link>
           </li>
         )}
-  
+
         {/*Display Our Dev Team link*/}
         {displayOurDevTeam && (
           <li>
