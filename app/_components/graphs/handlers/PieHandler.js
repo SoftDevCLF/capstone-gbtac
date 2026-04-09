@@ -12,7 +12,7 @@ Chart.register(CategoryScale);
  * Configures display options for pie charts
  * Handles loading and error states for pie charts
  * 
- * @param {Array} semspecList - List of sensor codes to fetch and display
+ * @param {Array} sensorList - List of sensor codes to fetch and display
  * @param {string} startDate - Start date for data fetching in YYYY-MM-DD format
  * @param {string} endDate - End date for data fetching in YYYY-MM-DD format
  * @param {string} graphTitle - Title to display on the graph

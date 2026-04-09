@@ -1,3 +1,15 @@
+/**
+ * Date range functions for sensor data 
+ * 
+ * Various functions to get newest and oldest dates for all sensor data
+ * Also one for forecast range, which is 7 days after newest (so in theory current) date
+ * getDataRange is the main function to call
+ * 
+ * @returns object with newest, oldest, and forecast dates
+ * 
+ * @author Kiera Johnson
+ */
+
 async function getNewest(){
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/graphs/newest`, {credentials: "include"});
     const data = await res.json()
