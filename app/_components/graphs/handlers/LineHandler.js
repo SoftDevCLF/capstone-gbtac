@@ -25,6 +25,7 @@ export default function LineHandler({
     onStatsReady,
     unit,
     apiPrefix = "/graphs",
+    multiplier = 1,
 }){
 
     // Auto-compute the chart x-axis time unit — must match backend aggregation tiers
@@ -176,6 +177,12 @@ export default function LineHandler({
     ];
     const [graphData, setGraphData] = useState({labels, datasets: [{}]}); // data to be passed on to LineChart component
 
+    useEffect(() => {
+        if(fetched){
+
+        }
+    }, [multiplier, fetched])
+
     // runs when sensorData or sensor names change
     useEffect(() => {
         if(fetched && sensorData.length > 0 && Array.isArray(sensorData[0]) && sensorData[0].length > 0 && sensors.every(s => s.name !== null)){
@@ -252,7 +259,7 @@ export default function LineHandler({
                         }
 
                         return {
-                            x: new Date(d.ts + "Z"),
+                            x: new Date(d.ts),
                             y: value,
                         };
                     }),
@@ -278,16 +285,6 @@ export default function LineHandler({
                 datasets: dataset
             });
 
-            // let resolvedUnit = getTimeUnit();
-            // if (aggTime === "H") resolvedUnit = "hour";
-            // else if (aggTime === "D") resolvedUnit = "day";
-            // else if (aggTime === "M") resolvedUnit = "month";
-            // else if (aggTime === "Y") resolvedUnit = "year";
-            // setUnit(resolvedUnit);
-            // if (resolvedUnit === "hour") setMinZoom(2 * 60 * 60 * 1000);
-            // else if (resolvedUnit === "day") setMinZoom(2 * 24 * 60 * 60 * 1000);
-            // else if (resolvedUnit === "month") setMinZoom(2 * 30.5 * 24 * 60 * 60 * 1000);
-            // else if (resolvedUnit === "year") setMinZoom(2 * 12 * 30.5 * 24 * 60 * 60 * 1000);
             let nextUnit;
 
             if (aggTime === "none") nextUnit = "hour";   // 👈 FIX
@@ -305,7 +302,6 @@ export default function LineHandler({
         }
     }, [sensorData, sensors, fetched, onStatsReady, aggTime, unit, timeUnit]);
 
-    const displayUnit = unit || getTimeUnit();
 
     // options for graph display to be passed on to LineChart component
     const graphOptions = {
@@ -319,7 +315,6 @@ export default function LineHandler({
                 },
                 type: "time",
                 time: {
-                    // unit: displayUnit,
                     // displayFormats: getDisplayFormats(),
                     // tooltipFormat: "PPpp",
                     unit: timeUnit,
