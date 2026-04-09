@@ -15,8 +15,8 @@
  *
  * @returns The admin edit-staff-by-email page
  *
- * @author Dominique Anne Lee
  * @author Temi Bankole
+ * @author Dominique Anne Lee
  */
 
 "use client";
