@@ -54,7 +54,7 @@ export default function Page() {
   const STORAGE_KEY = "dashboard-natural-gas";
 
   //Unit toggle: kWh or W (display only, does not affect data or storage)
-  const [unit, setUnit] = useState("kWh");
+  const [unit, setUnit] = useState("Wh");
 
   //User edits made via DateRangePicker
   const [state, setState] = useState(() =>
@@ -262,7 +262,7 @@ export default function Page() {
         };
       }
 
-      const convertedValue = unit === "W" ? item.value * 1000 : item.value;
+      const convertedValue = unit === "Wh" ? item.value * 1000 : item.value;
 
       return {
         ...item,
@@ -299,8 +299,8 @@ export default function Page() {
                 kWh).
               </p>
               <p>
-                Values can be toggled between kWh and W (1&nbsp;kWh =
-                1000&nbsp;W).
+                Values can be toggled between kWh and Wh (1&nbsp;kWh =
+                1000&nbsp;Wh).
               </p>
               <p>
                 Total energy combines natural gas with electricity sensor
@@ -352,7 +352,7 @@ export default function Page() {
         <div className="flex justify-center mb-6 lg:justify-start">
           <button
             //Display-unit toggle only; source data remains unchanged.
-            onClick={() => setUnit(unit === "kWh" ? "W" : "kWh")}
+            onClick={() => setUnit(unit === "kWh" ? "Wh" : "kWh")}
             className="px-4 py-2 bg-[#005EB8] text-white rounded hover:bg-[#004080] transition"
           >
             Toggle Units: {unit}
@@ -378,21 +378,6 @@ export default function Page() {
               Select a valid date range to load charts.
             </div>
           )}
-
-          <div className="flex justify-end gap-4 mt-3">
-            <button
-              onClick={handleSaveScreen}
-              className="px-4 py-2 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
-            >
-              Save Screen
-            </button>
-            {appliedState ? (
-              <ExportPDFButton
-                chartRef={chartRef2}
-                fileName={`natural-gas-dashboard-${appliedState.fromDate}-${appliedState.toDate}`}
-              />
-            ) : null}
-          </div>
 
           {showSaveNotification && (
             <NotificationModal

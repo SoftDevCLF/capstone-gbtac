@@ -92,7 +92,7 @@ export default function EditStaffPage() {
     const fetchStaffData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/auth/staff-by-email?email=${encodeURIComponent(email)}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/staff-by-email?email=${encodeURIComponent(email)}`,
           {
             method: "GET",
             credentials: "include",
@@ -104,7 +104,8 @@ export default function EditStaffPage() {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          const errorMessage = errorData.detail || `Failed to fetch staff data (${response.status})`;
+          const errorMessage =
+            errorData.detail || `Failed to fetch staff data (${response.status})`;
           console.error("Fetch error:", response.status, errorData);
           throw new Error(errorMessage);
         }
@@ -155,20 +156,23 @@ export default function EditStaffPage() {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8000/auth/admin/update-staff", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          originalEmail: originalEmail,
-          email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          active: formData.status === "Active",
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/admin/update-staff`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            originalEmail: originalEmail,
+            email: formData.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            active: formData.status === "Active",
+          }),
+        }
+      );
 
       const data = await response.json();
 

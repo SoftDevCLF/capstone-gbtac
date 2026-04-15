@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../_utils/auth-context";
 import ConfirmModal from "./ConfirmModal";
 
-const IDLE_LIMIT_MS = 10 * 60 * 1000;        // 10 minutes
+const IDLE_LIMIT_MS = 30 * 60 * 1000;        // 30 minutes
 const WARNING_MS = 1 * 60 * 1000;            // Show warning in last 1 minute
 const HEARTBEAT_INTERVAL_MS = 60 * 1000;     // Refresh once per minute while active
 
@@ -34,8 +34,8 @@ export default function IdleSessionManager() {
     const warningTimeoutRef = useRef(null);
     const logoutTimeoutRef = useRef(null);
     const countdownIntervalRef = useRef(null);
+    const heartbeatIntervalRef = useRef(null);
     const isLoggingOutRef = useRef(false);
-    const lastHeartbeatRef = useRef(0);
 
     const [showWarning, setShowWarning] = useState(false);
     const [countdown, setCountdown] = useState(WARNING_MS / 1000);
@@ -54,6 +54,7 @@ export default function IdleSessionManager() {
         if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
         if (logoutTimeoutRef.current) clearTimeout(logoutTimeoutRef.current);
         if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+        if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
     };
 
     const handleAutoLogout = async () => {
@@ -71,10 +72,14 @@ export default function IdleSessionManager() {
     };
 
     const startTimers = () => {
-        clearTimers();
+        if (isLoggingOutRef.current) return;
+
+        if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+        if (logoutTimeoutRef.current) clearTimeout(logoutTimeoutRef.current);
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+
         setShowWarning(false);
         setCountdown(WARNING_MS / 1000);
-        isLoggingOutRef.current = false;
 
         warningTimeoutRef.current = setTimeout(() => {
             setShowWarning(true);
@@ -92,21 +97,19 @@ export default function IdleSessionManager() {
             return;
         }
 
-        const resetActivityTimer = async () => {
+        const resetActivityTimer = () => {
             startTimers();
+        };
 
-            const now = Date.now();
+        const runHeartbeat = async () => {
+            if (isLoggingOutRef.current) return;
 
-            // Heartbeat refresh is rate-limited so high-frequency events like mousemove do not trigger repeated session refreshes
-            if (now - lastHeartbeatRef.current >= HEARTBEAT_INTERVAL_MS) {
-                lastHeartbeatRef.current = now;
-                const ok = await refreshSlidingSession();
+            const ok = await refreshSlidingSession();
 
-                if (!ok) {
-                    await handleAutoLogout();
-                }
+            if (!ok) {
+                await handleAutoLogout();
             }
-            };
+        };
 
         const events = [
             "mousemove",
@@ -123,13 +126,17 @@ export default function IdleSessionManager() {
 
         startTimers();
 
+        heartbeatIntervalRef.current = setInterval(() => {
+            runHeartbeat();
+        }, HEARTBEAT_INTERVAL_MS);
+
         return () => {
             clearTimers();
             events.forEach((event) => {
                 window.removeEventListener(event, resetActivityTimer);
             });
         };
-    }, [shouldTrackIdle, pathname]);
+    }, [shouldTrackIdle, pathname, refreshSlidingSession]);
 
     useEffect(() => {
         if (!showWarning) return;
@@ -151,9 +158,15 @@ export default function IdleSessionManager() {
         };
     }, [showWarning]);
 
-    const stayLoggedIn = () => {
+    const stayLoggedIn = async () => {
         setShowWarning(false);
         startTimers();
+
+        const ok = await refreshSlidingSession();
+
+        if (!ok) {
+            await handleAutoLogout();
+        }
     };
 
     if (!showWarning) return null;

@@ -16,27 +16,33 @@ import { useRouter } from "next/navigation";
  *   and focuses the last filled input
  * - The resend cooldown is driven by a setInterval stored in timerRef; the
  *   interval is cleared on unmount to prevent state updates on an unmounted component
- * - Both the resend API call and the verification API call are not yet implemented
- *   — see the TODOs in handleResend and handleSubmit
  * - On successful verification the user is routed to /auth/reset-password via
  *   the Next.js router
+ * 
  * @author Temi Bankole
+ * @author Anna Isabelle Yabut
  */
 export default function VerifyCodeForm() {
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef([]);
   const [cooldown, setCooldown] = useState(0);
   const timerRef = useRef(null);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     return () => clearInterval(timerRef.current);
   }, []);
 
-  const handleResend = () => {
-    // TODO: call resend API here — see GitHub issue for tracking
-    setCooldown(45);
+  const startCooldown = (seconds) => {
+    clearInterval(timerRef.current);
+    setCooldown(seconds);
+
     timerRef.current = setInterval(() => {
       setCooldown((prev) => {
         if (prev <= 1) {
@@ -48,9 +54,58 @@ export default function VerifyCodeForm() {
     }, 1000);
   };
 
+  const handleResend = async () => {
+    setError("");
+    setMessage("");
+
+    if (!email.trim()) {
+      setError("Please enter your email first.");
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/request-password-reset`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        },
+      );
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(
+          typeof data?.detail === "string"
+            ? data.detail
+            : "Failed to send verification code.",
+        );
+      }
+
+      if (!data.success) {
+        startCooldown(data.remainingSeconds || 45);
+        setMessage(data.message || "Please wait before requesting another code.");
+        return;
+      }
+
+      setCodeSent(true);
+      setMessage("Verification code sent. Please check your email.");
+      startCooldown(data.remainingSeconds || 60);
+    } catch (err) {
+      setError(
+        typeof err?.message === "string"
+          ? err.message
+          : "Failed to send verification code.",
+      );
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const handleCodeChange = (index, value) => {
-    // Strip non-numeric characters and take only the last digit to handle
-    // cases where the browser inserts the previous value alongside the new one
     const digit = value.replace(/\D/g, "").slice(-1);
     const nextCode = [...code];
     nextCode[index] = digit;
@@ -92,20 +147,65 @@ export default function VerifyCodeForm() {
     });
     setCode(nextCode);
 
-    // Focus the last filled input, or the 6th if all digits were pasted
     const focusIndex = Math.min(pastedDigits.length, 6) - 1;
     inputRefs.current[focusIndex]?.focus();
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
+    setMessage("");
+
     const fullCode = code.join("");
-    // TODO: replace with real API call — see GitHub issue for tracking
-    const isValid = false;
-    if (isValid) {
-      router.push("/auth/reset-password");
-    } else {
-      setError("Invalid code. Please try again.");
+
+    if (!email.trim()) {
+      setError("Please enter your email.");
+      return;
+    }
+
+    if (fullCode.length !== 6) {
+      setError("Please enter the full 6-digit code.");
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/verify-reset-code`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            code: fullCode,
+          }),
+        },
+      );
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(
+          typeof data?.detail === "string"
+            ? data.detail
+            : "Invalid code. Please try again.",
+        );
+      }
+
+      router.push(
+        `/auth/reset-password?email=${encodeURIComponent(
+          email.trim().toLowerCase(),
+        )}&code=${encodeURIComponent(fullCode)}`,
+      );
+    } catch (err) {
+      setError(
+        typeof err?.message === "string"
+          ? err.message
+          : "Invalid code. Please try again.",
+      );
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -117,73 +217,138 @@ export default function VerifyCodeForm() {
       <div className="space-y-4">
         <div className="space-y-2">
           <h2 className="text-2xl border-b pb-2 font-semibold text-gray-800">
-            Check Your Email
+            {codeSent ? "Enter Verification Code" : "Check Your Email"}
           </h2>
           <p className="text-sm text-gray-600">
-            We sent a verification code to your email. Please check your
-            inbox and enter the code below.
+            {codeSent
+              ? "Enter the 6-digit code sent to your email."
+              : "Enter your email to receive a verification code."}
           </p>
         </div>
 
-        <div className="flex flex-col">
-          <label
-            htmlFor="verification-code"
-            className="font-semibold text-gray-800"
-          >
-            Verification Code
-          </label>
-
-          <div
-            className="mt-2 flex flex-wrap sm:justify-start items-center gap-3"
-            onPaste={handlePaste}
-          >
-            {code.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => { inputRefs.current[index] = el; }}
-                id={index === 0 ? "verification-code" : undefined}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={1}
-                autoComplete={index === 0 ? "one-time-code" : "off"}
-                value={digit}
-                required
-                aria-label={`Verification code digit ${index + 1}`}
-                onChange={(e) => handleCodeChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                className="h-13 w-12 text-center text-lg font-semibold border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900"
-              />
-            ))}
+        {!codeSent && (
+          <div className="flex flex-col">
+            <label htmlFor="reset-email" className="font-semibold text-gray-800">
+              Email
+            </label>
+            <input
+              id="reset-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your SAIT email"
+              className="mt-2 w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
+            />
           </div>
-        </div>
-        <p className="text-xs text-gray-600">
-          To protect your account, do not share this code with anyone.
-        </p>
+        )}
+
+        {codeSent && (
+          <>
+            <div className="flex flex-col">
+              <label
+                htmlFor="verification-code"
+                className="font-semibold text-gray-800"
+              >
+                Verification Code
+              </label>
+
+              <div
+                className="mt-2 flex justify-center items-center gap-3"
+                onPaste={handlePaste}
+              >
+                {code.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => {
+                      inputRefs.current[index] = el;
+                    }}
+                    id={index === 0 ? "verification-code" : undefined}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    autoComplete={index === 0 ? "one-time-code" : "off"}
+                    value={digit}
+                    required
+                    aria-label={`Verification code digit ${index + 1}`}
+                    onChange={(e) => handleCodeChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className="h-13 w-12 text-center text-lg font-semibold border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-600">
+              To protect your account, do not share this code with anyone.
+            </p>
+          </>
+        )}
+
+        {message && <p className="text-green-600 text-sm">{message}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
 
       <div className="space-y-3">
-        <button
-          type="submit"
-          className="w-full max-w-87 justify-center flex py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
-        >
-          Verify Code
-        </button>
-        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        <hr className="my-4 border-gray-300" />
-        <div className="text-sm text-center sm:text-left">
-          {cooldown > 0 ? (
-            <span className="text-gray-400">Resend Code in {cooldown}s</span>
-          ) : (
+        <div className="flex justify-center">
+          {!codeSent ? (
             <button
               type="button"
               onClick={handleResend}
-              className="font-medium text-blue-600 hover:text-blue-500"
+              disabled={isSending || cooldown > 0}
+              className="w-1/2 flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
             >
-              Resend Code
+              {cooldown > 0
+                ? `Wait ${cooldown}s`
+                : isSending
+                  ? "Sending..."
+                  : "Send Code"}
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isVerifying}
+              className="w-1/2 flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+            >
+              {isVerifying ? "Verifying..." : "Verify Code"}
             </button>
           )}
         </div>
+
+        {codeSent && (
+          <>
+            <hr className="my-4 border-gray-300" />
+            <div className="text-sm text-center">
+              {cooldown > 0 ? (
+                <span className="text-gray-400">Resend Code in {cooldown}s</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isSending}
+                  className="font-medium text-blue-600 hover:text-blue-500 disabled:text-gray-400"
+                >
+                  {isSending ? "Sending..." : "Resend Code"}
+                </button>
+              )}
+            </div>
+
+            <div className="text-sm text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setCodeSent(false);
+                  setCode(["", "", "", "", "", ""]);
+                  setError("");
+                  setMessage("");
+                }}
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Change email
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </form>
   );

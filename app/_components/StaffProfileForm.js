@@ -436,17 +436,20 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
   const updateFirestoreProfile = async () => {
     try {
-      const response = await fetch('http://localhost:8000/auth/update-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: currentUser.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          active: formData.status === "Active"
-        })
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/update-profile`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            email: currentUser.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            active: formData.status === "Active",
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
