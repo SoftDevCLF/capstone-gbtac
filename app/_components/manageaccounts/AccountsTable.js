@@ -41,16 +41,39 @@ export default function AccountsTable({ search = "" }) {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/staff", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        let response;
+        let errorMessage = "Failed to fetch staff data";
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch staff data");
+        for (let attempt = 0; attempt < 5; attempt++) {
+          response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/auth/staff`,
+            {
+              method: "GET",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.ok) {
+            break;
+          }
+
+          const errorData = await response.json().catch(() => null);
+          errorMessage =
+            typeof errorData?.detail === "string"
+              ? errorData.detail
+              : "Failed to fetch staff data";
+
+          if (attempt < 4) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
+
+        if (!response || !response.ok) {
+          setError(errorMessage);
+          return;
         }
 
         const data = await response.json();
@@ -61,13 +84,16 @@ export default function AccountsTable({ search = "" }) {
             name: `${staff.firstName} ${staff.lastName}`.trim() || "N/A",
             email: staff.email,
             role: staff.role,
-            status: staff.active ? "Active" : "Inactive"
+            status: staff.active ? "Active" : "Inactive",
           }));
           setAccounts(formattedAccounts);
+          setError(null);
+        } else {
+          setError("Failed to fetch staff data");
         }
       } catch (err) {
         console.error("Error fetching staff:", err);
-        setError(err.message);
+        setError("Failed to fetch staff data");
       } finally {
         setLoading(false);
       }
@@ -76,9 +102,10 @@ export default function AccountsTable({ search = "" }) {
     fetchStaff();
   }, []);
 
-  const filteredAccounts = accounts.filter(account =>
-    account.name.toLowerCase().includes(search.toLowerCase()) ||
-    account.email.toLowerCase().includes(search.toLowerCase())
+  const filteredAccounts = accounts.filter(
+    (account) =>
+      account.name.toLowerCase().includes(search.toLowerCase()) ||
+      account.email.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleDeleteClick = (account) => {
@@ -166,32 +193,45 @@ export default function AccountsTable({ search = "" }) {
 
   return (
     <>
-      <div 
+      <div
         className="overflow-x-auto shadow-lg rounded-lg border border-gray-200 max-h-96"
         style={{ scrollbarWidth: "thin", scrollbarGutter: "stable" }}
       >
         <table className="w-full divide-y divide-gray-200">
-        <thead className="sticky top-0 z-10" style={{ backgroundColor: "#F6F7F9" }}>
-          <tr>
-            <th className="px-6 py-3 text-left text-lg font-medium text-black">#</th>
-            <th className="px-6 py-3 text-left text-lg font-medium text-black">Name</th>
-            <th className="px-6 py-3 text-left text-lg font-medium text-black">Email</th>
-            <th className="px-6 py-3 text-left text-lg font-medium text-black">Status</th>
-            <th className="px-6 py-3 text-lg font-medium text-black whitespace-nowrap">Action</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
-          {filteredAccounts.map((account) => (
-            <AccountRow 
-              key={account.id} 
-              account={account} 
-              index={account.id - 1}
-              onDeleteClick={handleDeleteClick}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
+          <thead
+            className="sticky top-0 z-10"
+            style={{ backgroundColor: "#F6F7F9" }}
+          >
+            <tr>
+              <th className="px-6 py-3 text-left text-lg font-medium text-black">
+                #
+              </th>
+              <th className="px-6 py-3 text-left text-lg font-medium text-black">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-lg font-medium text-black">
+                Email
+              </th>
+              <th className="px-6 py-3 text-left text-lg font-medium text-black">
+                Status
+              </th>
+              <th className="px-6 py-3 text-lg font-medium text-black whitespace-nowrap">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
+            {filteredAccounts.map((account) => (
+              <AccountRow
+                key={account.id}
+                account={account}
+                index={account.id - 1}
+                onDeleteClick={handleDeleteClick}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Delete confirmation modal — only mounted when an account is staged for deletion */}
       {showDeleteModal && selectedAccount && (
@@ -206,21 +246,21 @@ export default function AccountsTable({ search = "" }) {
         />
       )}
 
-    {notification.open && (
-      <NotificationModal
-        title={notification.title}
-        message={notification.message}
-        variant={notification.variant}
-        onClose={() =>
-          setNotification({
-            open: false,
-            title: "",
-            message: "",
-            variant: "success",
-          })
-        }
-      />
-    )}
+      {notification.open && (
+        <NotificationModal
+          title={notification.title}
+          message={notification.message}
+          variant={notification.variant}
+          onClose={() =>
+            setNotification({
+              open: false,
+              title: "",
+              message: "",
+              variant: "success",
+            })
+          }
+        />
+      )}
     </>
   );
 }

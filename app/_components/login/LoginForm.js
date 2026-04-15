@@ -15,44 +15,26 @@ import { useAuth } from "../../_utils/auth-context";
  * Email/password login form for the Capstone App. Handles credential
  * validation, Cloudflare Turnstile CAPTCHA verification, backend lockout
  * enforcement, and role-based redirect after a successful sign-in. Also
- * exposes a multi-step forgot-password flow (email → code → new password)
- * and an access-request mailto shortcut for unapproved users.
+ * exposes an access-request mailto shortcut for unapproved users.
  *
  * Notes:
  * - Accepts only @sait.ca, @edu.sait.ca, and @gmail.com addresses.
- * - Login and password-reset code sends are both rate-limited by the backend;
- *   cooldown countdowns are driven locally once the remaining seconds are
- *   returned from the API.
- * - Turnstile callbacks are registered as window globals because the widget
- *   invokes them by name via its data-callback attributes.
+ * - Login attempts are rate-limited by the backend; cooldown countdowns are
+ *   driven locally once the remaining seconds are returned from the API.
+ * - Turnstile is rendered explicitly once the script has loaded so the widget
+ *   reliably appears on the first visit to the page.
  *
  * @author Cintya Lara Flores
  * @author Anna Isabelle Yabut
  */
 
 export default function LoginForm() {
-  const [showForgotModal, setShowForgotModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [employeeEmail, setEmployeeEmail] = useState("");
-  // Kept separate from employeeEmail so the forgot flow does not overwrite the login field
-  const [forgotEmail, setForgotEmail] = useState("");
   const [password, setPassword] = useState("");
-  // "email" → "code" → "password" — controls which step of the forgot-password modal is shown
-  const [step, setStep] = useState("email");
-  const [resetCodeArray, setResetCodeArray] = useState([
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loginCooldownSeconds, setLoginCooldownSeconds] = useState(0);
-  const [resetCooldownSeconds, setResetCooldownSeconds] = useState(0);
   const [captchaToken, setCaptchaToken] = useState("");
   const [notification, setNotification] = useState({
     open: false,
@@ -61,8 +43,8 @@ export default function LoginForm() {
     variant: "success",
   });
 
+  const { setAuthFromLogin } = useAuth();
   const router = useRouter();
-  const { refreshSession } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const showNotification = (
@@ -73,25 +55,10 @@ export default function LoginForm() {
     setNotification({ open: true, title, message, variant });
   };
 
-  // One ref per digit box — used to move focus forward/backward as the user types
-  const inputRefs = useRef([]);
-
-  // Counts down resetCooldownSeconds once the backend signals a rate-limit on code sends
-  useEffect(() => {
-    if (resetCooldownSeconds <= 0) return;
-
-    const interval = setInterval(() => {
-      setResetCooldownSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [resetCooldownSeconds]);
+  // Container ref for the explicitly rendered Cloudflare Turnstile widget
+  const turnstileRef = useRef(null);
+  // Stores the Turnstile widget ID returned by render() so reset() can target the correct widget
+  const turnstileWidgetIdRef = useRef(null);
 
   // Counts down loginCooldownSeconds once the backend signals a lockout
   useEffect(() => {
@@ -110,25 +77,32 @@ export default function LoginForm() {
     return () => clearInterval(interval);
   }, [loginCooldownSeconds]);
 
-  // Turnstile calls these globals by name via data-callback attributes on the widget div
+  // Explicitly renders the Turnstile widget once the script has loaded and the
+  // container div is available. This avoids the widget sometimes failing to
+  // appear on the first page load.
   useEffect(() => {
-    window.onTurnstileSuccess = (token) => {
-      setCaptchaToken(token);
-    };
-
-    window.onTurnstileExpired = () => {
-      setCaptchaToken("");
-    };
-
-    window.onTurnstileError = () => {
-      setCaptchaToken("");
-    };
-
-    return () => {
-      window.onTurnstileSuccess = undefined;
-      window.onTurnstileExpired = undefined;
-      window.onTurnstileError = undefined;
-    };
+    if (
+      typeof window !== "undefined" &&
+      window.turnstile &&
+      turnstileRef.current &&
+      turnstileWidgetIdRef.current === null
+    ) {
+      turnstileWidgetIdRef.current = window.turnstile.render(
+        turnstileRef.current,
+        {
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+          callback: (token) => {
+            setCaptchaToken(token);
+          },
+          "expired-callback": () => {
+            setCaptchaToken("");
+          },
+          "error-callback": () => {
+            setCaptchaToken("");
+          },
+        },
+      );
+    }
   }, []);
 
   /**
@@ -267,7 +241,7 @@ export default function LoginForm() {
     const data = await res.json().catch(() => null);
 
     if (!res.ok) {
-      console.error("Allowed user check failed:", res.status, data);
+      console.warn("Allowed user check failed:", res.status, data);
       throw new Error(
         typeof data?.detail === "string"
           ? data.detail
@@ -315,46 +289,6 @@ export default function LoginForm() {
   };
 
   /**
-   * requestPasswordReset
-   *
-   * Sends a 6-digit reset code to the given email address. The backend
-   * enforces a rate limit; when the limit is active the response includes
-   * remainingSeconds instead of a success flag.
-   *
-   * @param {string} email - Lowercase email address to send the code to
-   * @returns {{ success: boolean, remainingSeconds?: number }}
-   *
-   * Notes:
-   * - Throws if the fetch itself fails.
-   * - Callers must check result.success before advancing the flow; a falsy
-   *   success means the rate limit is active, not that the email was rejected.
-   */
-  const requestPasswordReset = async (email) => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/request-password-reset`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      },
-    );
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      throw new Error(
-        typeof data?.detail === "string"
-          ? data.detail
-          : JSON.stringify(
-              data?.detail || data || "Failed to request password reset",
-            ),
-      );
-    }
-
-    return data;
-  };
-
-  /**
    * verifyCaptcha
    *
    * Sends the Cloudflare Turnstile token to the backend for server-side
@@ -389,8 +323,12 @@ export default function LoginForm() {
   // Resets the Turnstile widget and clears the stored token so the user must solve the challenge again before their next login attempt
   const resetTurnstile = () => {
     setCaptchaToken("");
-    if (typeof window !== "undefined" && window.turnstile) {
-      window.turnstile.reset();
+    if (
+      typeof window !== "undefined" &&
+      window.turnstile &&
+      turnstileWidgetIdRef.current !== null
+    ) {
+      window.turnstile.reset(turnstileWidgetIdRef.current);
     }
   };
 
@@ -408,106 +346,6 @@ export default function LoginForm() {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  /**
-   * verifyResetCode
-   *
-   * Validates the 6-digit code the user entered against the one the backend
-   * sent to their email. On success the forgot-password flow advances to the
-   * password-entry step.
-   *
-   * @param {string} email - The email the code was sent to
-   * @param {string} code  - The 6-digit code entered by the user
-   * @returns {{ message: string }} Backend confirmation message
-   *
-   * Notes:
-   * - Throws if the code is invalid or expired.
-   */
-  const verifyResetCode = async (email, code) => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/verify-reset-code`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
-      },
-    );
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      throw new Error(
-        typeof data?.detail === "string"
-          ? data.detail
-          : JSON.stringify(data?.detail || data || "Invalid code"),
-      );
-    }
-
-    return data;
-  };
-
-  /**
-   * confirmPasswordReset
-   *
-   * Completes the forgot-password flow by submitting the verified code and
-   * the user's new password to the backend.
-   *
-   * @param {string} email       - The email the reset was initiated for
-   * @param {string} code        - The 6-digit code that was already verified
-   * @param {string} newPassword - The new password chosen by the user
-   * @returns {{ success: boolean }} Backend confirmation
-   *
-   * Notes:
-   * - Throws if the reset fails (e.g. code expired between verify and confirm,
-   *   or the new password does not meet complexity requirements).
-   */
-  const confirmPasswordReset = async (email, code, newPassword) => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/confirm-password-reset`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code, newPassword }),
-      },
-    );
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok) {
-      throw new Error(
-        typeof data?.detail === "string"
-          ? data.detail
-          : JSON.stringify(data?.detail || data || "Reset failed"),
-      );
-    }
-
-    return data;
-  };
-
-  // Sends the reset code (or resends it) and advances to the code-entry step on success; if the backend signals a rate limit, starts the cooldown timer with the seconds returned
-  const handleForgotSubmit = async () => {
-    try {
-      if (!forgotEmail.trim()) {
-        showNotification("Please enter your email.");
-        return;
-      }
-
-      const emailToSend = forgotEmail.trim().toLowerCase();
-
-      const result = await requestPasswordReset(emailToSend);
-
-      if (!result.success) {
-        setResetCooldownSeconds(result.remainingSeconds || 0);
-        showNotification(`Please wait ${result.remainingSeconds}s`);
-        return;
-      }
-
-      showNotification("Verification code sent!", "success", "Success");
-      setStep("code");
-    } catch (err) {
-      showNotification("Reset failed: " + err.message);
-    }
   };
 
   // Opens the user's mail client with a pre-filled access-request email addressed to the admin
@@ -572,8 +410,32 @@ export default function LoginForm() {
 
       const cred = await signInWithEmailAndPassword(auth, emailLower, password);
 
-      const idToken = await cred.user.getIdToken(true);
-      const allowed = await checkAllowedUserWithToken(idToken);
+      let idToken = await cred.user.getIdToken(true);
+      let allowed;
+      let lastError = null;
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          if (attempt > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            idToken = await cred.user.getIdToken(true);
+          }
+
+          allowed = await checkAllowedUserWithToken(idToken);
+          lastError = null;
+          break;
+        } catch (err) {
+          lastError = err;
+
+          if (!err.message?.includes("Token used too early")) {
+            throw err;
+          }
+        }
+      }
+
+      if (lastError) {
+        throw lastError;
+      }
 
       if (!allowed.allowed) {
         showNotification("You are not authorized to access this app.");
@@ -605,9 +467,15 @@ export default function LoginForm() {
       }
 
       console.log("Before createSessionLogin");
-      await createSessionLogin(idToken);
-      await refreshSession();
+      const sessionData = await createSessionLogin(idToken);
       console.log("After createSessionLogin");
+
+      setAuthFromLogin({
+        email: sessionData.email,
+        uid: sessionData.uid,
+        role: sessionData.role,
+      });
+
       await resetLoginAttempts(emailLower);
 
       setErrors({});
@@ -623,8 +491,20 @@ export default function LoginForm() {
         showNotification("This account does not have a valid role assigned.");
       }
     } catch (err) {
+      // auth/user-disabled indicates the account has been disabled in Firebase Auth
+      if (err.code === "auth/user-disabled") {
+        await signOut(auth);
+        setPassword("");
+        resetTurnstile();
+        showNotification(
+          "This account has been deactivated. Please contact an administrator.",
+        );
+        return;
+      }
+
       // auth/too-many-requests is Firebase's own rate-limit, distinct from the backend lockout
       if (err.code === "auth/too-many-requests") {
+        await signOut(auth);
         resetTurnstile();
         showNotification(
           "Too many login attempts were detected for this account. Please wait a few minutes before trying again.",
@@ -650,108 +530,37 @@ export default function LoginForm() {
               ? `${mins} minute(s) ${secs} second(s)`
               : `${secs} second(s)`;
 
+          await signOut(auth);
           resetTurnstile();
           showNotification(
             `Too many failed login attempts. Account locked for ${timeText}.`,
           );
         } else if (isInvalidLogin) {
+          await signOut(auth);
           resetTurnstile();
           showNotification(
             `Invalid email or password. You have ${result.remainingAttempts} attempt(s) left.`,
           );
         } else {
+          await signOut(auth);
           resetTurnstile();
           console.error("LOGIN ERROR:", err);
-          showNotification("Login failed. Please try again.");
+          showNotification(
+            typeof err?.message === "string"
+              ? err.message
+              : "Login failed. Please try again.",
+          );
         }
       } catch (backendErr) {
+        await signOut(auth);
         resetTurnstile();
         console.error("BACKEND LOCKOUT ERROR:", backendErr);
         showNotification("Login failed. Please try again.");
       } finally {
         setIsLoading(false);
       }
-    }
-  };
-
-  // Joins the digit array and submits it for verification; advances to the password step on success
-  const handleVerifyCode = async () => {
-    try {
-      const code = resetCodeArray.join("");
-
-      if (code.length !== 6) {
-        showNotification("Please enter the full 6-digit code.");
-        return;
-      }
-
-      const result = await verifyResetCode(forgotEmail, code);
-      showNotification(
-        result.message || "Code verified!",
-        "success",
-        "Success",
-      );
-      setStep("password");
-    } catch (err) {
-      showNotification(
-        typeof err?.message === "string"
-          ? err.message
-          : "Failed to verify code",
-      );
-    }
-  };
-
-  // Confirms the new password matches, then submits the reset; resets all modal state on success
-  const handleResetPassword = async () => {
-    try {
-      if (newPassword !== confirmPassword) {
-        showNotification("Passwords do not match");
-        return;
-      }
-
-      const code = resetCodeArray.join("");
-
-      if (code.length !== 6) {
-        showNotification("Please enter the full 6-digit code.");
-        return;
-      }
-
-      await confirmPasswordReset(forgotEmail, code, newPassword);
-
-      showNotification("Password reset successful!", "success", "Success");
-
-      // reset everything
-      setShowForgotModal(false);
-      setStep("email");
-      setForgotEmail("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setResetCodeArray(["", "", "", "", "", ""]);
-    } catch (err) {
-      showNotification(err.message);
-    }
-  };
-
-  // Updates the digit at `index` and moves focus to the next box when a digit is entered
-  const handleCodeChange = (value, index) => {
-    // Reject anything that is not a single digit or an empty string (from deletion)
-    if (!/^\d?$/.test(value)) return;
-
-    const newCode = [...resetCodeArray];
-    newCode[index] = value;
-    setResetCodeArray(newCode);
-
-    // move forward
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  // Retreats focus to the previous box on Backspace when the current box is already empty
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace") {
-      if (!resetCodeArray[index] && index > 0) {
-        inputRefs.current[index - 1]?.focus();
-      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -812,7 +621,7 @@ export default function LoginForm() {
       <button
         type="button"
         className="text-blue-600/75 hover:underline text-sm mb-4 cursor-pointer"
-        onClick={() => setShowForgotModal(true)}
+        onClick={() => router.push("/auth/verify-codes")}
       >
         Forgot my password
       </button>
@@ -821,15 +630,9 @@ export default function LoginForm() {
         <p className="text-red-500 text-sm mb-2">{errors.password}</p>
       )}
 
-      {/* Turnstile widget — callbacks are wired via the window globals registered in useEffect */}
+      {/* Turnstile widget container — rendered explicitly after the Turnstile script loads */}
       <div className="flex justify-center mb-4">
-        <div
-          className="cf-turnstile"
-          data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-          data-callback="onTurnstileSuccess"
-          data-expired-callback="onTurnstileExpired"
-          data-error-callback="onTurnstileError"
-        />
+        <div ref={turnstileRef} className="flex justify-center" />
       </div>
 
       <div className="flex justify-center">
@@ -863,129 +666,6 @@ export default function LoginForm() {
           Request access
         </button>
       </div>
-
-      {showForgotModal && (
-        <Modal
-          title={
-            step === "email"
-              ? "Forgot Password"
-              : step === "code"
-                ? "Verify Code"
-                : "Reset Password"
-          }
-          onClose={() => {
-            setShowForgotModal(false);
-            setStep("email");
-            setForgotEmail("");
-            setNewPassword("");
-            setConfirmPassword("");
-            setResetCooldownSeconds(0);
-            setResetCodeArray(["", "", "", "", "", ""]);
-          }}
-          onSubmit={
-            step === "email"
-              ? handleForgotSubmit
-              : step === "code"
-                ? handleVerifyCode
-                : handleResetPassword
-          }
-          submitText={
-            step === "email"
-              ? resetCooldownSeconds > 0
-                ? `Wait ${resetCooldownSeconds}s`
-                : "Send Code"
-              : step === "code"
-                ? "Verify Code"
-                : "Reset Password"
-          }
-          submitDisabled={
-            (step === "email" &&
-              (!forgotEmail.trim() || resetCooldownSeconds > 0)) ||
-            (step === "code" && resetCodeArray.join("").length !== 6) ||
-            (step === "password" &&
-              (!newPassword.trim() || !confirmPassword.trim()))
-          }
-        >
-          {step === "email" && (
-            <div className="flex flex-col gap-2">
-              <input
-                type="email"
-                placeholder="Enter your SAIT email"
-                value={forgotEmail}
-                onChange={(e) => setForgotEmail(e.target.value)}
-                maxLength={320}
-                className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
-              />
-
-              <p className="text-sm text-gray-500">
-                We’ll send a 6-digit verification code to your email.
-              </p>
-            </div>
-          )}
-
-          {step === "code" && (
-            <div className="flex flex-col gap-3">
-              {/* One input per digit; inputRefs drives auto-advance and backspace-retreat */}
-              <div className="flex justify-center gap-2">
-                {resetCodeArray.map((digit, index) => (
-                  <input
-                    key={index}
-                    ref={(el) => (inputRefs.current[index] = el)}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleCodeChange(e.target.value, index)}
-                    onKeyDown={(e) => handleKeyDown(e, index)}
-                    className="w-10 h-12 text-center text-lg border rounded focus:outline-none focus:border-blue-500"
-                  />
-                ))}
-              </div>
-
-              <p className="text-sm text-gray-500 text-center">
-                Enter the code sent to <strong>{forgotEmail}</strong>
-              </p>
-
-              {/* Disabled during the server-enforced cooldown period */}
-              <button
-                type="button"
-                className="text-sm text-blue-600 hover:underline text-center disabled:text-gray-400"
-                onClick={handleForgotSubmit}
-                disabled={resetCooldownSeconds > 0}
-              >
-                {resetCooldownSeconds > 0
-                  ? `Resend in ${resetCooldownSeconds}s`
-                  : "Resend Code"}
-              </button>
-            </div>
-          )}
-
-          {step === "password" && (
-            <div className="flex flex-col gap-2">
-              <input
-                type="password"
-                placeholder="Enter new password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
-              />
-
-              <input
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border px-3 py-2 rounded text-gray-900 placeholder-gray-500"
-              />
-
-              <p className="text-xs text-gray-500">
-                Password must be at least 8 characters and include an uppercase
-                letter, number, and special character.
-              </p>
-            </div>
-          )}
-        </Modal>
-      )}
 
       {showRequestModal && (
         <Modal

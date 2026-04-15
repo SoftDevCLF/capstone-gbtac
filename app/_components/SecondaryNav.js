@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signOut } from "firebase/auth";
 import { auth, db } from "../_utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import NotificationModal from "./NotificationModal";
+import { useAuth } from "../_utils/auth-context";
 
 /**
  * SecondaryNav component
@@ -26,11 +26,14 @@ import NotificationModal from "./NotificationModal";
  *
  * @author Cintya Lara Flores
  * @author Dominique Anne Lee
+ * @author Anna Isabelle Yabut
  */
 
 export default function SecondaryNav() {
   // Router for navigation after logout
   const router = useRouter();
+  const { logout } = useAuth();
+
   // Local state for user info and auth status
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -43,23 +46,43 @@ export default function SecondaryNav() {
   });
   const displayName = [firstName, lastName].filter(Boolean).join(" ");
 
+  const loadUserProfile = async (user) => {
+    if (!user?.email) {
+      setFirstName("");
+      setLastName("");
+      return;
+    }
+
+    try {
+      const normalizedEmail = user.email.toLowerCase();
+      const userDoc = doc(db, "allowedUsers", normalizedEmail);
+      const docSnap = await getDoc(userDoc);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setFirstName(data.firstName || "");
+        setLastName(data.lastName || "");
+      } else {
+        // User is authenticated but has no Firestore record — log for debugging
+        console.warn("No Firestore document found for user:", normalizedEmail);
+        setFirstName("");
+        setLastName("");
+      }
+    } catch (err) {
+      console.error("SECONDARY NAV PROFILE LOAD ERROR:", err);
+      setFirstName("");
+      setLastName("");
+    }
+  };
+
   // Initial auth check on component mount; listens for Firebase auth state changes
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
+      if (user?.email) {
         // If user is logged in
         setIsLoggedIn(true);
         // Fetch display name from Firestore allowedUsers collection
-        const userDoc = doc(db, "allowedUsers", user.email);
-        const docSnap = await getDoc(userDoc);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setFirstName(data.firstName || "");
-          setLastName(data.lastName || "");
-        } else {
-          // User is authenticated but has no Firestore record — log for debugging
-          console.warn("No Firestore document found for user:", user.email);
-        }
+        await loadUserProfile(user);
       } else {
         // If user is not logged in
         setIsLoggedIn(false);
@@ -71,14 +94,8 @@ export default function SecondaryNav() {
     // Listen for profile updates
     const handleProfileUpdate = async () => {
       const user = auth.currentUser;
-      if (user) {
-        const userDoc = doc(db, "allowedUsers", user.email);
-        const docSnap = await getDoc(userDoc);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setFirstName(data.firstName || "");
-          setLastName(data.lastName || "");
-        }
+      if (user?.email) {
+        await loadUserProfile(user);
       }
     };
 
@@ -90,16 +107,12 @@ export default function SecondaryNav() {
     };
   }, []);
 
-  // Handles logout by invalidating server session and signing out of Firebase
+  // Handles logout by invalidating server session, signing out of Firebase,
+  // and clearing shared auth context before routing back to the landing page
   const handleLogout = async (e) => {
     e.preventDefault();
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      await signOut(auth);
+      await logout();
       router.push("/");
       router.refresh();
     } catch (err) {
