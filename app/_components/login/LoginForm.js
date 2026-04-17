@@ -355,13 +355,19 @@ export default function LoginForm() {
       return;
     }
 
-    // Change to real admin email later on
-    const adminEmail = "annaisabelle.yabut@edu.sait.ca";
+    const adminEmail = "maeric.rico@sait.ca";
 
     const subject = "Access Request – Capstone App";
-    const body = `Hello,\n\nPlease approve access for:\n${employeeEmail
-      .trim()
-      .toLowerCase()}\n\nThanks.`;
+
+    const body = `Hello,
+
+    A new user is requesting access to the Capstone App.
+
+    Employee Email: ${employeeEmail.trim()}
+
+    Please review and approve this request at your convenience.
+
+    Thank you.`;
 
     window.location.href = `mailto:${adminEmail}?subject=${encodeURIComponent(
       subject,
