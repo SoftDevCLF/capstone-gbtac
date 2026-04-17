@@ -117,7 +117,7 @@ export default function EnergyDashboard() {
   // Persist staged state and refresh KPI cards on every state change
   useEffect(() => {
     saveDashboardState(STORAGE_KEY, state);
-    fetchStats();
+    // fetchStats();
   }, [state]);
 
   // Persist staged state and refresh KPI cards on every state change
@@ -128,17 +128,19 @@ export default function EnergyDashboard() {
   }, [state.fromDate, state.toDate, validateAll]);
 
   // Base stats
-  const [stats, setStats] = useState([
+  const defaultStats = [
     { label: "Average Generation", value: "-" },
     { label: "Maximum Generation", value: "-" },
     { label: "Minimum Generation", value: "-" },
-    { label: "Average Generation", value: "-" },
+    { label: "Average Consumption", value: "-" },
     { label: "Maximum Consumption", value: "-" },
     { label: "Minimum Consumption", value: "-" },
-  ]);
+  ];
+  const [stats, setStats] = useState(defaultStats);
 
   // Fetches KPI card values from the backend for the currently applied date range
   const fetchStats = async () => {
+    setStats(defaultStats);
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/energy/cards?start=${appliedState?.fromDate}&end=${appliedState?.toDate}`,
       { credentials: "include" },
@@ -146,6 +148,12 @@ export default function EnergyDashboard() {
     const data = await res.json();
     setStats(data);
   };
+
+  useEffect(() => {
+    if (appliedState?.fromDate && appliedState?.toDate) {
+      fetchStats();
+    }
+  }, [appliedState]);
 
   // Converts raw W values to kWh client-side when the unit toggle is active;
   // subtitle reflects the applied date range rather than a live sensor timestamp
@@ -158,7 +166,7 @@ export default function EnergyDashboard() {
           )
         : item.value,
     unit: unit,
-    subtitle: formatDateRange(appliedState?.fromDate, appliedState?.toDate),
+    subtitle: formatDateRange(appliedState?.fromDate, appliedState?.toDate > dataRange.newest ? dataRange.newest : appliedState?.toDate),
   }));
 
   const handleSaveScreen = () => {

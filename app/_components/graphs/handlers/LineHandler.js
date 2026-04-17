@@ -291,6 +291,18 @@ export default function LineHandler({
                     pointRadius: 3,
                     pointHoverRadius: 6,
                     tension: 0.1,
+                    pointBackgroundColor: (ctx) => {
+                        const x = ctx.parsed?.x;
+                        return x > new Date("2025-12-31T23:59:59").getTime()
+                            ? colours[sensor.id % colours.length] + "80"
+                            : colours[sensor.id % colours.length];
+                    },
+                    pointBorderColor: (ctx) => {
+                        const x = ctx.parsed?.x;
+                        return x > new Date("2025-12-31T23:59:59").getTime()
+                            ? colours[sensor.id % colours.length] + "80"
+                            : colours[sensor.id % colours.length];
+                    },  
                     segment: {
                         borderDash: (ctx) =>
                             ctx.p1.parsed.x > new Date("2025-12-31T23:59:59").getTime() ? [6, 4] : undefined,
