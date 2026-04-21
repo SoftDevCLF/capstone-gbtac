@@ -78,33 +78,31 @@ const SENSOR_ORIENTATION = {
 
 const SENSOR_LABELS = {
   // Basement East
-  "30000_TL57": "East 1 Basement",
-  "30000_TL56": "East 2 Basement",
-  "30000_TL55": "East 3 Basement",
+  "30000_TL57": "SaitSolarLab_30000_TL57",
+  "30000_TL56": "SaitSolarLab_30000_TL56",
+  "30000_TL55": "SaitSolarLab_30000_TL55",
 
   // Basement North
-  "30000_TL39": "North 1 Basement",
-  "30000_TL38": "North 2 Basement",
+  "30000_TL39": "SaitSolarLab_30000_TL39",
+  "30000_TL38": "SaitSolarLab_30000_TL38",
 
   // Basement South
-  "30000_TL69": "South 1 Basement",
-  "30000_TL68": "South 2 Basement",
-  "30000_TL67": "South 3 Basement",
-  "30000_TL66": "South 4 Basement",
-  "30000_TL95": "South 5 Basement",
+  "30000_TL69": "SaitSolarLab_30000_TL69",
+  "30000_TL68": "SaitSolarLab_30000_TL68",
+  "30000_TL67": "SaitSolarLab_30000_TL67",
+  "30000_TL66": "SaitSolarLab_30000_TL66",
+  "30000_TL95": "SaitSolarLab_30000_TL95",
 
   // 1st Floor
-  "30000_TL90": "North 1st Floor",
-  "30000_TL71": "South 1 1st Floor",
-  "30000_TL70": "South 2 1st Floor",
-  "30000_TL65": "West 1 1st Floor",
-  "30000_TL64": "West 2 1st Floor",
-  "30000_TL63": "West 3 1st Floor",
-  "30000_TL62": "West 4 1st Floor",
-  "30000_TL61": "West 5 1st Floor",
-  "30000_TL60": "West 6 1st Floor",
-  "30000_TL59": "West 7 1st Floor",
-  "30000_TL58": "West 8 1st Floor",
+  "30000_TL90": "SaitSolarLab_30000_TL90",
+  "30000_TL71": "SaitSolarLab_30000_TL71",
+  "30000_TL7₀": "SaitSolarLab_30000_TL7₀",
+  "30000_TL63": "SaitSolarLab_30000_TL63",
+  "30000_TL62": "SaitSolarLab_30000_TL62",
+  "30000_TL61": "SaitSolarLab_30000_TL61",
+  "30000_TL60": "SaitSolarLab_30000_TL60",
+  "30000_TL59": "SaitSolarLab_30000_TL59",
+  "30000_TL58": "SaitSolarLab_30000_TL58",
 };
 
 const FLOOR_OPTIONS = ["Basement", "1st Floor", "2nd Floor"];

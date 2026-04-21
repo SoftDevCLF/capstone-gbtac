@@ -55,19 +55,19 @@ const SENSOR_ORIENTATION = {
 };
 
 const SENSOR_LABELS = {
-  "20004_TL2": "East 1 Basement",
-  "20005_TL2": "West Basement",
-  "20006_TL2": "East 2 Basement",
-  "20007_TL2": "North (West) 1st Floor",
-  "20008_TL2": "South 1 1st Floor",
-  "20009_TL2": "South 2 1st Floor",
-  "20010_TL2": "East 1st Floor",
-  "20011_TL2": "Middle 1st Floor",
-  "20012_TL2": "West 2nd Floor",
-  "20013_TL2": "Middle 2nd Floor",
-  "20014_TL2": "East 2nd Floor",
-  "20015_TL2": "South 1 2nd Floor",
-  "20016_TL2": "South 2 2nd Floor",
+  "20004_TL2": "SaitSolarLab_20004_TL2",
+  "20005_TL2": "SaitSolarLab_20005_TL2",
+  "20006_TL2": "SaitSolarLab_20006_TL2",
+  "20007_TL2": "SaitSolarLab_20007_TL2",
+  "20008_TL2": "SaitSolarLab_20008_TL2",
+  "20009_TL2": "SaitSolarLab_20009_TL2",
+  "20010_TL2": "SaitSolarLab_20010_TL2",
+  "20011_TL2": "SaitSolarLab_20011_TL2",
+  "20012_TL2": "SaitSolarLab_20012_TL2",
+  "20013_TL2": "SaitSolarLab_20013_TL2",
+  "20014_TL2": "SaitSolarLab_20014_TL2",
+  "20015_TL2": "SaitSolarLab_20015_TL2",
+  "20016_TL2": "SaitSolarLab_20016_TL2",
 };
 
 /**

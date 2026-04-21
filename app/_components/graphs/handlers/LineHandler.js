@@ -188,6 +188,7 @@ export default function LineHandler({
     const colours = [
         "#E63946", // red
         "#2196F3", // blue
+        "#6D2077", // plum
         "#2A9D8F", // teal
         "#F4A261", // orange
         "#6A0572", // purple
