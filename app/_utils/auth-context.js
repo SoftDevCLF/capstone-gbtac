@@ -12,6 +12,7 @@ const AuthContext = createContext({
   logout: async () => {},
   refreshSession: async () => {},
   refreshSlidingSession: async () => {},
+  setAuthFromLogin: () => {},
 });
 
 /**
@@ -38,6 +39,26 @@ export function AuthContextProvider({ children }) {
   const [role, setRole] = useState(null);
   const [isAllowed, setIsAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  /**
+   * setAuthFromLogin
+   *
+   * Updates the shared auth state immediately after a successful login using
+   * the user data already returned by the backend session-login endpoint.
+   *
+   * @param {{ email: string, uid: string, role: string }} sessionData - User/session data returned after login
+   *
+   * Notes:
+   * - This avoids an immediate follow-up call to /auth/me right after login,
+   *   which can race with cookie/session availability.
+   * - Marks the user as allowed and clears loading once login succeeds.
+   */
+  const setAuthFromLogin = ({ email, uid, role }) => {
+    setUser({ email, uid });
+    setRole(role || "user");
+    setIsAllowed(true);
+    setLoading(false);
+  };
 
   /**
    * refreshSession
@@ -96,14 +117,27 @@ export function AuthContextProvider({ children }) {
       const currentUser = auth.currentUser;
       if (!currentUser) return false;
 
-      const idToken = await currentUser.getIdToken(true);
+      let idToken = await currentUser.getIdToken(true);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-session`, {
+      let res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-session`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
       });
+
+      if (!res.ok) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        idToken = await currentUser.getIdToken(true);
+
+        res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-session`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        });
+      }
 
       if (!res.ok) {
         setUser(null);
@@ -170,6 +204,7 @@ export function AuthContextProvider({ children }) {
         logout,
         refreshSession,
         refreshSlidingSession,
+        setAuthFromLogin,
       }}
     >
       {children}

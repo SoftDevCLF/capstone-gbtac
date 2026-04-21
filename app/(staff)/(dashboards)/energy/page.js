@@ -108,8 +108,8 @@ export default function EnergyDashboard() {
 
     return `As of: ${fromFormatted} - ${toFormatted}`;
   };
-  // Unit state: kWh or W
-  const [unit, setUnit] = useState("W");
+  // Unit state: kWh or Wh
+  const [unit, setUnit] = useState("Wh");
 
   const [aggregation, setAggregation] = useState("none");
   const [showSaveNotification, setShowSaveNotification] = useState(false);
@@ -117,7 +117,7 @@ export default function EnergyDashboard() {
   // Persist staged state and refresh KPI cards on every state change
   useEffect(() => {
     saveDashboardState(STORAGE_KEY, state);
-    fetchStats();
+    // fetchStats();
   }, [state]);
 
   // Persist staged state and refresh KPI cards on every state change
@@ -128,25 +128,32 @@ export default function EnergyDashboard() {
   }, [state.fromDate, state.toDate, validateAll]);
 
   // Base stats
-  const [stats, setStats] = useState([
+  const defaultStats = [
     { label: "Average Generation", value: "-" },
     { label: "Maximum Generation", value: "-" },
     { label: "Minimum Generation", value: "-" },
-    { label: "Average Generation", value: "-" },
+    { label: "Average Consumption", value: "-" },
     { label: "Maximum Consumption", value: "-" },
     { label: "Minimum Consumption", value: "-" },
-  ]);
+  ];
+  const [stats, setStats] = useState(defaultStats);
 
   // Fetches KPI card values from the backend for the currently applied date range
   const fetchStats = async () => {
+    setStats(defaultStats);
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/energy/cards?start=${appliedState?.fromDate}&end=${appliedState?.toDate}`,
       { credentials: "include" },
     );
     const data = await res.json();
-    console.log("stats data:", data);
     setStats(data);
   };
+
+  useEffect(() => {
+    if (appliedState?.fromDate && appliedState?.toDate) {
+      fetchStats();
+    }
+  }, [appliedState]);
 
   // Converts raw W values to kWh client-side when the unit toggle is active;
   // subtitle reflects the applied date range rather than a live sensor timestamp
@@ -159,7 +166,7 @@ export default function EnergyDashboard() {
           )
         : item.value,
     unit: unit,
-    subtitle: formatDateRange(appliedState?.fromDate, appliedState?.toDate),
+    subtitle: formatDateRange(appliedState?.fromDate, appliedState?.toDate > dataRange.newest ? dataRange.newest : appliedState?.toDate),
   }));
 
   const handleSaveScreen = () => {
@@ -218,7 +225,7 @@ export default function EnergyDashboard() {
 
       <div className="flex justify-center mb-6 lg:justify-start">
         <button
-          onClick={() => setUnit(unit === "kWh" ? "W" : "kWh")}
+          onClick={() => setUnit(unit === "kWh" ? "Wh" : "kWh")}
           className="px-4 py-2 bg-[#005EB8] text-white rounded hover:bg-[#004080] transition"
         >
           Toggle Units: {unit}
@@ -238,11 +245,12 @@ export default function EnergyDashboard() {
               startDate={appliedState?.fromDate}
               endDate={appliedState?.toDate}
               graphTitle={`Consumption vs Generation, ${appliedState?.fromDate} to ${appliedState?.toDate}`}
-              yTitle={"Wh"}
+              yTitle={unit}
               xTitle={"hours"}
               xUnit={"hour"}
               aggTime={aggregation}
               aggType={"sum"}
+              multiplier={unit === "kWh" ? 1 / 1000 : 1}
             />
           </div>
 
@@ -265,7 +273,8 @@ export default function EnergyDashboard() {
               startDate={appliedState?.fromDate}
               endDate={appliedState?.toDate}
               graphTitle={`Solar Panel Generation, ${appliedState?.fromDate} to ${appliedState?.toDate < "2025-12-31" ? appliedState?.toDate : "2025-12-31"}`}
-              label={"Wh"} // **check: unsure if right unit
+              label={unit}
+              multiplier={unit === "kWh" ? 1 / 1000 : 1}
             />
           </div>
         </div>

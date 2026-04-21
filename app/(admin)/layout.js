@@ -2,45 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../_utils/auth-context";
 
 export default function AdminLayout({ children }) {
-  const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { loading, role, isAllowed } = useAuth();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-          credentials: "include",
-        });
+    if (!mounted || loading) return;
 
-        if (!res.ok) {
-          router.replace("/");
-          return;
-        }
+    if (!isAllowed) {
+      router.replace("/");
+      return;
+    }
 
-        const data = await res.json();
+    if (role !== "admin") {
+      router.replace("/staff-welcome-page");
+    }
+  }, [mounted, loading, isAllowed, role, router]);
 
-        if (data.role !== "admin") {
-          router.replace("/staff-welcome-page");
-          return;
-        }
-
-        setLoading(false);
-      } catch (error) {
-        router.replace("/");
-      }
-    };
-
-    checkSession();
-  }, [router]);
-
-  if (!mounted || loading) {
+  if (!mounted || loading || !isAllowed || role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="h-8 w-8 rounded-full border-4 border-gray-300 border-t-[#005EB8] animate-spin"></div>

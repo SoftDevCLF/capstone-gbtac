@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ConfirmModal from "@/app/_components/ConfirmModal";
 import NotificationModal from "@/app/_components/NotificationModal";
 
@@ -29,6 +30,7 @@ import NotificationModal from "@/app/_components/NotificationModal";
  */
 
 export default function CreateStaffForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -37,12 +39,14 @@ export default function CreateStaffForm() {
   });
   const [errors, setErrors] = useState({});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [notification, setNotification] = useState({
     open: false,
     title: "",
     message: "",
     variant: "success",
   });
+  const [redirectOnNotificationClose, setRedirectOnNotificationClose] = useState(false);
 
   /**
    * showNotification
@@ -137,9 +141,10 @@ export default function CreateStaffForm() {
    */
   const createStaff = async () => {
     setShowConfirmModal(false);
+    setIsCreating(true);
 
     try {
-      const response = await fetch("http://localhost:8000/auth/create-staff", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/create-staff`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -177,9 +182,14 @@ export default function CreateStaffForm() {
         return;
       }
 
-      showNotification("Staff account created successfully", "success", "Success");
+      showNotification(
+        data.message || "Staff account created successfully.",
+        "success",
+        "Success",
+      );
+      setRedirectOnNotificationClose(true);
 
-      //Reset form to defaults after successful account creation.
+      // Reset form values after successful account creation.
       setFormData({
         firstName: "",
         lastName: "",
@@ -189,12 +199,14 @@ export default function CreateStaffForm() {
     } catch (error) {
       console.error("Create staff error:", error);
       showNotification("Something went wrong while creating the staff account.");
+    } finally {
+      setIsCreating(false);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm() || isCreating) return;
     setShowConfirmModal(true);
   };
 
@@ -220,6 +232,7 @@ export default function CreateStaffForm() {
               maxLength={50}
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               required
+              disabled={isCreating}
             />
             {errors.firstName && (
               <span className="text-red-500 text-sm mt-1">{errors.firstName}</span>
@@ -235,6 +248,7 @@ export default function CreateStaffForm() {
               maxLength={50}
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               required
+              disabled={isCreating}
             />
             {errors.lastName && (
               <span className="text-red-500 text-sm mt-1">{errors.lastName}</span>
@@ -252,6 +266,7 @@ export default function CreateStaffForm() {
             maxLength={150}
             className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             required
+            disabled={isCreating}
           />
           {errors.email && (
             <span className="text-red-500 text-sm mt-1">{errors.email}</span>
@@ -264,6 +279,7 @@ export default function CreateStaffForm() {
             value={formData.status}
             onChange={handleChange}
             className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 bg-white"
+            disabled={isCreating}
           >
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
@@ -274,16 +290,18 @@ export default function CreateStaffForm() {
         <Link href="/account-manager">
           <button
             type="reset"
-            className="px-5 py-3 bg-[#912932] text-white font-semibold rounded hover:bg-[#8B1625] transition"
+            className="px-5 py-3 bg-[#912932] text-white font-semibold rounded hover:bg-[#8B1625] transition disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={isCreating}
           >
             Cancel
           </button>
         </Link>
         <button
           type="submit"
-          className="px-5 py-3 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition"
+          className="px-5 py-3 bg-[#005EB8] text-white font-semibold rounded hover:bg-[#004080] transition disabled:opacity-60 disabled:cursor-not-allowed"
+          disabled={isCreating}
         >
-          Create Staff
+          {isCreating ? "Creating Staff..." : "Create Staff"}
         </button>
       </div>
     </form>
@@ -303,14 +321,20 @@ export default function CreateStaffForm() {
         title={notification.title}
         message={notification.message}
         variant={notification.variant}
-        onClose={() =>
+        onClose={() => {
           setNotification({
             open: false,
             title: "",
             message: "",
             variant: "success",
-          })
-        }
+          });
+
+          if (redirectOnNotificationClose && notification.variant === "success") {
+            setRedirectOnNotificationClose(false);
+            router.push("/account-manager");
+            router.refresh();
+          }
+        }}
       />
     )}
   </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import ConfirmModal from "./ConfirmModal";
 import NotificationModal from "./NotificationModal";
@@ -15,23 +15,47 @@ import NotificationModal from "./NotificationModal";
  * Notes:
  * - Validation enforces: minimum 8 characters, at least one uppercase letter, one
  *   number, and one special character (!@#$%^&*) — errors are shown per field inline
- * - The API call for the actual password reset is not yet implemented — see the
- *   TODO in handleConfirmReset
  * - Password visibility is reveal-on-hold rather than toggle — it hides again on
  *   mouse up, mouse leave, or touch end, handled separately for touch and pointer
  *   devices
  * - On success, NotificationModal is shown and onClose redirects to /login via
  *   the Next.js router rather than a hard navigation
+ * 
  * @author Temi Bankole
+ * @author Anna Isabelle Yabut
  */
 export default function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [formData, setFormData] = useState({ newPassword: "", confirmNewPassword: "" });
+  const email = searchParams.get("email") || "";
+  const code = searchParams.get("code") || "";
+
+  const [formData, setFormData] = useState({
+    newPassword: "",
+    confirmNewPassword: "",
+  });
   const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState({ new: false, confirm: false });
+  const [showPassword, setShowPassword] = useState({
+    new: false,
+    confirm: false,
+  });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeField, setActiveField] = useState("");
+
+  const passwordChecks = {
+    length: formData.newPassword.length >= 8,
+    uppercase: /[A-Z]/.test(formData.newPassword),
+    number: /[0-9]/.test(formData.newPassword),
+    special: /[!@#$%^&*]/.test(formData.newPassword),
+  };
+
+  const passwordsMatch =
+    formData.confirmNewPassword.length > 0 &&
+    formData.newPassword === formData.confirmNewPassword;
 
   const validate = () => {
     const newErrors = {};
@@ -47,24 +71,91 @@ export default function ResetPasswordForm() {
     if (formData.newPassword !== formData.confirmNewPassword)
       newErrors.confirmNewPassword = "Passwords do not match.";
 
+    if (!email) newErrors.general = "Missing reset email.";
+    if (!code) newErrors.general = "Missing verification code.";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setErrors((prev) => {
+      const nextErrors = { ...prev };
+
+      if (name === "newPassword") {
+        delete nextErrors.newPassword;
+
+        if (
+          formData.confirmNewPassword.length > 0 &&
+          value !== formData.confirmNewPassword
+        ) {
+          nextErrors.confirmNewPassword = "Passwords do not match.";
+        } else {
+          delete nextErrors.confirmNewPassword;
+        }
+      }
+
+      if (name === "confirmNewPassword") {
+        if (formData.newPassword !== value) {
+          nextErrors.confirmNewPassword = "Passwords do not match.";
+        } else {
+          delete nextErrors.confirmNewPassword;
+        }
+      }
+
+      return nextErrors;
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setApiError("");
     if (validate()) setShowConfirmModal(true);
   };
 
-  const handleConfirmReset = () => {
+  const handleConfirmReset = async () => {
     setShowConfirmModal(false);
-    // TODO: call reset password API here — see GitHub issue for tracking
-    setShowNotificationModal(true);
+    setApiError("");
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/confirm-password-reset`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            code,
+            newPassword: formData.newPassword,
+          }),
+        },
+      );
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(
+          typeof data?.detail === "string"
+            ? data.detail
+            : "Failed to reset password.",
+        );
+      }
+
+      setShowNotificationModal(true);
+    } catch (err) {
+      setApiError(
+        typeof err?.message === "string"
+          ? err.message
+          : "Failed to reset password.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCloseNotification = () => {
@@ -73,7 +164,10 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <form className="space-y-8 text-[#212529] max-w-xl mx-auto" onSubmit={handleSubmit}>
+    <form
+      className="space-y-8 text-[#212529] max-w-xl mx-auto"
+      onSubmit={handleSubmit}
+    >
       <div className="space-y-6">
         <h2 className="text-2xl border-b pb-2 font-semibold text-gray-800">
           Set a New Password
@@ -90,36 +184,86 @@ export default function ResetPasswordForm() {
               type={showPassword.new ? "text" : "password"}
               autoComplete="new-password"
               required
-              placeholder="Min 8 characters"
+              placeholder="Enter new password"
               value={formData.newPassword}
               onChange={handleChange}
+              onFocus={() => setActiveField("new")}
               className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             />
             {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
             <button
               type="button"
               className="absolute right-3 top-4"
-              onMouseDown={() => setShowPassword((prev) => ({ ...prev, new: true }))}
-              onMouseUp={() => setShowPassword((prev) => ({ ...prev, new: false }))}
-              onMouseLeave={() => setShowPassword((prev) => ({ ...prev, new: false }))}
-              onTouchStart={() => setShowPassword((prev) => ({ ...prev, new: true }))}
-              onTouchEnd={() => setShowPassword((prev) => ({ ...prev, new: false }))}
+              onMouseDown={() =>
+                setShowPassword((prev) => ({ ...prev, new: true }))
+              }
+              onMouseUp={() =>
+                setShowPassword((prev) => ({ ...prev, new: false }))
+              }
+              onMouseLeave={() =>
+                setShowPassword((prev) => ({ ...prev, new: false }))
+              }
+              onTouchStart={() =>
+                setShowPassword((prev) => ({ ...prev, new: true }))
+              }
+              onTouchEnd={() =>
+                setShowPassword((prev) => ({ ...prev, new: false }))
+              }
             >
               <Image
-                src={showPassword.new ? "/icons/eye-close.png" : "/icons/eye-open.png"}
+                src={
+                  showPassword.new ? "/icons/eye-close.png" : "/icons/eye-open.png"
+                }
                 alt="toggle password"
                 width={20}
                 height={20}
               />
             </button>
+
+            {activeField === "new" && (
+              <div className="mt-3 space-y-1 text-sm">
+                <p
+                  className={
+                    passwordChecks.length ? "text-green-600" : "text-gray-500"
+                  }
+                >
+                  At least 8 characters
+                </p>
+                <p
+                  className={
+                    passwordChecks.uppercase ? "text-green-600" : "text-gray-500"
+                  }
+                >
+                  At least one uppercase letter
+                </p>
+                <p
+                  className={
+                    passwordChecks.number ? "text-green-600" : "text-gray-500"
+                  }
+                >
+                  At least one number
+                </p>
+                <p
+                  className={
+                    passwordChecks.special ? "text-green-600" : "text-gray-500"
+                  }
+                >
+                  At least one special character (!@#$%^&*)
+                </p>
+              </div>
+            )}
+
             {errors.newPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.newPassword}</p>
+              <p className="text-red-500 text-sm mt-2">{errors.newPassword}</p>
             )}
           </div>
         </div>
 
         <div className="flex flex-col">
-          <label htmlFor="confirm-new-password" className="font-semibold text-gray-800">
+          <label
+            htmlFor="confirm-new-password"
+            className="font-semibold text-gray-800"
+          >
             Confirm New Password
           </label>
           <div className="mt-2 relative">
@@ -132,38 +276,72 @@ export default function ResetPasswordForm() {
               placeholder="Re-enter new password"
               value={formData.confirmNewPassword}
               onChange={handleChange}
+              onFocus={() => setActiveField("confirm")}
               className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             />
             {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
             <button
               type="button"
               className="absolute right-3 top-4"
-              onMouseDown={() => setShowPassword((prev) => ({ ...prev, confirm: true }))}
-              onMouseUp={() => setShowPassword((prev) => ({ ...prev, confirm: false }))}
-              onMouseLeave={() => setShowPassword((prev) => ({ ...prev, confirm: false }))}
-              onTouchStart={() => setShowPassword((prev) => ({ ...prev, confirm: true }))}
-              onTouchEnd={() => setShowPassword((prev) => ({ ...prev, confirm: false }))}
+              onMouseDown={() =>
+                setShowPassword((prev) => ({ ...prev, confirm: true }))
+              }
+              onMouseUp={() =>
+                setShowPassword((prev) => ({ ...prev, confirm: false }))
+              }
+              onMouseLeave={() =>
+                setShowPassword((prev) => ({ ...prev, confirm: false }))
+              }
+              onTouchStart={() =>
+                setShowPassword((prev) => ({ ...prev, confirm: true }))
+              }
+              onTouchEnd={() =>
+                setShowPassword((prev) => ({ ...prev, confirm: false }))
+              }
             >
               <Image
-                src={showPassword.confirm ? "/icons/eye-close.png" : "/icons/eye-open.png"}
+                src={
+                  showPassword.confirm
+                    ? "/icons/eye-close.png"
+                    : "/icons/eye-open.png"
+                }
                 alt="toggle password"
                 width={20}
                 height={20}
               />
             </button>
-            {errors.confirmNewPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.confirmNewPassword}</p>
+
+            {activeField === "confirm" &&
+              formData.confirmNewPassword.length > 0 && (
+                <p
+                  className={`text-sm mt-3 ${
+                    passwordsMatch ? "text-green-600" : "text-gray-500"
+                  }`}
+                >
+                  {passwordsMatch ? "Passwords match" : "Passwords must match"}
+                </p>
+              )}
+
+            {errors.confirmNewPassword && activeField !== "confirm" && (
+              <p className="text-red-500 text-sm mt-2">
+                {errors.confirmNewPassword}
+              </p>
             )}
           </div>
         </div>
+
+        {(errors.general || apiError) && (
+          <p className="text-red-500 text-sm">{errors.general || apiError}</p>
+        )}
       </div>
 
       <div className="space-y-4">
         <button
           type="submit"
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+          disabled={isSubmitting}
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
         >
-          Reset Password
+          {isSubmitting ? "Resetting..." : "Reset Password"}
         </button>
 
         {showConfirmModal && (

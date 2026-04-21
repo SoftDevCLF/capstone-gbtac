@@ -53,7 +53,7 @@ function AuthActionContent() {
                 const currentUser = auth.currentUser;
                 if (currentUser) {
                   await fetch(
-                    `http://localhost:8000/auth/staff/${encodeURIComponent(info.data.email)}`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/auth/staff/${encodeURIComponent(info.data.email)}`,
                     {
                       method: "PUT",
                       headers: { "Content-Type": "application/json" },
@@ -80,13 +80,13 @@ function AuthActionContent() {
                 if (oldEmail) {
                   // Call backend to update Firestore (backend has admin privileges)
                   const updateResponse = await fetch(
-                    `http://localhost:8000/auth/update-email`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/auth/update-email`,
                     {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         oldEmail: oldEmail,
-                        newEmail: newEmail
+                        newEmail: newEmail,
                       }),
                     }
                   );

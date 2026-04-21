@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ConfirmModal from "./ConfirmModal";
 import NotificationModal from "./NotificationModal";
 import Image from "next/image";
@@ -48,6 +49,7 @@ import { doc, getDoc } from "firebase/firestore";
  */
 export default function StaffProfileForm({ viewerRole = "staff" }) {
   const isAdmin = viewerRole === "admin";
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [originalEmail, setOriginalEmail] = useState("");
 
@@ -62,6 +64,8 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
   });
 
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [notification, setNotification] = useState({
     open: false,
@@ -77,6 +81,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
   const [currentPasswordVerified, setCurrentPasswordVerified] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isProfileLoaded, setIsProfileLoaded] = useState(false);
   const [originalData, setOriginalData] = useState({
     firstName: "",
     lastName: "",
@@ -170,7 +175,11 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
             email: user.email || "",
             status: "Active"
           });
+        } finally {
+          setIsProfileLoaded(true);
         }
+      } else {
+        setIsProfileLoaded(true);
       }
     });
 
@@ -248,6 +257,8 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
       // Clear new/confirm password fields if current password is cleared
@@ -272,6 +283,8 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
   };
 
   const verifyCurrentPassword = async () => {
+    setTouched((prev) => ({ ...prev, currentPassword: true }));
+
     if (!formData.currentPassword) {
       setErrors(prev => ({
         ...prev,
@@ -348,6 +361,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
           showSuccessNotification(
             "A verification email has been sent to your new email address. Please check your inbox and click the verification link to complete the email change.",
           );
+          setTimeout(() => router.push("/staff-welcome-page"), 1500);
           return;
         } catch (emailError) {
           if (emailError.code === 'auth/operation-not-allowed') {
@@ -394,6 +408,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
           }
 
           showSuccessNotification("Password changed successfully!");
+          setTimeout(() => router.push("/staff-welcome-page"), 1500);
           return;
         } catch (passwordError) {
           setErrors(prev => ({
@@ -408,6 +423,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
         await updateFirestoreProfile();
 
         showSuccessNotification("Profile updated successfully!");
+        setTimeout(() => router.push("/staff-welcome-page"), 1500);
       }
 
     } catch (error) {
@@ -420,17 +436,20 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
   const updateFirestoreProfile = async () => {
     try {
-      const response = await fetch('http://localhost:8000/auth/update-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: currentUser.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          active: formData.status === "Active"
-        })
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/update-profile`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            email: currentUser.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            active: formData.status === "Active",
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -473,7 +492,12 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setHasAttemptedSubmit(true);
     if (validate()) setShowConfirmModal(true);
+  };
+
+  const shouldShowFieldError = (fieldName) => {
+    return Boolean(errors[fieldName]) && (hasAttemptedSubmit || touched[fieldName]);
   };
 
   return (
@@ -494,7 +518,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               maxLength={50}
             />
-            {errors.firstName && (
+            {shouldShowFieldError("firstName") && (
               <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
             )}
           </div>
@@ -509,7 +533,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
               className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
               maxLength={50}
             />
-            {errors.lastName && (
+            {shouldShowFieldError("lastName") && (
               <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
             )}
           </div>
@@ -526,10 +550,10 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
             className="border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
             maxLength={100}
           />
-          {errors.email && (
+          {shouldShowFieldError("email") && (
             <p className="text-red-500 text-sm mt-1">{errors.email}</p>
           )}
-          {!isAdmin && formData.email !== originalEmail && !currentPasswordVerified && (
+          {!isAdmin && isProfileLoaded && formData.email !== originalEmail && !currentPasswordVerified && (
             <p className="text-orange-600 text-sm mt-1 font-semibold">
               ⚠ You must verify your current password before changing your email.
             </p>
@@ -595,7 +619,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                 />
               </button>
             </div>
-            {errors.currentPassword && (
+            {shouldShowFieldError("currentPassword") && (
               <p className="text-red-500 text-sm mt-1">{errors.currentPassword}</p>
             )}
             {!currentPasswordVerified && (
@@ -627,7 +651,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   placeholder="New Password"
                   className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                 />
-                {errors.newPassword && (
+                {shouldShowFieldError("newPassword") && (
                   <p className="text-red-500 text-sm mt-1">{errors.newPassword}</p>
                 )}
                 {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}
@@ -648,7 +672,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   />
                 </button>
               </div>
-              {errors.newPassword && (
+              {shouldShowFieldError("newPassword") && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.newPassword}
                 </p>
@@ -668,7 +692,7 @@ export default function StaffProfileForm({ viewerRole = "staff" }) {
                   placeholder="Confirm New Password"
                   className="w-full pr-10 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:border-blue-500 transition text-gray-900 placeholder-gray-500"
                 />
-                {errors.confirmPassword && (
+                {shouldShowFieldError("confirmPassword") && (
                   <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
                 )}
                 {/* Reveal-on-hold toggle — hides password again on release or pointer leave */}

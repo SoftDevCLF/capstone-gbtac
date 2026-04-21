@@ -5,24 +5,20 @@ import { saveRecentDashboard } from "../../../utils/saveRecentDashboard";
 import DashboardLayout from "../../../_components/DashboardLayout";
 import DatePicker from "../../../_components/DatePicker";
 import LineHandler from "../../../_components/graphs/handlers/LineHandler";
-import { loadDashboardState, saveDashboardState } from "../../../utils/storage";
+import { saveDashboardState } from "../../../utils/storage";
 import { useDateValidation } from "../../../_components/hooks/useDateValidation";
+
 import ExportPDFButton from "@/app/_components/ExportPDFButton";
 import NotificationModal from "@/app/_components/NotificationModal";
 import { getDataRange } from "@/app/_utils/get-data-range";
 
-// ****BUG****Top-level await is not supported in "use client" components — getDataRange
-// should be called inside a useEffect or fetched server-side and passed as a prop
-const dataRange = await getDataRange();
 const STORAGE_KEY = "dashboard-wall-temp";
-const DEFAULT_FROM_DATE = "2018-10-13";
-const DEFAULT_TO_DATE = dataRange.newest;
+const DEFAULT_FROM_DATE = "2023-01-01";
+const DEFAULT_TO_DATE = "2023-01-01";
+const DEFAULT_FLOORS = ["Basement"];
+const DEFAULT_ORIENTATIONS = ["East"];
 
 // 24 wall sensors mapped by floor, derived from database naming conventions.
-// ****BUG****
-// 2nd Floor is in FLOOR_OPTIONS but has an empty array in FLOOR_SENSOR_MAP —
-// Selecting it will silently produce zero sensors with no feedback to the user.
-// This should either be removed from FLOOR_OPTIONS or have a disabled state in the UI until sensors are added.
 const FLOOR_SENSOR_MAP = {
   Basement: [
     "30000_TL57",
@@ -49,7 +45,6 @@ const FLOOR_SENSOR_MAP = {
     "30000_TL59",
     "30000_TL58", // West 1st floor
   ],
-  "2nd Floor": [],
 };
 
 const SENSOR_ORIENTATION = {
@@ -105,7 +100,7 @@ const SENSOR_LABELS = {
   "30000_TL58": "SaitSolarLab_30000_TL58",
 };
 
-const FLOOR_OPTIONS = ["Basement", "1st Floor", "2nd Floor"];
+const FLOOR_OPTIONS = ["Basement", "1st Floor"];
 const ORIENTATION_OPTIONS = ["North", "South", "East", "West"];
 
 /**
@@ -135,30 +130,26 @@ const ORIENTATION_OPTIONS = ["North", "South", "East", "West"];
 export default function WallTempDashboard() {
   const chartRef = useRef(null);
 
-  const [state, setState] = useState(() => {
-    const saved = loadDashboardState(STORAGE_KEY, {});
-    return {
-      fromDate: saved.fromDate || DEFAULT_FROM_DATE,
-      toDate: saved.toDate || DEFAULT_TO_DATE,
-      floors: saved.floors || [],
-      orientations: saved.orientations || [],
-    };
+  const [state, setState] = useState({
+    fromDate: DEFAULT_FROM_DATE,
+    toDate: DEFAULT_TO_DATE,
+    floors: DEFAULT_FLOORS,
+    orientations: DEFAULT_ORIENTATIONS,
   });
 
-  //initialize from saved state so chart loads immediately
-  // ****CHECK*** appliedState is never null on first load — Unlike AmbientTempDashboard,
-  // this dashboard initialises appliedState directly from saved state (or defaults),
-  // so it can never be null. The !appliedState guards on floorFiltered and activeSensors
-  // are therefore dead code. Worth aligning with the other dashboards for consistency.
-  const [appliedState, setAppliedState] = useState(() => {
-    const saved = loadDashboardState(STORAGE_KEY, {});
-    return {
-      fromDate: saved.fromDate || DEFAULT_FROM_DATE,
-      toDate: saved.toDate || DEFAULT_TO_DATE,
-      floors: saved.floors || [],
-      orientations: saved.orientations || [],
-    };
+  // Always start with defaults so the chart loads fast
+  const [appliedState, setAppliedState] = useState({
+    fromDate: DEFAULT_FROM_DATE,
+    toDate: DEFAULT_TO_DATE,
+    floors: DEFAULT_FLOORS,
+    orientations: DEFAULT_ORIENTATIONS,
   });
+
+  const [dataRange, setDataRange] = useState({ forecast: "2024-12-31" });
+
+  useEffect(() => {
+    getDataRange().then(setDataRange).catch(() => {});
+  }, []);
 
   const { errors, validateAll } = useDateValidation({
     earliestDate: "2018-10-13",
@@ -167,11 +158,6 @@ export default function WallTempDashboard() {
   const [showSaveNotification, setShowSaveNotification] = useState(false);
 
   const { fromDate, toDate, floors = [], orientations = [] } = state;
-
-  // Persist staged state on every change so settings survive a page reload
-  useEffect(() => {
-    saveDashboardState(STORAGE_KEY, state);
-  }, [state]);
 
   // Re-run validation on every date change to keep error UI current
   useEffect(() => {
